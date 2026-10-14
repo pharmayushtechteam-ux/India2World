@@ -1,0 +1,174 @@
+[
+  {
+    "customerId": "CUS-31026",
+    "name": "rohith",
+    "email": "pharmayushtechteam@gmail.com",
+    "phone": "+971 50 123 4567",
+    "country": "United Arab Emirates",
+    "city": "Dubai",
+    "lockerId": "I2W-CUS-31026",
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=rohith&backgroundColor=0066FF"
+  },
+  {
+    "customerId": "CUS-10028",
+    "name": "Priya Sharma",
+    "email": "priya.sharma@example.com",
+    "phone": "+971 50 987 6543",
+    "country": "United Arab Emirates",
+    "city": "Dubai",
+    "lockerId": "I2W-CUS-10028"
+  },
+  {
+    "customerId": "CUS-10042",
+    "name": "Rahul Mehta",
+    "email": "rahul.mehta@example.com",
+    "phone": "+1 415 555 0192",
+    "country": "United States",
+    "city": "San Francisco",
+    "lockerId": "I2W-CUS-10042"
+  },
+  {
+    "customerId": "CUS-10034",
+    "name": "Ahmed Khan",
+    "email": "ahmed.k@example.com",
+    "phone": "+971 52 334 5566",
+    "country": "United Arab Emirates",
+    "city": "Abu Dhabi",
+    "lockerId": "I2W-CUS-10034"
+  },
+  {
+    "customerId": "CUS-99999",
+    "name": "Customer",
+    "email": "bad-address@test.nonexistentdomain123.com"
+  },
+  {
+    "customerId": "CUS-49006",
+    "name": "riya",
+    "email": "pharmayushonline@gmail.com",
+    "phone": "+91 98765 12347",
+    "country": "United Arab Emirates",
+    "city": "Dubai",
+    "lockerId": "I2W-49006",
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=riya&backgroundColor=0066FF"
+  },
+  {
+    "customerId": "CUS-39668",
+    "name": "Ananya Verma",
+    "email": "test_customer_1791891386329@example.com",
+    "phone": "+91 99887 76655",
+    "country": "United States",
+    "city": "San Jose",
+    "lockerId": "I2W-39668",
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ananya%20Verma&backgroundColor=0066FF"
+  },
+  {
+    "customerId": "CUS-24325",
+    "name": "mithuna",
+    "email": "mithuna@example.com",
+    "phone": "+91 9826573980",
+    "country": "France",
+    "city": "Dubai",
+    "lockerId": "I2W-24325",
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=mithuna&backgroundColor=0066FF"
+  },
+  {
+    "customerId": "CUS-70529",
+    "name": "Ananya Verma",
+    "email": "test_customer_1791891970712@example.com",
+    "phone": "+91 99887 76655",
+    "country": "United States",
+    "city": "San Jose",
+    "lockerId": "I2W-70529",
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ananya%20Verma&backgroundColor=0066FF"
+  },
+  {
+    "customerId": "CUS-69229",
+    "name": "Ananya Verma",
+    "email": "test_customer_1791892008571@example.com",
+    "phone": "+91 99887 76655",
+    "country": "United States",
+    "city": "San Jose",
+    "lockerId": "I2W-69229",
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ananya%20Verma&backgroundColor=0066FF"
+  },
+  {
+    "customerId": "CUS-31068",
+    "name": "Ananya Verma",
+    "email": "test_customer_1791892602143@example.com",
+    "phone": "+91 99887 76655",
+    "country": "United States",
+    "city": "San Jose",
+    "lockerId": "I2W-31068",
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ananya%20Verma&backgroundColor=0066FF"
+  },
+  {
+    "customerId": "CUS-42238",
+    "name": "Ananya Verma",
+    "email": "test_customer_1791893792650@example.com",
+    "phone": "+91 99887 76655",
+    "country": "United States",
+    "city": "San Jose",
+    "lockerId": "I2W-42238",
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ananya%20Verma&backgroundColor=0066FF"
+  },
+  {
+    "customerId": "CUS-38901",
+    "name": "Ananya Verma",
+    "email": "test_customer_1791894304103@example.com",
+    "phone": "+91 99887 76655",
+    "country": "United States",
+    "city": "San Jose",
+    "lockerId": "I2W-38901",
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ananya%20Verma&backgroundColor=0066FF"
+  },
+  {
+    "customerId": "CUS-10001",
+    "name": "John Doe",
+    "email": "john@example.com",
+    "phone": "+91 98765 43210",
+    "country": "United Arab Emirates",
+    "city": "Dubai",
+    "lockerId": "I2W-10001",
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=John%20Doe&backgroundColor=0066FF"
+  },
+  {
+    "customerId": "CUS-43098",
+    "name": "Ananya Verma",
+    "email": "test_customer_1791955142764@example.com",
+    "phone": "+91 99887 76655",
+    "country": "United States",
+    "city": "San Jose",
+    "lockerId": "I2W-43098",
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ananya%20Verma&backgroundColor=0066FF"
+  },
+  {
+    "customerId": "CUS-59345",
+    "name": "Ananya Verma",
+    "email": "test_customer_1791955823028@example.com",
+    "phone": "+91 99887 76655",
+    "country": "United States",
+    "city": "San Jose",
+    "lockerId": "I2W-59345",
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ananya%20Verma&backgroundColor=0066FF"
+  },
+  {
+    "customerId": "CUS-81834",
+    "name": "Ananya Verma",
+    "email": "test_customer_1791956587643@example.com",
+    "phone": "+91 99887 76655",
+    "country": "United States",
+    "city": "San Jose",
+    "lockerId": "I2W-81834",
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ananya%20Verma&backgroundColor=0066FF"
+  },
+  {
+    "customerId": "CUS-10286",
+    "name": "Durgaluckshmi",
+    "email": "durgaluckshmi@gmail.com",
+    "phone": "+91 98765 43210",
+    "country": "United Arab Emirates",
+    "city": "Dubai",
+    "lockerId": "I2W-10286",
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Durgaluckshmi&backgroundColor=0066FF"
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "AUD-MV7OOTJH-BHQA",
+    "timestamp": "2026-10-14T05:43:14.573Z",
+    "adminName": "Super Admin",
+    "adminEmail": "admin@india2world.com",
+    "category": "warehouse, pricing",
+    "action": "UPDATE_SETTINGS",
+    "details": "Saved settings for category/categories: warehouse, pricing"
+  },
+  {
+    "id": "AUD-MV7O85EY-V8B2",
+    "timestamp": "2026-10-14T05:30:16.810Z",
+    "adminName": "Super Admin",
+    "adminEmail": "admin@india2world.com",
+    "category": "warehouse, pricing",
+    "action": "UPDATE_SETTINGS",
+    "details": "Saved settings for category/categories: warehouse, pricing"
+  },
+  {
+    "id": "AUD-MV7NTGV6-6362",
+    "timestamp": "2026-10-14T05:18:51.810Z",
+    "adminName": "Super Admin",
+    "adminEmail": "admin@india2world.com",
+    "category": "warehouse, pricing",
+    "action": "UPDATE_SETTINGS",
+    "details": "Saved settings for category/categories: warehouse, pricing"
+  },
+  {
+    "id": "AUD-MV7NS6BX-1PV4",
+    "timestamp": "2026-10-14T05:17:51.501Z",
+    "adminName": "Super Admin",
+    "adminEmail": "admin@india2world.com",
+    "category": "pricing",
+    "action": "UPDATE_SETTINGS",
+    "details": "Saved settings for category/categories: pricing"
+  }
+]

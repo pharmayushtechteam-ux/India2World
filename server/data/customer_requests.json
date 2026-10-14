@@ -1,0 +1,61 @@
+{
+  "CUS-49006": [
+    {
+      "id": "REQ-49011",
+      "requestNumber": "REQ-49011",
+      "customerId": "CUS-49006",
+      "customerName": "riya",
+      "customerEmail": "pharmayushonline@gmail.com",
+      "date": "13 Oct 2026, 04:30 PM",
+      "status": "Quote Ready",
+      "totalItems": 2,
+      "totalAmountINR": 4296,
+      "destinationCountry": "United Arab Emirates",
+      "products": [
+        {
+          "id": "riya-prod-1",
+          "name": "Kuchipoo Boys Typographic Print Regular Fit Sweatshirt",
+          "storeName": "AJIO",
+          "priceINR": 1299,
+          "quantity": 1,
+          "imageUrl": "https://kuchipoo.in/cdn/shop/files/KUC-HOD-227FRONT.jpg?v=1759291947",
+          "url": "https://www.ajio.com/kuchipoo-boys-typographic-print-regular-fit-sweatshirt/p/466887570_white"
+        },
+        {
+          "id": "riya-prod-2",
+          "name": "IRTH by House of Titan Black Logo Satchel Handbag",
+          "storeName": "Tata CLiQ",
+          "priceINR": 2997,
+          "quantity": 1,
+          "imageUrl": "https://img.tatacliq.com/images/i30//437Wx649H/MP000000025091217_437Wx649H_202502281858541.jpeg",
+          "url": "https://www.tatacliq.com/irth-by-house-of-titan-black-logo-satchel-handbag/p-mp000000025091217"
+        }
+      ]
+    }
+  ],
+  "CUS-31026": [
+    {
+      "id": "REQ-31088",
+      "requestNumber": "REQ-31088",
+      "customerId": "CUS-31026",
+      "customerName": "rohith",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "date": "12 Oct 2026, 02:15 PM",
+      "status": "Admin Review",
+      "totalItems": 1,
+      "totalAmountINR": 1782,
+      "destinationCountry": "United Arab Emirates",
+      "products": [
+        {
+          "id": "rohith-prod-1",
+          "name": "Bacca Bucci Obsidian Black Chunky High-Top Streetwear Sneakers",
+          "storeName": "Flipkart",
+          "priceINR": 1782,
+          "quantity": 1,
+          "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/shoe/i/5/v/8-bbmg8267-8-bacca-bucci-obsidian-black-watermarked-original-imahf8fhezk5bctg.jpeg",
+          "url": "https://www.flipkart.com/bacca-bucci-obsidian-black-sneakers/p/itmf8fgurjk4mys"
+        }
+      ]
+    }
+  ]
+}

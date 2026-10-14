@@ -1,0 +1,308 @@
+{
+  "general": {
+    "appName": "India2World",
+    "tagline": "Shop in India. Deliver Worldwide.",
+    "legalName": "India2World Cross-Border Logistics Pvt. Ltd.",
+    "supportEmail": "support@india2world.com",
+    "supportPhone": "+91 98200 12345",
+    "officeAddress": "Chhatrapati Shivaji Maharaj International Airport Cargo Zone, Sahar Road, Andheri East, Mumbai 400099, India",
+    "defaultCurrency": "INR",
+    "timezone": "Asia/Kolkata",
+    "dateFormat": "DD/MM/YYYY",
+    "primaryCountry": "India (IND)",
+    "customerRegistration": true,
+    "maintenanceMode": false,
+    "maintenanceNotice": "India2World operations portal is temporarily undergoing scheduled maintenance. Services will resume shortly."
+  },
+  "emailSmtp": {
+    "host": "smtp.gmail.com",
+    "port": 587,
+    "security": "STARTTLS",
+    "user": "pharmayushtechteam@gmail.com",
+    "senderName": "India2World",
+    "passSet": true,
+    "testRecipient": "pharmayushtechteam@gmail.com"
+  },
+  "customerAccount": {
+    "registrationMode": "open",
+    "emailVerificationRequired": true,
+    "autoActivateOnSignup": true,
+    "blockSuspendedAccounts": true,
+    "passwordResetValidityHours": 24,
+    "dormancyAlertDays": 90,
+    "customerDataPrivacyEnabled": true,
+    "strictCustomerDataIsolation": true
+  },
+  "buyForMe": {
+    "supportedPlatforms": {
+      "amazon": true,
+      "flipkart": true,
+      "myntra": true,
+      "tatacliq": true,
+      "ajio": true,
+      "nykaa": true
+    },
+    "urlValidationStrictness": "strict",
+    "autoExtractMetadata": true,
+    "fallbackScraping": true,
+    "maxProductsPerRequest": 20,
+    "maxImageUploadSizeMB": 10,
+    "duplicateProductDetection": "warn"
+  },
+  "pricing": {
+    "buyForMeHandlingFee": 500,
+    "volumetricDivisor": 5000,
+    "baseShippingRatePerKg": 1850,
+    "expressPrioritySurcharge": 450,
+    "fuelSurchargePercent": 12,
+    "quotationValidityDays": 7,
+    "currencyBufferPercent": 2.5,
+    "gstTaxPercent": 18,
+    "minChargeableWeightKg": 0.5
+  },
+  "orderWorkflow": {
+    "autoConfirmOnPayment": true,
+    "procurementApprovalThresholdINR": 50000,
+    "autoGenerateInvoice": true,
+    "allowCustomerCancellation": "until_procurement",
+    "statusTransitionMode": "strict",
+    "failedEmailRetryCount": 3,
+    "orderRetentionDays": 365
+  },
+  "payment": {
+    "gateways": {
+      "razorpay": {
+        "enabled": true,
+        "keyId": "rzp_live_i2w_secure_prod",
+        "status": "ready"
+      },
+      "stripe": {
+        "enabled": true,
+        "publishableKey": "pk_live_i2w_global_pay",
+        "status": "ready"
+      },
+      "bankWire": {
+        "enabled": true,
+        "bankName": "HDFC Bank - Commercial Branch",
+        "accountNumber": "50200084920194",
+        "ifsc": "HDFC0000060",
+        "swift": "HDFCINBBXXX",
+        "status": "active"
+      },
+      "paypal": {
+        "enabled": false,
+        "status": "not_configured"
+      }
+    },
+    "requireTransactionRef": true,
+    "dualApprovalForRefunds": true,
+    "invoicePrefix": "I2W-INV-",
+    "companyGstin": "27AABCU9603R1ZM",
+    "hsnSacCode": "996813",
+    "autoReconcileWebhooks": true
+  },
+  "warehouse": {
+    "warehouseAddress": "Bay #4, Marol MIDC, Andheri East, Mumbai 400093, Maharashtra, India",
+    "freeStorageDays": 30,
+    "dailyOverageFee": 50,
+    "bayCapacity": 500,
+    "autoAllocateLocker": true,
+    "mandatoryIntakeInspection": true,
+    "mandatoryIntakePhotos": true
+  },
+  "shippingTracking": {
+    "carriers": {
+      "dhl": {
+        "enabled": true,
+        "name": "DHL Express Worldwide",
+        "slaDays": "2 - 4 Days",
+        "status": "active"
+      },
+      "fedex": {
+        "enabled": true,
+        "name": "FedEx Priority International",
+        "slaDays": "3 - 5 Days",
+        "status": "active"
+      },
+      "aramex": {
+        "enabled": true,
+        "name": "Aramex Global Priority (GCC Hub)",
+        "slaDays": "4 - 7 Days",
+        "status": "active"
+      },
+      "ups": {
+        "enabled": false,
+        "name": "UPS Worldwide Expedited",
+        "slaDays": "3 - 6 Days",
+        "status": "available"
+      }
+    },
+    "repackStrategy": "discard_outer_box",
+    "maxPackageDimensionCm": 300,
+    "maxParcelWeightKg": 30,
+    "autoMilestoneEmails": true,
+    "damagedPackageProtocol": "quarantine"
+  },
+  "adminRoles": {
+    "roles": [
+      {
+        "roleId": "super-admin",
+        "roleName": "Super Admin",
+        "description": "Complete unrestricted administrative access across system, pricing, SMTP, secrets and security audit.",
+        "permissions": {
+          "orders": "full",
+          "procurement": "full",
+          "warehouse": "full",
+          "consolidation": "full",
+          "dispatch": "full",
+          "refunds": "full",
+          "invoices": "full",
+          "settings": "full"
+        }
+      },
+      {
+        "roleId": "operations-manager",
+        "roleName": "Operations Manager",
+        "description": "Manages incoming requests, buyer purchase queue, warehouse consolidations, and outbound dispatches.",
+        "permissions": {
+          "orders": "full",
+          "procurement": "full",
+          "warehouse": "full",
+          "consolidation": "full",
+          "dispatch": "full",
+          "refunds": "approval_only",
+          "invoices": "full",
+          "settings": "view"
+        }
+      },
+      {
+        "roleId": "warehouse-staff",
+        "roleName": "Warehouse Staff",
+        "description": "Receives packages, inspects condition, records physical dimensions, uploads intake photos, and packs boxes.",
+        "permissions": {
+          "orders": "view",
+          "procurement": "none",
+          "warehouse": "full",
+          "consolidation": "full",
+          "dispatch": "view",
+          "refunds": "none",
+          "invoices": "none",
+          "settings": "none"
+        }
+      },
+      {
+        "roleId": "customer-support",
+        "roleName": "Customer Support",
+        "description": "Assists customers with quotes, package inquiries, tracking status, tickets, and communication.",
+        "permissions": {
+          "orders": "view",
+          "procurement": "view",
+          "warehouse": "view",
+          "consolidation": "view",
+          "dispatch": "view",
+          "refunds": "none",
+          "invoices": "view",
+          "settings": "none"
+        }
+      },
+      {
+        "roleId": "finance-staff",
+        "roleName": "Finance Staff",
+        "description": "Reviews payment captures, bank reconciliations, dual-signoff on refunds, and fiscal GST reporting.",
+        "permissions": {
+          "orders": "view",
+          "procurement": "none",
+          "warehouse": "none",
+          "consolidation": "none",
+          "dispatch": "none",
+          "refunds": "full",
+          "invoices": "full",
+          "settings": "view"
+        }
+      }
+    ]
+  },
+  "notifications": {
+    "templates": [
+      {
+        "id": "tpl-order-confirm",
+        "name": "Order Confirmation",
+        "event": "order_confirmed",
+        "channel": "email",
+        "enabled": true,
+        "subject": "Confirmed: Your India2World Order {{orderId}} is in processing",
+        "description": "Dispatches immediately after customer pays assisted purchase or shipping quotation."
+      },
+      {
+        "id": "tpl-quote-ready",
+        "name": "Quotation Ready",
+        "event": "quotation_ready",
+        "channel": "email",
+        "enabled": true,
+        "subject": "Quotation Ready: Review and approve your request {{requestId}}",
+        "description": "Notifies customer when operations team has reviewed and priced items."
+      },
+      {
+        "id": "tpl-payment-received",
+        "name": "Payment Capture Receipt",
+        "event": "payment_received",
+        "channel": "email",
+        "enabled": true,
+        "subject": "Payment Received: Transaction {{txnId}} confirmed for India2World",
+        "description": "Sends instant payment receipt with gateway transaction reference."
+      },
+      {
+        "id": "tpl-invoice-pdf",
+        "name": "Official Tax Invoice Dispatched",
+        "event": "invoice_dispatched",
+        "channel": "email",
+        "enabled": true,
+        "subject": "Tax Invoice: India2World Invoice #{{invoiceNumber}} attached",
+        "description": "Delivers generated GST-compliant PDF invoice via live SMTP transport."
+      },
+      {
+        "id": "tpl-package-intake",
+        "name": "Package Received at Mumbai Hub",
+        "event": "package_received",
+        "channel": "email",
+        "enabled": true,
+        "subject": "New Package Received: Bay Locker #{{lockerId}} (Tracking: {{trackingNumber}})",
+        "description": "Sends notification and unboxing verification photos to customer."
+      },
+      {
+        "id": "tpl-shipment-awb",
+        "name": "Air Cargo Dispatched (AWB Tracking)",
+        "event": "shipment_dispatched",
+        "channel": "email",
+        "enabled": true,
+        "subject": "Dispatched: Consignment #{{shipmentId}} on flight with {{carrier}}",
+        "description": "Includes live courier tracking URL, flight departure, and estimated delivery date."
+      },
+      {
+        "id": "tpl-refund-complete",
+        "name": "Refund Credit Notification",
+        "event": "refund_processed",
+        "channel": "email",
+        "enabled": true,
+        "subject": "Refund Processed: ₹{{amount}} credited to your original payment method",
+        "description": "Alerts customer when refund has cleared dual finance sign-off."
+      },
+      {
+        "id": "tpl-admin-alert",
+        "name": "Admin High-Value Order Alert",
+        "event": "admin_high_value",
+        "channel": "email",
+        "enabled": true,
+        "subject": "🚨 Operations Alert: High-Value Order {{orderId}} (> ₹50,000) Requires Review",
+        "description": "Alerts Super Admin when assisted purchase exceeds sign-off threshold."
+      }
+    ],
+    "emailSignature": "India2World Global Logistics Hub • Airport Cargo Complex, Mumbai 400099 • Email: support@india2world.com"
+  },
+  "securityAudit": {
+    "sessionTimeoutMinutes": 60,
+    "enforceAdmin2FA": false,
+    "rateLimitingEnabled": true,
+    "auditLogRetentionDays": 180
+  }
+}

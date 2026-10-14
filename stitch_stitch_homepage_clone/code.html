@@ -1,0 +1,287 @@
+<!DOCTYPE html><html lang="en" style=""><head></head><body class="min-h-screen bg-[#f4f7fb] text-slate-800 antialiased p-3 sm:p-6 lg:p-8 flex justify-center items-start"><svg class="inline-defs-container" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden"></svg>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>India2World - Shop in India. Deliver Worldwide.</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              blue: '#165dfc',
+              darkBlue: '#0b1940',
+              accent: '#2563eb',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom CSS for specific decorative elements -->
+<style data-purpose="custom-styling">
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .hero-bg-gradient {
+      background: radial-gradient(circle at 75% 35%, rgba(219, 234, 254, 0.45) 0%, rgba(248, 250, 252, 0) 65%);
+    }
+    .custom-box-shadow {
+      box-shadow: 0 10px 30px -5px rgba(22, 93, 252, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+    }
+    .custom-input-shadow {
+      box-shadow: 0 0 0 2px #2563eb, 0 10px 25px -5px rgba(37, 99, 235, 0.2);
+    }
+  </style>
+
+
+<!-- Main Container -->
+<div class="w-full max-w-[1240px] bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 flex flex-col">
+<!-- BEGIN: Header -->
+<header class="w-full px-6 md:px-10 py-4 flex items-center justify-between bg-white border-b border-slate-100/80">
+  <!-- Left: Brand Logo & Tagline -->
+  <a class="flex items-center gap-3 group" href="#">
+    <div class="relative w-11 h-11 flex-shrink-0">
+      <svg class="w-11 h-11" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="circle-clip">
+            <circle cx="24" cy="24" r="21"></circle>
+          </clipPath>
+        </defs>
+        <g clip-path="url(#circle-clip)">
+          <!-- Saffron top stripe -->
+          <rect x="3" y="3" width="42" height="13" fill="#FF671F"></rect>
+          <!-- White middle stripe -->
+          <rect x="3" y="16" width="42" height="14" fill="#FFFFFF"></rect>
+          <!-- Green bottom stripe -->
+          <rect x="3" y="30" width="42" height="15" fill="#046A38"></rect>
+          <!-- Stylized globe longitude/latitude lines in navy blue -->
+          <path d="M24 16C29 16 33 21 33 23C33 25 29 30 24 30C19 30 15 25 15 23C15 21 19 16 24 16Z" fill="none" stroke="#0654BA" stroke-width="2.2"></path>
+          <circle cx="19" cy="23" r="2.2" fill="#0654BA"></circle>
+          <circle cx="27" cy="20" r="1.8" fill="#0654BA"></circle>
+          <!-- Stylized parcel box / horn shape -->
+          <path d="M22 19L33 16L32 29L24 27Z" fill="#0b57d0" opacity="0.95"></path>
+        </g>
+        <!-- Outer ring -->
+        <circle cx="24" cy="24" r="21" stroke="#E2E8F0" stroke-width="1.5"></circle>
+        <!-- Flying Airplane Icon at top right -->
+        <g transform="translate(32, 4) rotate(25)">
+          <path d="M5 0L6.5 4.5L10 5.5L6.5 6.5L5 11L3.5 6.5L0 5.5L3.5 4.5Z" fill="#0654BA"></path>
+          <path d="M4 2L8 5L4 8L5 5Z" fill="#0284C7"></path>
+        </g>
+      </svg>
+    </div>
+    <div class="flex flex-col justify-center">
+      <div class="text-2xl font-bold tracking-tight text-[#0654BA] leading-none flex items-center font-sans">
+        India<span class="text-[#0654BA]">2</span>World
+      </div>
+      <span class="text-[10px] font-medium text-slate-500 tracking-tight leading-normal mt-1">Shop in India. Deliver Worldwide.</span>
+    </div>
+  </a>
+
+  <!-- Center & Right Navigation -->
+  <div class="flex items-center gap-6 lg:gap-7">
+    <!-- Center Nav Links -->
+    <nav class="hidden lg:flex items-center gap-6 text-[15px] font-medium text-[#0f172a]">
+      <a class="hover:text-[#0654BA] transition-colors" href="#how-it-works">How It Works</a>
+      <a class="hover:text-[#0654BA] transition-colors" href="#pricing">Pricing</a>
+      <a class="hover:text-[#0654BA] transition-colors" href="#countries">Countries</a>
+      <a class="hover:text-[#0654BA] transition-colors" href="#help">Help</a>
+      <a class="hover:text-[#0654BA] transition-colors" href="#track">Track</a>
+    </nav>
+
+    <!-- Divider -->
+    <span class="hidden lg:inline text-slate-300 font-light select-none">|</span>
+
+    <!-- Right Actions -->
+    <div class="flex items-center gap-4">
+      <a class="text-[15px] font-medium text-[#0f172a] hover:text-[#0654BA] transition-colors" href="#login">Login</a>
+      <a class="px-6 py-2 rounded-xl bg-[#0066FF] hover:bg-[#0052cc] text-white font-semibold text-[15px] shadow-sm transition-colors text-center inline-flex items-center justify-center" href="#signup">
+        Sign Up
+      </a>
+      <!-- Globe / Language Selector -->
+      <button aria-label="Select Language" class="w-10 h-10 rounded-full flex items-center justify-center bg-slate-50 hover:bg-slate-100 text-[#0f172a] transition-colors border border-transparent" type="button">
+        <svg class="w-5 h-5 text-[#0b1940]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="2" x2="22" y1="12" y2="12"></line>
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+<!-- END: Header -->
+<!-- BEGIN: Hero Section -->
+<section class="relative px-6 md:px-12 pt-10 pb-14 bg-gradient-to-b from-blue-50/40 via-white to-white overflow-hidden hero-bg-gradient"><div class="relative w-full rounded-2xl overflow-hidden shadow-xs border border-blue-100/60"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYrl7ekJVXMoT-rE-TE8Yz00Qmq0fwc2cxnD7eZV5poy5MRSk-pH7YCMyFbxXPLEEnq2_Fk2tv6LN6WcQlCA8eh0ht7sxvGc69hStv6m_50WHN3JKPxlHH1nH292gq6s4qcdemnJBBXfug5xrkEz0iQW_gD36q3256scNdKeTFNF02YNmsJmq-Crb0GszU5IdSczwe24GdrVuElR_b3LRZcYXxJYaaZyV-bt3232_7hEZyQld-GOPtbwPrUE0Re73krUc" alt="Shop Anywhere in India. We Deliver Worldwide." class="w-full h-auto object-cover block"></div></section>
+<!-- END: Hero Section -->
+<!-- BEGIN: Top Online Stores Section -->
+<section class="px-6 md:px-10 py-6 bg-white border-b border-slate-100">
+  <div class="bg-white rounded-2xl border border-slate-200/70 px-6 py-5 md:px-8 md:py-6 shadow-xs">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-[17px] md:text-lg font-bold text-[#0b1940] tracking-tight">Shop from India's Top Online Stores</h2>
+      <span class="text-xs md:text-sm font-medium text-[#3b5998] hover:text-[#165dfc] cursor-pointer transition-colors">And many more...</span>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+      <!-- 1. Amazon.in -->
+      <div class="h-14 bg-white rounded-xl border border-slate-200/80 flex items-center justify-center px-3 py-2 hover:border-slate-300 transition-colors shadow-xs"><svg class="h-7 w-auto max-w-[125px]" viewBox="0 0 135 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <text x="2" y="21" font-family="'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="21" font-weight="800" fill="#111827" letter-spacing="-0.5">amazon<tspan font-size="16" font-weight="700" fill="#111827" letter-spacing="-0.2">.in</tspan></text>
+  <path d="M 14 26.5 C 33 32 58 31 72 23.5" stroke="#ff9900" stroke-width="2.8" stroke-linecap="round" fill="none"></path>
+  <path d="M 70 21.5 L 75 23.8 L 68.5 26.5 Z" fill="#ff9900"></path>
+</svg></div>
+      <!-- 2. Myntra -->
+      <div class="h-14 bg-white rounded-xl border border-slate-200/80 flex items-center justify-center gap-2 px-3 py-2 hover:border-slate-300 transition-colors shadow-xs"><div class="flex items-center justify-center gap-2.5">
+  <svg class="h-7 w-auto aspect-square flex-shrink-0" viewBox="0 0 40 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M 6 28 C 3 17 9 7 15 7 C 19 7 21 15 21 21 C 21 15 23 7 27 7 C 33 7 39 17 36 28 C 32 20 28 15 25 15 C 23.5 15 22.5 19 22 23 C 21.5 19 20.5 15 19 15 C 16 15 12 20 6 28 Z" fill="#f43f5e"></path>
+    <path d="M 11 28 C 9.5 21 13 11 17 9 C 20 7.5 21 13 21 19 C 21 13 22 7.5 25 9 C 29 11 32.5 21 31 28 C 28 21.5 25.5 16.5 23.5 16.5 C 22.2 16.5 21.5 20 21 24 C 20.5 20 19.8 16.5 18.5 16.5 C 16.5 16.5 14 21.5 11 28 Z" fill="#ff5722" opacity="0.95"></path>
+    <path d="M 16 28 C 14.5 22 17 14 19.5 12 C 20.5 11 21 15 21 20 C 21 15 21.5 11 22.5 12 C 25 14 27.5 22 26 28 C 24.5 22.5 23 18.5 22 18.5 C 21.4 18.5 21 21 21 24 C 21 21 20.6 18.5 20 18.5 C 19 18.5 17.5 22.5 16 28 Z" fill="#e91e63" opacity="0.9"></path>
+  </svg>
+  <span class="text-[15px] font-bold text-[#111827] tracking-tight font-sans">Myntra</span>
+</div></div>
+      <!-- 3. Flipkart -->
+      <div class="h-14 bg-white rounded-xl border border-slate-200/80 flex items-center justify-center gap-1.5 px-3 py-2 hover:border-slate-300 transition-colors shadow-xs"><div class="flex items-center justify-center gap-2">
+  <span class="text-lg font-black italic text-[#2874f0] font-sans tracking-tight">Flipkart</span>
+  <svg class="h-7 w-auto" viewBox="0 0 32 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M 6 10 C 6 8.5 7.5 8 9 8 L 23 8 C 24.5 8 26 8.5 26 10 L 28 30 C 28 32 26.5 33 24.5 33 L 7.5 33 C 5.5 33 4 32 4 30 Z" fill="#fed700"></path>
+    <path d="M 11 8 C 11 4.5 13.5 3 16 3 C 18.5 3 21 4.5 21 8" stroke="#cca400" stroke-width="1.8" stroke-linecap="round" fill="none"></path>
+    <path d="M 10 11 C 10 13 12.5 14.5 16 14.5 C 19.5 14.5 22 13 22 11" stroke="#d4a700" stroke-width="1.2" fill="none"></path>
+    <!-- Royal blue 'f' speed lines -->
+    <path d="M 18 17 C 22.5 17 24 19 24 21 C 24 23 22 24.5 19 24.5 M 14 21.5 L 22.5 21.5 M 15 25.5 L 21 25.5 M 12 28.5 L 23 28.5" stroke="#2874f0" stroke-width="2.2" stroke-linecap="round"></path>
+  </svg>
+</div></div>
+      <!-- 4. TATA CLiQ -->
+      <div class="h-14 bg-white rounded-xl border border-slate-200/80 flex flex-col items-center justify-center px-4 py-1.5 hover:border-slate-300 transition-colors shadow-xs">
+        <div class="flex items-center gap-1 leading-none">
+          <span class="text-[9px] font-black tracking-widest text-[#111827]">TATA</span>
+          <svg class="w-2.5 h-2.5" viewBox="0 0 10 10">
+            <polygon points="5,1 9,9 1,9" fill="#e11d48"></polygon>
+          </svg>
+        </div>
+        <span class="text-base font-extrabold text-[#111827] tracking-tight leading-none mt-0.5">CLiQ</span>
+      </div>
+      <!-- 5. AJIO -->
+      <div class="h-14 bg-white rounded-xl border border-slate-200/80 flex items-center justify-center px-4 py-2 hover:border-slate-300 transition-colors shadow-xs">
+        <span class="text-xl font-black tracking-[0.15em] text-[#0c2340] font-sans">AJIO</span>
+      </div>
+      <!-- 6. NYKAA -->
+      <div class="h-14 bg-white rounded-xl border border-slate-200/80 flex items-center justify-center px-4 py-2 hover:border-slate-300 transition-colors shadow-xs">
+        <span class="text-xl font-black italic tracking-tighter text-[#fc2779] transform -skew-x-6 font-sans drop-shadow-xs">NYKAA</span>
+      </div>
+      <!-- 7. bigbasket -->
+      <div class="h-14 bg-white rounded-xl border border-slate-200/80 flex items-center justify-center gap-1.5 px-2.5 py-2 hover:border-slate-300 transition-colors shadow-xs">
+        <div class="w-5 h-5 rounded-md bg-[#84c225] flex items-center justify-center text-[#e52d38] font-black text-xs leading-none shadow-xs">bb</div>
+        <span class="text-sm font-bold text-[#222222] tracking-tight">bigbasket</span>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- END: Top Online Stores Section -->
+<!-- BEGIN: How It Works Section -->
+<section id="how-it-works" class="px-6 md:px-10 py-8 bg-white border-b border-slate-100"><div class="bg-[#f0f7ff] rounded-3xl p-6 md:p-8 border border-blue-100/80"><div class="flex flex-wrap items-baseline gap-3 mb-8"><h2 class="text-2xl md:text-[28px] font-extrabold text-[#0b1940] tracking-tight">How It Works</h2><span class="text-sm md:text-base text-slate-500 font-normal">Get your favorite products from India in 6 simple steps</span></div><div class="flex flex-col lg:flex-row items-center lg:items-start justify-between gap-6 lg:gap-2"><div class="flex flex-col items-center text-center flex-1"><div class="relative w-20 h-20 rounded-full bg-[#dbeafe] flex items-center justify-center mb-4"><svg class="w-9 h-9 text-[#165dfc]" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg><span class="absolute top-0 right-0 w-6 h-6 rounded-full bg-[#165dfc] text-white text-xs font-bold flex items-center justify-center border-2 border-white shadow-xs">1</span></div><h3 class="text-base font-bold text-[#0f172a] mb-1">Paste the Link</h3><p class="text-xs text-slate-500 leading-relaxed max-w-[150px]">Share the product link from any Indian website</p></div><div class="hidden lg:flex items-center justify-center pt-7 text-slate-300 flex-shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div><div class="flex flex-col items-center text-center flex-1"><div class="relative w-20 h-20 rounded-full bg-[#dcfce7] flex items-center justify-center mb-4"><svg class="w-9 h-9 text-[#16a34a]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 7h8"></path><path d="M8 11h8"></path><path d="M8 15h5"></path></svg><span class="absolute top-0 right-0 w-6 h-6 rounded-full bg-[#16a34a] text-white text-xs font-bold flex items-center justify-center border-2 border-white shadow-xs">2</span></div><h3 class="text-base font-bold text-[#0f172a] mb-1">Get a Quote</h3><p class="text-xs text-slate-500 leading-relaxed max-w-[150px]">We review and share the total cost</p></div><div class="hidden lg:flex items-center justify-center pt-7 text-slate-300 flex-shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div><div class="flex flex-col items-center text-center flex-1"><div class="relative w-20 h-20 rounded-full bg-[#dcfce7] flex items-center justify-center mb-4"><svg class="w-9 h-9 text-[#16a34a]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg><span class="absolute top-0 right-0 w-6 h-6 rounded-full bg-[#16a34a] text-white text-xs font-bold flex items-center justify-center border-2 border-white shadow-xs">3</span></div><h3 class="text-base font-bold text-[#0f172a] mb-1">We Purchase It</h3><p class="text-xs text-slate-500 leading-relaxed max-w-[150px]">Our team buys it on your behalf</p></div><div class="hidden lg:flex items-center justify-center pt-7 text-slate-300 flex-shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div><div class="flex flex-col items-center text-center flex-1"><div class="relative w-20 h-20 rounded-full bg-[#dbeafe] flex items-center justify-center mb-4"><svg class="w-9 h-9 text-[#165dfc]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 12v10"></path></svg><span class="absolute top-0 right-0 w-6 h-6 rounded-full bg-[#165dfc] text-white text-xs font-bold flex items-center justify-center border-2 border-white shadow-xs">4</span></div><h3 class="text-base font-bold text-[#0f172a] mb-1">We Receive It</h3><p class="text-xs text-slate-500 leading-relaxed max-w-[150px]">Items arrive at our Indian warehouse</p></div><div class="hidden lg:flex items-center justify-center pt-7 text-slate-300 flex-shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div><div class="flex flex-col items-center text-center flex-1"><div class="relative w-20 h-20 rounded-full bg-[#dbeafe] flex items-center justify-center mb-4"><svg class="w-9 h-9 text-[#165dfc]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20"></path><circle cx="17" cy="15" r="1"></circle></svg><span class="absolute top-0 right-0 w-6 h-6 rounded-full bg-[#165dfc] text-white text-xs font-bold flex items-center justify-center border-2 border-white shadow-xs">5</span></div><h3 class="text-base font-bold text-[#0f172a] mb-1">We Consolidate It</h3><p class="text-xs text-slate-500 leading-relaxed max-w-[150px]">Combine multiple orders to save on shipping</p></div><div class="hidden lg:flex items-center justify-center pt-7 text-slate-300 flex-shrink-0"><svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></div><div class="flex flex-col items-center text-center flex-1"><div class="relative w-20 h-20 rounded-full bg-[#ffe4e6] flex items-center justify-center mb-4"><svg class="w-9 h-9 text-[#e11d48]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M16.5 9.4 7.55 4.24"></path><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.29 7 12 12 20.71 7"></polyline><line x1="12" y1="22" x2="12" y2="12"></line></svg><span class="absolute top-0 right-0 w-6 h-6 rounded-full bg-[#e11d48] text-white text-xs font-bold flex items-center justify-center border-2 border-white shadow-xs">6</span></div><h3 class="text-base font-bold text-[#0f172a] mb-1">We Ship Worldwide</h3><p class="text-xs text-slate-500 leading-relaxed max-w-[150px]">Fast and reliable delivery to your country</p></div></div></div></section>
+<!-- END: How It Works Section -->
+<!-- BEGIN: Popular Categories Section -->
+<section class="px-6 md:px-10 py-10 bg-white">
+<!-- Section Header -->
+<div class="flex items-center justify-between mb-8">
+<h2 class="text-2xl font-bold text-slate-900 tracking-tight">Popular Categories</h2>
+<a class="text-sm font-bold text-brand-blue hover:text-blue-700 flex items-center gap-1 transition-colors" href="#all-categories">
+<span class="">View All Categories</span>
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+<path d="M14 5l7 7m0 0l-7 7m7-7H3" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</a>
+</div>
+<!-- Categories Grid -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+<!-- Category 1: Fashion -->
+<div class="group flex flex-col bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden hover:shadow-md hover:border-slate-200 transition-all cursor-pointer">
+<div class="h-36 w-full overflow-hidden bg-rose-50/30 flex items-center justify-center p-2">
+<img alt="Fashion Saree" class="w-full h-full object-cover rounded-xl object-left-bottom group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1VLgswNhZFoASLOllnB4L-z9Un6XTB-q4dTg5LqWm_E9YiT8_AfoGJVxSRX-SMMEs_CvuMlz04V_E9w61P9u3gzp564ZwXGul9PLScGm_6w0c2ssqDr7Nim9AWXgGvCr0Jktqoi5D82EbBbaZIClLSkncRE8HxbrVjPG_8xMkKS7dxqYYWmb4-BbxZvofshsruTrAeH4ELuNr0lkX00C2ljO0eM7B4RVstYe3XeSl2lwnnbslBCt4SGEfKC">
+</div>
+<div class="py-3 px-2 text-center bg-white border-t border-slate-100/80">
+<span class="text-sm font-bold text-slate-800 group-hover:text-brand-blue transition-colors">Fashion</span>
+</div>
+</div>
+<!-- Category 2: Electronics -->
+<div class="group flex flex-col bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden hover:shadow-md hover:border-slate-200 transition-all cursor-pointer">
+<div class="h-36 w-full overflow-hidden bg-slate-100/50 flex items-center justify-center p-2">
+<img alt="Electronics Headphones" class="w-full h-full object-cover rounded-xl object-bottom group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1UnsKxAkX8snIVbzwhyJWB0Y7is9VOe-cd0U9sIJqcaAS1udvrqgSHXOc1oKcx54N4kRaodt0ZsVmE4ejfJElahoLEdODe-38Eon-_InwpPJuwSDbN0v-jePx2OtHRSipPRkPZ3S2zs-Oz9ersNxvaJKmWoSHV2ugN23MTU5wZ5-Q4FugQ9gASazlaEDg6qgztWKaCXmwZFm96C32EiQQDocdmfnfCB-fTAtpPJfdKgZ5mWVvtLFKdhOuCy">
+</div>
+<div class="py-3 px-2 text-center bg-white border-t border-slate-100/80">
+<span class="text-sm font-bold text-slate-800 group-hover:text-brand-blue transition-colors">Electronics</span>
+</div>
+</div>
+<!-- Category 3: Home & Living -->
+<div class="group flex flex-col bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden hover:shadow-md hover:border-slate-200 transition-all cursor-pointer">
+<div class="h-36 w-full overflow-hidden bg-amber-50/30 flex items-center justify-center p-2">
+<img alt="Home and Living Sofa" class="w-full h-full object-cover rounded-xl object-bottom group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1Wz8GgfVZbG7WUnu6rh4RSKsP3tHp-vLqFkWL_aFIWuftl7rcUXdAnYRZKELZMemYjYpPiZD0aWVESflyLyRwnzRG8hyxSbFPHVKsH3XlT-5OmsODYCDVpE5yU6DQEagB-Q7pULnSiUItCXyy_GFdeqZT_XsXC091U8g5m5EWXvC0msMQMqHGrLUoPr-WuWMfhQU25A-fs6H-apATVvcnPjaMTNr_mmsXox_ZMkRsMIeW5Ol0_sWvq3gzmz">
+</div>
+<div class="py-3 px-2 text-center bg-white border-t border-slate-100/80">
+<span class="text-sm font-bold text-slate-800 group-hover:text-brand-blue transition-colors">Home &amp; Living</span>
+</div>
+</div>
+<!-- Category 4: Beauty & Personal Care -->
+<div class="group flex flex-col bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden hover:shadow-md hover:border-slate-200 transition-all cursor-pointer">
+<div class="h-36 w-full overflow-hidden bg-pink-50/30 flex items-center justify-center p-2">
+<img alt="Beauty &amp; Personal Care" class="w-full h-full object-cover rounded-xl object-bottom group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0dJCa3VvCT4fV8DiZ40xPOhpJoY_Uhj1jWdQbtRhlKpnU5yahf7VXqt1b9xCjbqRKyYOQ8QtG3obBMlDStsmeW3SsiO5L0WCjTS_2YjWexingL8bST24xKhZeEdaZjWPh1ob5mDsbJ3i6vq0SFoO-g8nZKwEzTC_ObvqTwUSeZFn6MWrC9Tyq7aZ-wBACUr1a8oIJe0oDgSG7Z9_7N_G004cWn-q8-Y4eG01JLxrXRy_N7DVfhfCfMA">
+</div>
+<div class="py-3 px-2 text-center bg-white border-t border-slate-100/80">
+<span class="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-brand-blue transition-colors">Beauty &amp; Personal Care</span>
+</div>
+</div>
+<!-- Category 5: Books -->
+<div class="group flex flex-col bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden hover:shadow-md hover:border-slate-200 transition-all cursor-pointer">
+<div class="h-36 w-full overflow-hidden bg-orange-50/30 flex items-center justify-center p-2">
+<img alt="Books Atomic Habits and Ikigai" class="w-full h-full object-cover rounded-xl object-bottom group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJuO0Alx1FeUwjs9p_Brq2ttadSHIz47WC61dejSuClDjTuSGQRpshFeAr5kXYkvxbXaZnKMaqSr9WnIKSFZTwRy8Ayu2-WjVOzPGkorDF9CATGMj9u5zDiwBHyxuw4y4cCnDD8wz_v7gNUuHepEc9IXa5VH4buBbat-tIQhyNsMLiInyVpcyLWjSroIBVTAUdAx2OMXm69ALmKZqAnTQL4mxudyOyjhw0Y5o5CDmoyZm0rf7OwEk4Nw">
+</div>
+<div class="py-3 px-2 text-center bg-white border-t border-slate-100/80">
+<span class="text-sm font-bold text-slate-800 group-hover:text-brand-blue transition-colors">Books</span>
+</div>
+</div>
+<!-- Category 6: Health & Wellness -->
+<div class="group flex flex-col bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden hover:shadow-md hover:border-slate-200 transition-all cursor-pointer">
+<div class="h-36 w-full overflow-hidden bg-emerald-50/30 flex items-center justify-center p-2">
+<img alt="Health &amp; Wellness" class="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGPRhU_elar0S3kFW-WsVJsEtaSMbaYgrmyMlutPq7LQi977RcDxdjxNGKIS2LhJkgwmRSI1HXDbh6Andrc9FoIlJOtl7i3H7bPCdnbaQ08-Ozn9lnnHKG6iK4GxPpZ2eIAsrHuJcSDgnjfODID__Haab7LpsQz2ifSCwhUlGCfWv9fRH9NV4rCVAKJ-yTH1DJcOajgDhjnVWnboeVmh-FJsuDsTEttIolVj7xsFz4grwUHeugtnXhgd079FsTH7bebuc">
+</div>
+<div class="py-3 px-2 text-center bg-white border-t border-slate-100/80">
+<span class="text-sm font-bold text-slate-800 group-hover:text-brand-blue transition-colors">Health &amp; Wellness</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: Popular Categories Section -->
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>
