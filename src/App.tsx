@@ -6,6 +6,7 @@ import { AuthPage } from './components/auth/AuthPage';
 import { CustomerDashboard } from './components/dashboard/CustomerDashboard';
 import { PricingPage } from './components/pages/PricingPage';
 import { CountriesPage } from './components/pages/CountriesPage';
+import { StoresDirectoryPage } from './components/pages/StoresDirectoryPage';
 import { HowItWorksPage } from './components/pages/HowItWorksPage';
 import { HelpCenterPage } from './components/pages/HelpCenterPage';
 import { Footer } from './components/common/Footer';
@@ -26,7 +27,7 @@ function AppContent() {
     const rawHash = window.location.hash.split('?')[0].replace('#/', '').replace('#', '');
     const params = new URLSearchParams(window.location.search);
     const p = (params.get('page') || rawHash) as Page;
-    const validPages: Page[] = ['home', 'auth', 'buy-for-me', 'dashboard', 'pricing', 'countries', 'how-it-works', 'help', 'admin-login', 'admin'];
+    const validPages: Page[] = ['home', 'auth', 'buy-for-me', 'dashboard', 'pricing', 'countries', 'stores', 'how-it-works', 'help', 'admin-login', 'admin'];
     const resolved = validPages.includes(p) ? p : 'home';
     if ((resolved === 'buy-for-me' || resolved === 'dashboard') && !isUserAuthenticated()) {
       return 'auth';
@@ -71,7 +72,7 @@ function AppContent() {
   useEffect(() => {
     const handleHashChange = () => {
       const cleanHash = window.location.hash.split('?')[0].replace('#/', '').replace('#', '') as Page;
-      const validPages: Page[] = ['home', 'auth', 'buy-for-me', 'dashboard', 'pricing', 'countries', 'how-it-works', 'help', 'admin-login', 'admin'];
+      const validPages: Page[] = ['home', 'auth', 'buy-for-me', 'dashboard', 'pricing', 'countries', 'stores', 'how-it-works', 'help', 'admin-login', 'admin'];
       if (validPages.includes(cleanHash)) {
         if ((cleanHash === 'buy-for-me' || cleanHash === 'dashboard') && !isUserAuthenticated()) {
           setAuthRedirectIntent(cleanHash);
@@ -192,6 +193,13 @@ function AppContent() {
           <CountriesPage
             onNavigate={handleNavigate}
             onStartBuyForMe={() => handleStartBuyForMe()}
+          />
+        )}
+
+        {currentPage === 'stores' && (
+          <StoresDirectoryPage
+            onNavigate={handleNavigate}
+            onStartBuyForMe={(url) => handleStartBuyForMe(url)}
           />
         )}
 

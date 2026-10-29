@@ -5,7 +5,7 @@
     --primary-blue: #0066FF;
     --primary-blue-hover: #0052CC;
     --dark-navy: #0F172A;
-    --border-subtle: #E2E8F0;
+    --border-subtle: #E2E8E0;
   }
 
   html, body {
@@ -50,4 +50,24 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Infinite Stores Carousel Animation */
+@keyframes storesCarouselScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-stores-carousel {
+  display: flex;
+  width: max-content;
+  animation: storesCarouselScroll 34s linear infinite;
+}
+
+.animate-stores-carousel:hover {
+  animation-play-state: paused;
 }

@@ -265,157 +265,411 @@ export const HomePage: React.FC<HomePageProps> = ({
         )}
         {/* END: Header */}
 
-      {/* BEGIN: Hero Section matching exact uploaded photo */}
-      <section className="relative w-full bg-white border-b border-slate-100 m-0 p-0">
-        <div className="relative w-full overflow-hidden select-none">
-          {/* Exact Hero Artwork provided by user */}
-          <img
-            src="/assets/stitch-hero-exact.jpg"
-            alt="Shop Anywhere in India. We Deliver Worldwide."
-            className="w-full h-auto block select-none pointer-events-none"
-          />
-
-          {/* Interactive Search Bar overlay positioned seamlessly on top of the search bar in the photo */}
-          <form
-            onSubmit={handleGetStarted}
-            className="absolute z-20 flex items-center"
-            style={{
-              left: '3.61%',
-              top: '73.49%',
-              width: '70.51%',
-              height: '12.22%',
-            }}
-          >
-            {/* Input field overlay: transparent when empty to reveal exact image text, clean white when typing */}
-            <div className="flex-1 h-full relative flex items-center pl-[6.5%] pr-2">
-              <input
-                type="url"
-                value={productUrl}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setIsSearchFocused(false)}
-                onChange={(e) => setProductUrl(e.target.value)}
-                placeholder={isSearchFocused ? "Paste an Indian product link (e.g. Amazon, Myntra, Flipkart...)" : ""}
-                className={`w-full h-full text-[10px] sm:text-[13px] md:text-[14px] lg:text-[15.5px] font-medium transition-colors focus:outline-hidden rounded-md ${
-                  isSearchFocused || productUrl ? 'bg-white text-slate-800 px-2.5' : 'bg-transparent text-transparent placeholder:text-transparent cursor-pointer'
-                }`}
-                title="Paste an Indian product link"
-              />
+      {/* BEGIN: HTML Hero Banner Section */}
+      <section className="relative w-full bg-white border-b border-slate-100 overflow-hidden">
+        <div className="relative w-full px-4 sm:px-6 md:px-10 lg:px-12 py-4 sm:py-5 lg:py-6 flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-0">
+          {/* Left Side: HTML Text & HTML Search Bar */}
+          <div className="relative z-10 w-full lg:w-[54%] xl:w-[52%] shrink-0">
+            {/* Badge: From India to Your Doorstep */}
+            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#EAF2FF] border border-[#D4E4FF] mb-2.5 sm:mb-3 shadow-2xs">
+              <svg
+                className="w-5 h-3.5 rounded-[2px] shrink-0 shadow-2xs"
+                viewBox="0 0 24 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect width="24" height="5.33" fill="#FF9933" />
+                <rect y="5.33" width="24" height="5.33" fill="#FFFFFF" />
+                <rect y="10.67" width="24" height="5.33" fill="#138808" />
+                <circle cx="12" cy="8" r="2.1" stroke="#000080" strokeWidth="0.9" />
+                <circle cx="12" cy="8" r="0.6" fill="#000080" />
+              </svg>
+              <span className="text-[12.5px] sm:text-[13.5px] font-semibold text-[#1849A9] tracking-tight">
+                From India to Your Doorstep
+              </span>
             </div>
 
-            {/* Get Started button clickable overlay */}
-            <button
-              type="submit"
-              className="h-full w-[27%] cursor-pointer opacity-0 hover:opacity-10 active:opacity-20 bg-white rounded-lg sm:rounded-xl transition-opacity"
-              title="Get Started"
-              aria-label="Get Started"
+            {/* Main Heading (HTML Text) */}
+            <h1 className="font-extrabold tracking-tight leading-[1.08] text-[#050F2C] text-[28px] sm:text-[38px] md:text-[44px] lg:text-[46px] xl:text-[50px] mb-2.5 sm:mb-3">
+              <span className="block">Shop Anywhere</span>
+              <span className="block">in India.</span>
+              <span className="block text-[#0D59F2] mt-0.5">We Deliver Worldwide.</span>
+            </h1>
+
+            {/* Subtitle / Description (HTML Text) */}
+            <p className="text-[#334155] text-[13.5px] sm:text-[15px] md:text-[15.5px] leading-[1.48] font-normal max-w-[500px] mb-3.5 sm:mb-4">
+              Found something you love on an Indian website?
+              <br className="hidden sm:inline" /> Send us the product link. We&apos;ll purchase it in India,
+              <br className="hidden sm:inline" /> receive it at our warehouse, combine your orders,
+              <br className="hidden sm:inline" /> and ship them to your doorstep worldwide.
+            </p>
+
+            {/* HTML Search Bar Form */}
+            <form
+              onSubmit={handleGetStarted}
+              className={`w-full max-w-[680px] bg-white rounded-xl sm:rounded-2xl p-1.5 sm:p-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 border-2 transition-all mb-3 sm:mb-3.5 ${
+                isSearchFocused
+                  ? 'border-[#0D59F2] shadow-[0_0_22px_rgba(13,89,242,0.32)]'
+                  : 'border-[#2563EB] shadow-[0_0_16px_rgba(37,99,235,0.22)]'
+              }`}
+            >
+              <div className="flex-1 flex items-center gap-2.5 sm:gap-3 pl-3 sm:pl-4 pr-2 py-2 sm:py-1.5">
+                <Link2 className="w-5 h-5 text-slate-400 shrink-0 -rotate-45" />
+                <input
+                  type="url"
+                  value={productUrl}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => setIsSearchFocused(false)}
+                  onChange={(e) => setProductUrl(e.target.value)}
+                  placeholder="Paste an Indian product link (e.g. Amazon, Myntra, Flipkart...)"
+                  className="w-full bg-transparent text-slate-800 placeholder:text-slate-400 text-[13.5px] sm:text-[15px] font-medium focus:outline-hidden"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="shrink-0 inline-flex items-center justify-center gap-2 bg-[#0057FF] hover:bg-[#0047D4] active:bg-[#003BB3] text-white font-semibold text-[14.5px] sm:text-[15.5px] px-6 sm:px-7 py-2.5 sm:py-3 rounded-lg sm:rounded-xl shadow-xs transition-colors cursor-pointer"
+              >
+                <span>Get Started</span>
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
+              </button>
+            </form>
+
+            {/* 3 Feature Checkmarks (HTML Text) */}
+            <div className="flex flex-wrap items-center gap-x-5 sm:gap-x-7 gap-y-2 pt-0.5">
+              <div className="inline-flex items-center gap-2">
+                <span className="w-5 h-5 rounded-full bg-[#22C55E] flex items-center justify-center text-white shadow-2xs shrink-0">
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                </span>
+                <span className="text-[13px] sm:text-[14px] font-medium text-[#334155]">
+                  Purchase on your behalf
+                </span>
+              </div>
+
+              <div className="inline-flex items-center gap-2">
+                <span className="w-5 h-5 rounded-full bg-[#22C55E] flex items-center justify-center text-white shadow-2xs shrink-0">
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                </span>
+                <span className="text-[13px] sm:text-[14px] font-medium text-[#334155]">
+                  Combine multiple orders
+                </span>
+              </div>
+
+              <div className="inline-flex items-center gap-2">
+                <span className="w-5 h-5 rounded-full bg-[#22C55E] flex items-center justify-center text-white shadow-2xs shrink-0">
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                </span>
+                <span className="text-[13px] sm:text-[14px] font-medium text-[#334155]">
+                  Ship worldwide
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side: Redesigned HD Illustration — fits 100% uncropped on all screens */}
+          <div className="w-full lg:w-[58%] xl:w-[60%] lg:absolute lg:inset-y-0 lg:right-0 flex items-center justify-center lg:justify-end pointer-events-none select-none z-0">
+            <img
+              src="/assets/hero-redesigned-hd.jpg?v=6"
+              alt="Shop in India, Deliver Worldwide - India Gate, Taj Mahal, Airplane and India2World Parcels"
+              className="w-full max-w-[540px] sm:max-w-[620px] lg:max-w-none lg:w-auto lg:h-full object-contain object-center lg:object-right"
             />
-          </form>
+          </div>
         </div>
       </section>
-      {/* END: Hero Section */}
+      {/* END: HTML Hero Banner Section */}
 
       {/* BEGIN: Top Online Stores Section matching stitch clone */}
-      <section className="w-full px-4 sm:px-6 md:px-10 lg:px-12 py-6 bg-white border-b border-slate-100">
-        <div className="bg-white rounded-2xl border border-slate-200/70 px-5 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6 shadow-xs">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-[17px] md:text-lg font-bold text-[#0B1940] tracking-tight">
-              Shop from India's Top Online Stores
-            </h2>
+      <section className="w-full px-4 sm:px-6 md:px-10 lg:px-12 py-6 sm:py-8 bg-white border-b border-slate-100">
+        <div className="relative bg-gradient-to-br from-[#EEF5FF] via-white to-[#F0F7FF] rounded-3xl border-2 border-[#CFE0FF] px-5 py-6 sm:px-8 sm:py-7 shadow-[0_12px_36px_-10px_rgba(13,89,242,0.15)] overflow-hidden">
+          {/* Decorative background glow */}
+          <div className="pointer-events-none absolute -top-20 -right-20 w-64 h-64 rounded-full bg-blue-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-indigo-400/10 blur-3xl" />
+
+          {/* Section Header */}
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0D59F2]/10 border border-[#0D59F2]/20 text-[#0D59F2] text-[11px] sm:text-xs font-extrabold uppercase tracking-wider mb-2">
+                <span className="w-2 h-2 rounded-full bg-[#0D59F2] animate-pulse" />
+                <span>Direct Official Store Links ? 100+ Brands</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl md:text-[26px] font-extrabold text-[#0B1940] tracking-tight">
+                Shop from India&apos;s Top Online Stores
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                Click any store logo below to open its official website, browse products, and copy the product link for global delivery.
+              </p>
+            </div>
+
             <button
-              onClick={() => onNavigate('buy-for-me')}
-              className="text-xs md:text-sm font-semibold text-[#3b5998] hover:text-[#0066FF] cursor-pointer transition-colors"
+              type="button"
+              onClick={() => onNavigate('stores')}
+              className="self-start sm:self-center shrink-0 inline-flex items-center gap-2 bg-[#0D59F2] hover:bg-[#0047D4] text-white text-xs sm:text-sm font-bold px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl shadow-[0_4px_14px_rgba(13,89,242,0.3)] hover:shadow-[0_6px_20px_rgba(13,89,242,0.4)] transition-all cursor-pointer group"
             >
-              And many more...
+              <span>And many more...</span>
+              <span className="text-[11px] font-extrabold bg-white/20 px-2 py-0.5 rounded-full">100+</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-              {/* 1. Amazon.in */}
-              <button
-                onClick={() => onStartBuyForMe('https://www.amazon.in')}
-                className="h-14 bg-white rounded-xl border border-slate-200/80 flex items-center justify-center p-2 hover:border-slate-300 transition-all shadow-xs cursor-pointer group hover:scale-[1.02]"
-                title="Shop on Amazon.in"
-              >
-                <img
-                  src="/assets/store-amazon-mark.png"
-                  alt="Amazon.in"
-                  className="h-7 w-auto max-w-[120px] object-contain group-hover:scale-105 transition-transform"
-                />
-              </button>
 
-              {/* 2. Myntra */}
-              <button
-                onClick={() => onStartBuyForMe('https://www.myntra.com')}
-                className="h-14 bg-white rounded-xl border border-slate-200/80 flex items-center justify-center p-2 hover:border-slate-300 transition-all shadow-xs cursor-pointer group hover:scale-[1.02]"
-                title="Shop on Myntra"
-              >
-                <img
-                  src="/assets/store-myntra-mark.png"
-                  alt="Myntra"
-                  className="h-7 w-auto max-w-[120px] object-contain group-hover:scale-105 transition-transform"
-                />
-              </button>
+          {/* Animated Infinite Carousel of Store Logos */}
+          <div className="relative z-10 w-full overflow-hidden py-2">
+            {/* Soft Left & Right Edge Gradient Fade Masks */}
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-10 sm:w-16 bg-gradient-to-r from-[#EEF5FF] to-transparent z-20" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-10 sm:w-16 bg-gradient-to-l from-[#F0F7FF] to-transparent z-20" />
 
-              {/* 3. Flipkart */}
-              <button
-                onClick={() => onStartBuyForMe('https://www.flipkart.com')}
-                className="h-14 bg-white rounded-xl border border-slate-200/80 flex items-center justify-center p-2 hover:border-slate-300 transition-all shadow-xs cursor-pointer group hover:scale-[1.02]"
-                title="Shop on Flipkart"
-              >
-                <img
-                  src="/assets/store-flipkart-mark.png"
-                  alt="Flipkart"
-                  className="h-7 w-auto max-w-[120px] object-contain group-hover:scale-105 transition-transform"
-                />
-              </button>
+            <div className="animate-stores-carousel gap-4 sm:gap-5">
+              {[0, 1].map((loopIdx) => (
+                <div key={loopIdx} className="flex items-center gap-4 sm:gap-5 shrink-0">
+                  {/* 1. Amazon.in */}
+                  <a
+                    href="https://www.amazon.in"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-[175px] sm:w-[195px] h-[76px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#FF9900] flex flex-col items-center justify-center p-3 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(255,153,0,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    title="Visit Amazon.in official website"
+                  >
+                    <img
+                      src="/assets/store-amazon-mark.png"
+                      alt="Amazon.in"
+                      className="h-8 sm:h-9 w-auto max-w-[135px] object-contain group-hover:scale-105 transition-transform"
+                    />
+                    <span className="text-[10px] font-semibold text-slate-400 group-hover:text-[#FF9900] mt-1 transition-colors">
+                      amazon.in ?
+                    </span>
+                  </a>
 
-              {/* 4. TATA CLiQ */}
-              <button
-                onClick={() => onStartBuyForMe('https://www.tatacliq.com')}
-                className="h-14 bg-white rounded-xl border border-slate-200/80 flex flex-col items-center justify-center px-4 py-1.5 hover:border-slate-300 transition-colors shadow-xs cursor-pointer group"
-                title="Shop on TATA CLiQ"
-              >
-                <div className="flex items-center gap-1 leading-none">
-                  <span className="text-[9px] font-black tracking-widest text-[#111827]">TATA</span>
-                  <svg className="w-2.5 h-2.5" viewBox="0 0 10 10">
-                    <polygon points="5,1 9,9 1,9" fill="#e11d48" />
-                  </svg>
+                  {/* 2. Myntra */}
+                  <a
+                    href="https://www.myntra.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-[175px] sm:w-[195px] h-[76px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#FF3F6C] flex flex-col items-center justify-center p-3 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(255,63,108,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    title="Visit Myntra official website"
+                  >
+                    <img
+                      src="/assets/store-myntra-mark.png"
+                      alt="Myntra"
+                      className="h-8 sm:h-9 w-auto max-w-[135px] object-contain group-hover:scale-105 transition-transform"
+                    />
+                    <span className="text-[10px] font-semibold text-slate-400 group-hover:text-[#FF3F6C] mt-1 transition-colors">
+                      myntra.com ?
+                    </span>
+                  </a>
+
+                  {/* 3. Flipkart */}
+                  <a
+                    href="https://www.flipkart.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-[175px] sm:w-[195px] h-[76px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#2874F0] flex flex-col items-center justify-center p-3 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(40,116,240,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    title="Visit Flipkart official website"
+                  >
+                    <img
+                      src="/assets/store-flipkart-mark.png"
+                      alt="Flipkart"
+                      className="h-8 sm:h-9 w-auto max-w-[135px] object-contain group-hover:scale-105 transition-transform"
+                    />
+                    <span className="text-[10px] font-semibold text-slate-400 group-hover:text-[#2874F0] mt-1 transition-colors">
+                      flipkart.com ?
+                    </span>
+                  </a>
+
+                  {/* 4. TATA CLiQ */}
+                  <a
+                    href="https://www.tatacliq.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-[175px] sm:w-[195px] h-[76px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#DA1C5C] flex flex-col items-center justify-center px-4 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(218,28,92,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    title="Visit TATA CLiQ official website"
+                  >
+                    <div className="flex flex-col items-center group-hover:scale-105 transition-transform">
+                      <div className="flex items-center gap-1 leading-none">
+                        <span className="text-[10px] font-black tracking-widest text-[#111827]">TATA</span>
+                        <svg className="w-2.5 h-2.5" viewBox="0 0 10 10">
+                          <polygon points="5,1 9,9 1,9" fill="#e11d48" />
+                        </svg>
+                      </div>
+                      <span className="text-lg font-extrabold text-[#111827] tracking-tight leading-none mt-0.5">CLiQ</span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-slate-400 group-hover:text-[#DA1C5C] mt-1.5 transition-colors">
+                      tatacliq.com ?
+                    </span>
+                  </a>
+
+                  {/* 5. AJIO */}
+                  <a
+                    href="https://www.ajio.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-[175px] sm:w-[195px] h-[76px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#2C4152] flex flex-col items-center justify-center px-4 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(44,65,82,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    title="Visit AJIO official website"
+                  >
+                    <span className="text-2xl font-black tracking-[0.16em] text-[#0c2340] group-hover:scale-105 transition-transform leading-none">
+                      AJIO
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-400 group-hover:text-[#2C4152] mt-2 transition-colors">
+                      ajio.com ?
+                    </span>
+                  </a>
+
+                  {/* 6. NYKAA */}
+                  <a
+                    href="https://www.nykaa.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-[175px] sm:w-[195px] h-[76px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#FC2779] flex flex-col items-center justify-center px-4 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(252,39,121,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    title="Visit NYKAA official website"
+                  >
+                    <span className="text-2xl font-black italic tracking-tighter text-[#fc2779] -skew-x-6 drop-shadow-2xs group-hover:scale-105 transition-transform leading-none">
+                      NYKAA
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-400 group-hover:text-[#FC2779] mt-2 transition-colors">
+                      nykaa.com ?
+                    </span>
+                  </a>
+
+                  {/* 7. bigbasket */}
+                  <a
+                    href="https://www.bigbasket.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-[175px] sm:w-[195px] h-[76px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#84C225] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(132,194,37,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    title="Visit bigbasket official website"
+                  >
+                    <div className="flex items-center gap-1.5 group-hover:scale-105 transition-transform">
+                      <div className="w-6 h-6 rounded-md bg-[#84c225] flex items-center justify-center text-[#e52d38] font-black text-xs leading-none shadow-xs">
+                        bb
+                      </div>
+                      <span className="text-base font-extrabold text-[#222222] tracking-tight">bigbasket</span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-slate-400 group-hover:text-[#65A30D] mt-1.5 transition-colors">
+                      bigbasket.com ?
+                    </span>
+                  </a>
+
+                  {/* 8. Fabindia */}
+                  <a
+                    href="https://www.fabindia.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-[175px] sm:w-[195px] h-[76px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#8B1E24] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(139,30,36,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    title="Visit Fabindia official website"
+                  >
+                    <div className="flex items-center gap-2 group-hover:scale-105 transition-transform">
+                      <img src="/assets/brands/brand-11.png" alt="Fabindia" className="w-6 h-6 object-contain rounded-sm" />
+                      <span className="text-base font-extrabold text-[#8B1E24] tracking-tight font-serif">Fabindia</span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-slate-400 group-hover:text-[#8B1E24] mt-1.5 transition-colors">
+                      fabindia.com ?
+                    </span>
+                  </a>
+
+                  {/* 9. Manyavar */}
+                  <a
+                    href="https://www.manyavar.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-[175px] sm:w-[195px] h-[76px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#991B1B] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(153,27,27,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    title="Visit Manyavar official website"
+                  >
+                    <div className="flex items-center gap-2 group-hover:scale-105 transition-transform">
+                      <img src="/assets/brands/brand-12.png" alt="Manyavar" className="w-6 h-6 object-contain rounded-sm" />
+                      <span className="text-base font-extrabold text-[#991B1B] tracking-tight">Manyavar</span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-slate-400 group-hover:text-[#991B1B] mt-1.5 transition-colors">
+                      manyavar.com ?
+                    </span>
+                  </a>
+
+                  {/* 10. Tanishq */}
+                  <a
+                    href="https://www.tanishq.co.in"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-[175px] sm:w-[195px] h-[76px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#881337] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(136,19,55,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    title="Visit Tanishq official website"
+                  >
+                    <div className="flex items-center gap-2 group-hover:scale-105 transition-transform">
+                      <img src="/assets/brands/brand-51.png" alt="Tanishq" className="w-6 h-6 object-contain rounded-sm" />
+                      <span className="text-base font-extrabold text-[#881337] tracking-widest uppercase">TANISHQ</span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-slate-400 group-hover:text-[#881337] mt-1.5 transition-colors">
+                      tanishq.co.in ?
+                    </span>
+                  </a>
+
+                  {/* 11. FirstCry */}
+                  <a
+                    href="https://www.firstcry.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-[175px] sm:w-[195px] h-[76px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#F97316] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(249,115,22,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    title="Visit FirstCry official website"
+                  >
+                    <div className="flex items-center gap-2 group-hover:scale-105 transition-transform">
+                      <img src="/assets/brands/brand-93.png" alt="FirstCry" className="w-6 h-6 object-contain rounded-sm" />
+                      <span className="text-base font-extrabold text-[#EA580C] tracking-tight">firstcry</span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-slate-400 group-hover:text-[#F97316] mt-1.5 transition-colors">
+                      firstcry.com ?
+                    </span>
+                  </a>
+
+                  {/* 12. Croma */}
+                  <a
+                    href="https://www.croma.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-[175px] sm:w-[195px] h-[76px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#0D9488] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(13,148,136,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    title="Visit Croma official website"
+                  >
+                    <div className="flex items-center gap-2 group-hover:scale-105 transition-transform">
+                      <img src="/assets/brands/brand-61.png" alt="Croma" className="w-6 h-6 object-contain rounded-sm" />
+                      <span className="text-base font-black text-[#111827] tracking-wide">croma</span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-slate-400 group-hover:text-[#0D9488] mt-1.5 transition-colors">
+                      croma.com ?
+                    </span>
+                  </a>
+
+                  {/* 13. Meesho */}
+                  <a
+                    href="https://www.meesho.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-[175px] sm:w-[195px] h-[76px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#F43397] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(244,51,151,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    title="Visit Meesho official website"
+                  >
+                    <div className="flex items-center gap-2 group-hover:scale-105 transition-transform">
+                      <img src="/assets/brands/brand-5.png" alt="Meesho" className="w-6 h-6 object-contain rounded-sm" />
+                      <span className="text-base font-extrabold text-[#F43397] tracking-tight">meesho</span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-slate-400 group-hover:text-[#F43397] mt-1.5 transition-colors">
+                      meesho.com ?
+                    </span>
+                  </a>
+
+                  {/* 14. Haldiram's */}
+                  <a
+                    href="https://www.haldirams.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-[175px] sm:w-[195px] h-[76px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#DC2626] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(220,38,38,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    title="Visit Haldiram's official website"
+                  >
+                    <div className="flex items-center gap-2 group-hover:scale-105 transition-transform">
+                      <img src="/assets/brands/brand-91.png" alt="Haldiram's" className="w-6 h-6 object-contain rounded-sm" />
+                      <span className="text-base font-extrabold text-[#DC2626] tracking-tight">Haldiram&apos;s</span>
+                    </div>
+                    <span className="text-[10px] font-semibold text-slate-400 group-hover:text-[#DC2626] mt-1.5 transition-colors">
+                      haldirams.com ?
+                    </span>
+                  </a>
                 </div>
-                <span className="text-base font-extrabold text-[#111827] tracking-tight leading-none mt-0.5">CLiQ</span>
-              </button>
-
-              {/* 5. AJIO */}
-              <button
-                onClick={() => onStartBuyForMe('https://www.ajio.com')}
-                className="h-14 bg-white rounded-xl border border-slate-200/80 flex items-center justify-center px-4 py-2 hover:border-slate-300 transition-colors shadow-xs cursor-pointer group"
-                title="Shop on AJIO"
-              >
-                <span className="text-xl font-black tracking-[0.15em] text-[#0c2340]">AJIO</span>
-              </button>
-
-              {/* 6. NYKAA */}
-              <button
-                onClick={() => onStartBuyForMe('https://www.nykaa.com')}
-                className="h-14 bg-white rounded-xl border border-slate-200/80 flex items-center justify-center px-4 py-2 hover:border-slate-300 transition-colors shadow-xs cursor-pointer group"
-                title="Shop on NYKAA"
-              >
-                <span className="text-xl font-black italic tracking-tighter text-[#fc2779] -skew-x-6 drop-shadow-2xs">
-                  NYKAA
-                </span>
-              </button>
-
-              {/* 7. bigbasket */}
-              <button
-                onClick={() => onStartBuyForMe('https://www.bigbasket.com')}
-                className="h-14 bg-white rounded-xl border border-slate-200/80 flex items-center justify-center gap-1.5 px-2.5 py-2 hover:border-slate-300 transition-colors shadow-xs cursor-pointer group"
-                title="Shop on bigbasket"
-              >
-                <div className="w-5 h-5 rounded-md bg-[#84c225] flex items-center justify-center text-[#e52d38] font-black text-xs leading-none shadow-xs">
-                  bb
-                </div>
-                <span className="text-sm font-bold text-[#222222] tracking-tight">bigbasket</span>
-              </button>
+              ))}
             </div>
           </div>
+        </div>
       </section>
       {/* END: Top Online Stores Section */}
 

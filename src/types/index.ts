@@ -5,6 +5,7 @@ export type Page =
   | 'dashboard'
   | 'pricing'
   | 'countries'
+  | 'stores'
   | 'how-it-works'
   | 'help'
   | 'track'

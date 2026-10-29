@@ -11,29 +11,28 @@ interface LogoProps {
 export const Logo: React.FC<LogoProps> = ({
   className = '',
   size = 'md',
-  showSubtitle = true,
   onClick,
   iconOnly = false,
 }) => {
   const heightClasses = {
-    sm: 'h-8',
-    md: 'h-10 sm:h-11',
-    lg: 'h-12 sm:h-14',
-    xl: 'h-16',
+    sm: 'h-6 sm:h-7',
+    md: 'h-7 sm:h-8 md:h-9',
+    lg: 'h-9 sm:h-11',
+    xl: 'h-12',
   };
 
   const iconHeightClasses = {
-    sm: 'h-7 w-7',
-    md: 'h-9 w-9',
-    lg: 'h-11 w-11',
-    xl: 'h-14 w-14',
+    sm: 'h-6 w-auto',
+    md: 'h-8 w-auto',
+    lg: 'h-10 w-auto',
+    xl: 'h-12 w-auto',
   };
 
   if (iconOnly) {
     return (
       <img
-        src="/logo-icon.png"
-        alt="India2World Emblem"
+        src="/assets/boxmyindia-logo.png?v=2"
+        alt="boxmyindia.com"
         onClick={onClick}
         className={`object-contain shrink-0 select-none ${iconHeightClasses[size]} ${
           onClick ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''
@@ -41,8 +40,6 @@ export const Logo: React.FC<LogoProps> = ({
       />
     );
   }
-
-  const logoSrc = showSubtitle ? '/logo.png' : '/logo-no-subtitle.png';
 
   return (
     <div
@@ -52,8 +49,8 @@ export const Logo: React.FC<LogoProps> = ({
       } ${className}`}
     >
       <img
-        src={logoSrc}
-        alt="India2World - Shop in India. Deliver Worldwide."
+        src="/assets/boxmyindia-logo.png?v=2"
+        alt="boxmyindia.com"
         className={`w-auto object-contain ${heightClasses[size]}`}
       />
     </div>
