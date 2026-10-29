@@ -13,6 +13,7 @@
     "@types/nodemailer": "^8.0.2",
     "@types/pdfkit": "^0.17.6",
     "clsx": "^2.1.1",
+    "firebase": "^13.1.0",
     "lucide-react": "^1.54.0",
     "nodemailer": "^10.1.0",
     "pdfkit": "^0.20.2",
