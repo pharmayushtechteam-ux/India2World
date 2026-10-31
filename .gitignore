@@ -33,3 +33,4 @@ scratch/
 *.zip
 *.log
 /*.png
+.firebase/
