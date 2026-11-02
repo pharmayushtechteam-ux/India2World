@@ -51,7 +51,7 @@ export const Logo: React.FC<LogoProps> = ({
       <img
         src="/assets/boxmyindia-logo.png?v=2"
         alt="boxmyindia.com"
-        className={`w-auto object-contain ${heightClasses[size]}`}
+        className={`w-auto max-w-full object-contain ${heightClasses[size]}`}
       />
     </div>
   );

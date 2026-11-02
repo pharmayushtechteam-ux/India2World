@@ -12,7 +12,6 @@ import { HelpCenterPage } from './components/pages/HelpCenterPage';
 import { Footer } from './components/common/Footer';
 import { TrackingModal } from './components/common/TrackingModal';
 import { CurrencyModal } from './components/common/CurrencyModal';
-import { DemoSwitcher } from './components/common/DemoSwitcher';
 import { AdminAuthProvider, useAdminAuth } from './context/AdminAuthContext';
 import { AdminLoginPage } from './components/admin/AdminLoginPage';
 import { AdminPanel } from './components/admin/AdminPanel';
@@ -27,7 +26,19 @@ function AppContent() {
     const rawHash = window.location.hash.split('?')[0].replace('#/', '').replace('#', '');
     const params = new URLSearchParams(window.location.search);
     const p = (params.get('page') || rawHash) as Page;
-    const validPages: Page[] = ['home', 'auth', 'buy-for-me', 'dashboard', 'pricing', 'countries', 'stores', 'how-it-works', 'help', 'admin-login', 'admin'];
+    const validPages: Page[] = [
+      'home',
+      'auth',
+      'buy-for-me',
+      'dashboard',
+      'pricing',
+      'countries',
+      'stores',
+      'how-it-works',
+      'help',
+      'admin-login',
+      'admin',
+    ];
     const resolved = validPages.includes(p) ? p : 'home';
     if ((resolved === 'buy-for-me' || resolved === 'dashboard') && !isUserAuthenticated()) {
       return 'auth';
@@ -39,11 +50,25 @@ function AppContent() {
   const [initialBuyForMeUrl, setInitialBuyForMeUrl] = useState('');
   const [trackingModalOpen, setTrackingModalOpen] = useState(false);
   const [currencyModalOpen, setCurrencyModalOpen] = useState(false);
-  const [selectedCurrency, setSelectedCurrency] = useState('INR (₹)');
+  const [selectedCurrency, setSelectedCurrency] = useState<string>(() => {
+    try {
+      return localStorage.getItem('i2w_selected_currency') || 'INR (₹)';
+    } catch {
+      return 'INR (₹)';
+    }
+  });
+
+  const handleSelectCurrency = (curr: string) => {
+    setSelectedCurrency(curr);
+    try {
+      localStorage.setItem('i2w_selected_currency', curr);
+    } catch {}
+  };
+
   const [dashboardTab, setDashboardTab] = useState<DashboardTab>(() => {
     const params = new URLSearchParams(window.location.search);
-    const hashParams = window.location.hash.includes('?') 
-      ? new URLSearchParams(window.location.hash.split('?')[1]) 
+    const hashParams = window.location.hash.includes('?')
+      ? new URLSearchParams(window.location.hash.split('?')[1])
       : null;
     const tab = (hashParams?.get('tab') || params.get('tab')) as DashboardTab;
     return tab || 'overview';
@@ -53,6 +78,10 @@ function AppContent() {
   useEffect(() => {
     window.location.hash = `#/${currentPage}`;
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    const viewportCanvas = document.getElementById('viewport-canvas');
+    if (viewportCanvas) {
+      viewportCanvas.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, [currentPage]);
 
   // Auth gate listener: If logged out, redirect protected pages to auth
@@ -72,7 +101,19 @@ function AppContent() {
   useEffect(() => {
     const handleHashChange = () => {
       const cleanHash = window.location.hash.split('?')[0].replace('#/', '').replace('#', '') as Page;
-      const validPages: Page[] = ['home', 'auth', 'buy-for-me', 'dashboard', 'pricing', 'countries', 'stores', 'how-it-works', 'help', 'admin-login', 'admin'];
+      const validPages: Page[] = [
+        'home',
+        'auth',
+        'buy-for-me',
+        'dashboard',
+        'pricing',
+        'countries',
+        'stores',
+        'how-it-works',
+        'help',
+        'admin-login',
+        'admin',
+      ];
       if (validPages.includes(cleanHash)) {
         if ((cleanHash === 'buy-for-me' || cleanHash === 'dashboard') && !isUserAuthenticated()) {
           setAuthRedirectIntent(cleanHash);
@@ -127,129 +168,124 @@ function AppContent() {
     setCurrentPage(page);
   };
 
-  const isPublicPageWithNavbar = !['dashboard', 'auth', 'home', 'buy-for-me', 'admin', 'admin-login'].includes(currentPage);
+  const isPublicPageWithNavbar = !['dashboard', 'auth', 'home', 'buy-for-me', 'admin', 'admin-login'].includes(
+    currentPage
+  );
   const showFooter = !['auth', 'admin', 'admin-login'].includes(currentPage);
 
   return (
     <div className="min-h-screen bg-white text-slate-800 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] w-full max-w-none m-0 p-0 overflow-x-hidden">
-      {/* Modals */}
-      <TrackingModal
-        isOpen={trackingModalOpen}
-        onClose={() => setTrackingModalOpen(false)}
-        initialTrackingNumber="SHP-50012"
-      />
-      <CurrencyModal
-        isOpen={currencyModalOpen}
-        onClose={() => setCurrencyModalOpen(false)}
-        selectedCurrency={selectedCurrency}
-        onSelectCurrency={setSelectedCurrency}
-      />
-
-      {/* Navbar: Display on public pages, hide on Dashboard, Auth, Home, Buy For Me and Admin Panel */}
-      {isPublicPageWithNavbar && (
-        <Navbar
-          currentPage={currentPage}
-          onNavigate={handleNavigate}
-          onOpenTrackModal={() => setTrackingModalOpen(true)}
-          onOpenCurrencyModal={() => setCurrencyModalOpen(true)}
-          currentCurrency={selectedCurrency}
+        {/* Modals */}
+        <TrackingModal
+          isOpen={trackingModalOpen}
+          onClose={() => setTrackingModalOpen(false)}
+          initialTrackingNumber="SHP-50012"
         />
-      )}
+        <CurrencyModal
+          isOpen={currencyModalOpen}
+          onClose={() => setCurrencyModalOpen(false)}
+          selectedCurrency={selectedCurrency}
+          onSelectCurrency={handleSelectCurrency}
+        />
 
-      {/* Main Content Pages */}
-      <div className="flex-1 w-full flex flex-col">
-        {currentPage === 'home' && (
-          <HomePage
+        {/* Navbar: Display on public pages, hide on Dashboard, Auth, Home, Buy For Me and Admin Panel */}
+        {isPublicPageWithNavbar && (
+          <Navbar
+            currentPage={currentPage}
             onNavigate={handleNavigate}
-            onStartBuyForMe={handleStartBuyForMe}
             onOpenTrackModal={() => setTrackingModalOpen(true)}
             onOpenCurrencyModal={() => setCurrencyModalOpen(true)}
+            currentCurrency={selectedCurrency}
           />
         )}
 
-        {currentPage === 'auth' && (
-          <AuthPage
-            onSuccess={handleAuthSuccess}
-            onNavigate={handleNavigate}
-          />
-        )}
+        {/* Main Content Pages */}
+        <div className="flex-1 w-full flex flex-col">
+          {currentPage === 'home' && (
+            <HomePage
+              onNavigate={handleNavigate}
+              onStartBuyForMe={handleStartBuyForMe}
+              onOpenTrackModal={() => setTrackingModalOpen(true)}
+              onOpenCurrencyModal={() => setCurrencyModalOpen(true)}
+              selectedCurrency={selectedCurrency}
+            />
+          )}
 
-        {(currentPage === 'dashboard' || currentPage === 'buy-for-me') && (
-          <CustomerDashboard
-            initialTab={currentPage === 'buy-for-me' ? 'buy-for-me' : dashboardTab}
-            onNavigatePage={handleNavigate}
-            initialBuyForMeUrl={initialBuyForMeUrl}
-          />
-        )}
+          {currentPage === 'auth' && (
+            <AuthPage
+              onSuccess={handleAuthSuccess}
+              onNavigate={handleNavigate}
+            />
+          )}
 
-        {currentPage === 'pricing' && (
-          <PricingPage
-            onNavigate={handleNavigate}
-            onStartBuyForMe={() => handleStartBuyForMe()}
-          />
-        )}
+          {(currentPage === 'dashboard' || currentPage === 'buy-for-me') && (
+            <CustomerDashboard
+              initialTab={currentPage === 'buy-for-me' ? 'buy-for-me' : dashboardTab}
+              onNavigatePage={handleNavigate}
+              initialBuyForMeUrl={initialBuyForMeUrl}
+            />
+          )}
 
-        {currentPage === 'countries' && (
-          <CountriesPage
-            onNavigate={handleNavigate}
-            onStartBuyForMe={() => handleStartBuyForMe()}
-          />
-        )}
+          {currentPage === 'pricing' && (
+            <PricingPage
+              onNavigate={handleNavigate}
+              onStartBuyForMe={() => handleStartBuyForMe()}
+              selectedCurrency={selectedCurrency}
+            />
+          )}
 
-        {currentPage === 'stores' && (
-          <StoresDirectoryPage
-            onNavigate={handleNavigate}
-            onStartBuyForMe={(url) => handleStartBuyForMe(url)}
-          />
-        )}
+          {currentPage === 'countries' && (
+            <CountriesPage
+              onNavigate={handleNavigate}
+              onStartBuyForMe={() => handleStartBuyForMe()}
+              selectedCurrency={selectedCurrency}
+            />
+          )}
 
-        {currentPage === 'how-it-works' && (
-          <HowItWorksPage
-            onNavigate={handleNavigate}
-            onStartBuyForMe={() => handleStartBuyForMe()}
-          />
-        )}
+          {currentPage === 'stores' && (
+            <StoresDirectoryPage
+              onNavigate={handleNavigate}
+              onStartBuyForMe={(url) => handleStartBuyForMe(url)}
+            />
+          )}
 
-        {currentPage === 'help' && (
-          <HelpCenterPage onNavigate={handleNavigate} />
-        )}
+          {currentPage === 'how-it-works' && (
+            <HowItWorksPage
+              onNavigate={handleNavigate}
+              onStartBuyForMe={() => handleStartBuyForMe()}
+            />
+          )}
 
-        {currentPage === 'admin-login' && (
-          <AdminLoginPage
-            onSuccess={() => setCurrentPage('admin')}
-            onNavigateHome={() => handleNavigate('home')}
-          />
-        )}
+          {currentPage === 'help' && (
+            <HelpCenterPage onNavigate={handleNavigate} />
+          )}
 
-        {currentPage === 'admin' && (
-          isAuthenticated ? (
-            <AdminPanel onNavigateHome={() => handleNavigate('home')} />
-          ) : (
+          {currentPage === 'admin-login' && (
             <AdminLoginPage
               onSuccess={() => setCurrentPage('admin')}
               onNavigateHome={() => handleNavigate('home')}
             />
-          )
+          )}
+
+          {currentPage === 'admin' &&
+            (isAuthenticated ? (
+              <AdminPanel onNavigateHome={() => handleNavigate('home')} />
+            ) : (
+              <AdminLoginPage
+                onSuccess={() => setCurrentPage('admin')}
+                onNavigateHome={() => handleNavigate('home')}
+              />
+            ))}
+        </div>
+
+        {/* Global Full-Width Footer across customer pages */}
+        {showFooter && (
+          <Footer
+            onNavigate={handleNavigate}
+            onOpenTrackModal={() => setTrackingModalOpen(true)}
+            onOpenCurrencyModal={() => setCurrencyModalOpen(true)}
+          />
         )}
-      </div>
-
-      {/* Global Full-Width Footer across customer pages */}
-      {showFooter && (
-        <Footer
-          onNavigate={handleNavigate}
-          onOpenTrackModal={() => setTrackingModalOpen(true)}
-          onOpenCurrencyModal={() => setCurrencyModalOpen(true)}
-        />
-      )}
-
-      {/* Floating Demo Switcher for fast verification of reference designs */}
-      {currentPage !== 'admin-login' && (
-        <DemoSwitcher
-          currentPage={currentPage}
-          currentDashboardTab={dashboardTab}
-          onNavigate={handleNavigate}
-        />
-      )}
     </div>
   );
 }

@@ -1116,7 +1116,7 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
           return (
             <div className="space-y-6 animate-in fade-in duration-300">
               {/* 7 Summary Statistic Cards Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-7 gap-3 sm:gap-4">
                 {liveStats.map((stat) => (
                   <div
                     key={stat.id}

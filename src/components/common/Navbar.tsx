@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Logo } from './Logo';
-import { Globe, Menu, X, Package, Shield, HelpCircle, DollarSign, MapPin } from 'lucide-react';
+import { Globe, Menu, X } from 'lucide-react';
 import { Page } from '../../types';
+import { getCurrencyInfo } from '../../utils/currency';
 
 interface NavbarProps {
   currentPage: Page;
@@ -19,6 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentCurrency = 'INR (₹)',
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const currencyInfo = getCurrencyInfo(currentCurrency);
 
   const navLinks = [
     { label: 'Home', page: 'home' as Page },
@@ -31,20 +33,32 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white/98 backdrop-blur-md border-b border-slate-200/80 shadow-2xs">
-      <div className="w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 h-18 sm:h-20 flex items-center justify-between">
+      <div className="w-full px-2.5 sm:px-6 lg:px-8 xl:px-12 h-15 sm:h-18 lg:h-20 flex items-center justify-between gap-1.5 sm:gap-4">
         {/* Left Side: Brand Logo */}
-        <div className="shrink-0 flex items-center">
-          <Logo
-            size="md"
-            onClick={() => {
-              onNavigate('home');
-              setMobileMenuOpen(false);
-            }}
-          />
+        <div className="shrink-0 flex items-center min-w-0">
+          <div className="xl:hidden">
+            <Logo
+              size="sm"
+              className="max-w-[104px] sm:max-w-[148px]"
+              onClick={() => {
+                onNavigate('home');
+                setMobileMenuOpen(false);
+              }}
+            />
+          </div>
+          <div className="hidden xl:block">
+            <Logo
+              size="md"
+              onClick={() => {
+                onNavigate('home');
+                setMobileMenuOpen(false);
+              }}
+            />
+          </div>
         </div>
 
         {/* Centre Navigation: Home → How It Works → Pricing → Countries → Help → Track */}
-        <nav className="hidden lg:flex flex-1 items-center justify-center gap-6 xl:gap-8 text-[15px] font-bold whitespace-nowrap px-4">
+        <nav className="hidden md:flex flex-1 items-center justify-center md:gap-2.5 lg:gap-4 xl:gap-8 text-[13px] lg:text-[14px] xl:text-[15px] font-bold whitespace-nowrap px-1.5 lg:px-2 xl:px-4">
           {navLinks.map((link) => (
             <button
               key={link.label}
@@ -67,13 +81,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           ))}
         </nav>
 
-        {/* Right Actions: Login, Sign Up, Currency, Menu */}
-        <div className="hidden md:flex items-center gap-2 sm:gap-3 lg:gap-3.5 shrink-0">
+        {/* Right Actions: Login, Sign Up, Currency */}
+        <div className="hidden md:flex items-center gap-2 lg:gap-2.5 xl:gap-3.5 shrink-0">
           {/* Login */}
           <button
             type="button"
             onClick={() => onNavigate('auth')}
-            className={`transition-colors hover:text-[#0066FF] font-bold text-sm lg:text-[15px] cursor-pointer px-2 py-1.5 select-none ${
+            className={`transition-colors hover:text-[#0066FF] font-bold text-[13px] lg:text-[14px] xl:text-[15px] cursor-pointer px-1.5 lg:px-2 py-1.5 select-none whitespace-nowrap ${
               currentPage === 'auth' ? 'text-[#0066FF]' : 'text-[#0B1940]'
             }`}
           >
@@ -84,50 +98,55 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('auth')}
-            className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-xl bg-[#0066FF] hover:bg-[#0052cc] text-white font-bold text-xs sm:text-sm lg:text-[15px] shadow-xs hover:shadow-md transition-all active:scale-[0.98] cursor-pointer select-none"
+            className="px-3.5 py-2 lg:px-4 lg:py-2 xl:px-6 xl:py-2.5 rounded-xl bg-[#0066FF] hover:bg-[#0052cc] text-white font-bold text-[13px] lg:text-[14px] xl:text-[15px] shadow-xs hover:shadow-md transition-all active:scale-[0.98] cursor-pointer select-none whitespace-nowrap"
           >
             Sign Up
           </button>
 
-          {/* Language / Currency Globe */}
+          {/* Language / Currency Selector */}
           <button
             type="button"
             onClick={onOpenCurrencyModal}
             title={`Select Currency (${currentCurrency})`}
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center bg-white hover:bg-slate-50 text-[#0B1940] transition-colors border border-slate-200/90 hover:border-slate-300 shadow-2xs cursor-pointer shrink-0 active:scale-95"
+            aria-label={`Select Currency (${currentCurrency})`}
+            className="h-9 xl:h-10 px-2.5 xl:px-3 rounded-full flex items-center justify-center gap-1.5 bg-white hover:bg-slate-50 text-[#0B1940] transition-colors border border-slate-200/90 hover:border-slate-300 shadow-2xs cursor-pointer shrink-0 active:scale-95 text-xs font-bold"
           >
-            <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-[#0B1940]" />
+            <Globe className="w-4 h-4 text-[#0066FF]" />
+            <span>{currencyInfo.code}</span>
+            <span className="text-slate-500">({currencyInfo.symbol.trim()})</span>
           </button>
         </div>
 
-        {/* Mobile Controls */}
-        <div className="flex md:hidden items-center gap-1.5 sm:gap-2">
+        {/* Mobile Controls (< md) */}
+        <div className="flex md:hidden items-center gap-1 sm:gap-2 shrink-0">
           <button
             type="button"
             onClick={() => onNavigate('auth')}
-            className="px-2.5 py-1.5 text-xs sm:text-sm font-semibold text-[#0B1940] hover:text-[#0066FF] cursor-pointer"
+            className="px-1.5 sm:px-2.5 py-1.5 text-[11px] sm:text-sm font-bold text-[#0B1940] hover:text-[#0066FF] cursor-pointer whitespace-nowrap"
           >
             Login
           </button>
           <button
             type="button"
             onClick={() => onNavigate('auth')}
-            className="px-3.5 py-1.5 bg-[#0066FF] hover:bg-[#0052cc] text-white text-xs sm:text-sm font-bold rounded-xl shadow-xs transition-colors cursor-pointer"
+            className="px-2.5 sm:px-3.5 py-1.5 bg-[#0066FF] hover:bg-[#0052cc] text-white text-[11px] sm:text-sm font-bold rounded-lg sm:rounded-xl shadow-xs transition-colors cursor-pointer whitespace-nowrap"
           >
             Sign Up
           </button>
           <button
             type="button"
             onClick={onOpenCurrencyModal}
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-white hover:bg-slate-50 text-[#0B1940] border border-slate-200/90 shadow-2xs cursor-pointer transition-colors"
+            className="h-7.5 sm:h-9 px-2 sm:px-2.5 rounded-full flex items-center justify-center gap-1 bg-white hover:bg-slate-50 text-[#0B1940] border border-slate-200/90 shadow-2xs cursor-pointer transition-colors shrink-0 text-[10.5px] sm:text-xs font-bold"
             title={`Select Currency (${currentCurrency})`}
+            aria-label={`Select Currency (${currentCurrency})`}
           >
-            <Globe className="w-4 h-4 text-[#0B1940]" />
+            <Globe className="w-3.5 h-3.5 text-[#0066FF] shrink-0" />
+            <span>{currencyInfo.code}</span>
           </button>
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-white hover:bg-slate-50 text-[#0B1940] hover:text-[#0066FF] border border-slate-200/90 shadow-2xs cursor-pointer transition-colors"
+            className="w-7.5 h-7.5 sm:w-9 sm:h-9 rounded-full flex items-center justify-center bg-white hover:bg-slate-50 text-[#0B1940] hover:text-[#0066FF] border border-slate-200/90 shadow-2xs cursor-pointer transition-colors shrink-0"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="w-4 h-4 text-[#0B1940]" /> : <Menu className="w-4 h-4 text-[#0B1940]" />}
@@ -135,11 +154,12 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Mobile / Minimized Sub-Navbar: Guarantees Home and all navigation details are always visible when screen is small or minimized */}
-      <div className="md:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar px-4 py-2 bg-slate-50 border-t border-slate-100 text-xs font-semibold text-slate-700">
+      {/* Mobile Sub-Navbar: Touch-friendly navigation pills below md */}
+      <div className="md:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar px-2.5 sm:px-4 py-2 bg-slate-50 border-t border-slate-100 text-xs font-semibold text-slate-700">
         {navLinks.map((link) => (
           <button
             key={link.label}
+            type="button"
             onClick={() => {
               if (link.action) {
                 link.action();
@@ -158,13 +178,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         ))}
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile / Tablet Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-b border-slate-200 px-4 pt-2 pb-6 space-y-3 shadow-lg">
+        <div className="lg:hidden bg-white border-b border-slate-200 px-4 pt-2 pb-6 space-y-3 shadow-lg">
           <div className="flex flex-col space-y-1">
             {navLinks.map((link) => (
               <button
                 key={link.label}
+                type="button"
                 onClick={() => {
                   if (link.action) {
                     link.action();
@@ -173,7 +194,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   }
                   setMobileMenuOpen(false);
                 }}
-                className={`text-left px-3 py-2.5 rounded-lg text-base font-semibold ${
+                className={`text-left px-3 py-2.5 rounded-lg text-base font-semibold cursor-pointer ${
                   currentPage === link.page
                     ? 'bg-blue-50 text-[#0066FF]'
                     : 'text-slate-700 hover:bg-slate-50'
@@ -186,20 +207,33 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
             <button
+              type="button"
+              onClick={() => {
+                if (onOpenCurrencyModal) onOpenCurrencyModal();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 text-slate-700 font-semibold border border-slate-200 rounded-xl bg-slate-50 cursor-pointer text-sm"
+            >
+              <span>Currency: {currentCurrency}</span>
+              <span className="text-[#0066FF] font-bold">Change</span>
+            </button>
+            <button
+              type="button"
               onClick={() => {
                 onNavigate('auth');
                 setMobileMenuOpen(false);
               }}
-              className="w-full text-center py-2.5 text-slate-700 font-semibold border border-slate-200 rounded-xl"
+              className="w-full text-center py-2.5 text-slate-700 font-semibold border border-slate-200 rounded-xl cursor-pointer"
             >
               Login
             </button>
             <button
+              type="button"
               onClick={() => {
                 onNavigate('auth');
                 setMobileMenuOpen(false);
               }}
-              className="w-full text-center py-2.5 bg-[#0066FF] text-white font-bold rounded-xl shadow-xs"
+              className="w-full text-center py-2.5 bg-[#0066FF] text-white font-bold rounded-xl shadow-xs cursor-pointer"
             >
               Sign Up
             </button>

@@ -11,41 +11,41 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal, onOpenCurrencyModal }) => {
   return (
-    <footer className="w-full bg-white border-t border-slate-200 mt-16 pt-16 pb-12 text-slate-600 text-sm">
-      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
+    <footer className="w-full bg-white border-t border-slate-200 mt-8 sm:mt-16 pt-10 sm:pt-16 pb-10 sm:pb-12 text-slate-600 text-sm overflow-x-hidden">
+      <div className="w-full px-3.5 min-[375px]:px-4 sm:px-6 lg:px-8 xl:px-12">
         {/* Value Proposition Highlights */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pb-12 mb-12 border-b border-slate-100">
-          <div className="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
-            <div className="w-12 h-12 rounded-xl bg-blue-100 text-[#0066FF] flex items-center justify-center shrink-0">
-              <Truck className="w-6 h-6" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 pb-8 sm:pb-12 mb-8 sm:mb-12 border-b border-slate-100">
+          <div className="flex items-start gap-3.5 sm:gap-4 p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-100">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-100 text-[#0066FF] flex items-center justify-center shrink-0">
+              <Truck className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <h4 className="font-bold text-slate-900 text-base">Worldwide Express Delivery</h4>
-              <p className="text-slate-500 text-xs mt-1">
+            <div className="min-w-0">
+              <h4 className="font-bold text-slate-900 text-sm sm:text-base">Worldwide Express Delivery</h4>
+              <p className="text-slate-500 text-xs mt-1 leading-relaxed">
                 Fast & reliable shipping to over 220+ countries via DHL, FedEx, and Aramex in 3-7 business days.
               </p>
             </div>
           </div>
 
-          <div className="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
-            <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-6 h-6" />
+          <div className="flex items-start gap-3.5 sm:gap-4 p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-100">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <h4 className="font-bold text-slate-900 text-base">100% Secure & Inspected</h4>
-              <p className="text-slate-500 text-xs mt-1">
+            <div className="min-w-0">
+              <h4 className="font-bold text-slate-900 text-sm sm:text-base">100% Secure & Inspected</h4>
+              <p className="text-slate-500 text-xs mt-1 leading-relaxed">
                 Free 30-day warehouse storage, HD package photos, and damage inspection included.
               </p>
             </div>
           </div>
 
-          <div className="flex items-start gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
-            <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
-              <Sparkles className="w-6 h-6" />
+          <div className="flex items-start gap-3.5 sm:gap-4 p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-100">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
-            <div>
-              <h4 className="font-bold text-slate-900 text-base">Save up to 80% on Shipping</h4>
-              <p className="text-slate-500 text-xs mt-1">
+            <div className="min-w-0">
+              <h4 className="font-bold text-slate-900 text-sm sm:text-base">Save up to 80% on Shipping</h4>
+              <p className="text-slate-500 text-xs mt-1 leading-relaxed">
                 Smart order consolidation combines multiple packages from different Indian stores into one box.
               </p>
             </div>
@@ -53,21 +53,21 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal, on
         </div>
 
         {/* Footer Navigation Columns covering ALL Webapp Pages */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-x-4 gap-y-7 sm:gap-8 mb-8 sm:mb-12">
           {/* Brand Info */}
           <div className="col-span-2">
             <Logo size="md" onClick={() => onNavigate('home')} />
-            <p className="mt-4 text-slate-500 text-sm max-w-sm leading-relaxed">
+            <p className="mt-3 sm:mt-4 text-slate-500 text-xs sm:text-sm max-w-sm leading-relaxed">
               Your gateway to shopping across Indian stores from anywhere in the world. We purchase, receive, inspect, consolidate, and ship straight to your doorstep.
             </p>
-            <div className="mt-5 flex flex-col gap-2 text-xs text-slate-400">
+            <div className="mt-4 sm:mt-5 flex flex-col gap-2 text-xs text-slate-400">
               <span className="flex items-center gap-1.5">
                 <Globe2 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                Shipping worldwide from Mumbai Hub, India
+                <span>Shipping worldwide from Mumbai Hub, India</span>
               </span>
               <span className="flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                Certified Export Partner • 220+ Countries Served
+                <span>Certified Export Partner • 220+ Countries Served</span>
               </span>
             </div>
           </div>
@@ -275,11 +275,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal, on
         </div>
 
         {/* Bottom copyright and disclaimer */}
-        <div className="pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+        <div className="pt-6 sm:pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 text-center sm:text-left">
           <div>
             © {new Date().getFullYear()} India2World. All rights reserved. Built for seamless cross-border shopping from India.
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4 sm:gap-6">
             <button
               type="button"
               onClick={() => onNavigate('help')}

@@ -475,7 +475,7 @@ export const StoresDirectoryPage: React.FC<StoresDirectoryPageProps> = ({
                               <h3 className="font-bold text-sm text-[#0B1940] truncate group-hover:text-[#0D59F2] transition-colors">
                                 {brand.name}
                               </h3>
-                              <p className="text-[11px] font-medium text-slate-400 truncate">{brand.domain} ?</p>
+                              <p className="text-[11px] font-medium text-slate-400 truncate">{brand.domain} ↗</p>
                             </div>
                           </a>
                           {brand.popular ? (

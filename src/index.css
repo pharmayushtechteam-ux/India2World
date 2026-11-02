@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@custom-variant sm (@container (width >= 640px));
+@custom-variant md (@container (width >= 768px));
+@custom-variant lg (@container (width >= 1024px));
+@custom-variant xl (@container (width >= 1280px));
+@custom-variant 2xl (@container (width >= 1536px));
+
 @layer base {
   :root {
     --primary-blue: #0066FF;
@@ -17,6 +23,7 @@
     width: 100%;
     min-height: 100vh;
     overflow-x: hidden;
+    container-type: inline-size;
   }
 
   #root {
@@ -26,6 +33,10 @@
     padding: 0;
     min-height: 100vh;
   }
+}
+
+.viewport-container-query {
+  container-type: inline-size;
 }
 
 /* Custom scrollbars */
