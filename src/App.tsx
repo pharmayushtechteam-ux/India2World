@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Page, DashboardTab } from './types';
+import { AdminTab } from './types/admin';
 import { Navbar } from './components/common/Navbar';
 import { HomePage } from './components/home/HomePage';
 import { AuthPage } from './components/auth/AuthPage';
@@ -17,7 +18,7 @@ import { AdminLoginPage } from './components/admin/AdminLoginPage';
 import { AdminPanel } from './components/admin/AdminPanel';
 import { isUserAuthenticated, USER_CHANGED_EVENT } from './utils/userAuth';
 
-const VALID_PAGES: Page[] = [
+export const VALID_PAGES: Page[] = [
   'home',
   'auth',
   'buy-for-me',
@@ -31,78 +32,190 @@ const VALID_PAGES: Page[] = [
   'admin',
 ];
 
-const resolvePageFromUrl = (): Page => {
-  if (typeof window === 'undefined') return 'home';
+export const VALID_ADMIN_TABS: AdminTab[] = [
+  'dashboard',
+  'customers',
+  'purchase-requests',
+  'purchase-request-details',
+  'quotations',
+  'purchase-queue',
+  'orders',
+  'incoming-packages',
+  'receive-package',
+  'warehouse',
+  'consolidation',
+  'create-consolidation',
+  'shipping',
+  'tracking',
+  'payments',
+  'refunds',
+  'support',
+  'notifications',
+  'reports',
+  'settings',
+];
 
-  // 1. Check pathname: e.g. /pricing, /how-it-works, /stores, /countries, /home
-  const path = window.location.pathname.replace(/^\/+|\/+$/g, '').trim().toLowerCase();
-  if (path && VALID_PAGES.includes(path as Page)) {
-    return path as Page;
+export const VALID_DASHBOARD_TABS: DashboardTab[] = [
+  'overview',
+  'buy-for-me',
+  'my-requests',
+  'my-purchases',
+  'my-warehouse',
+  'consolidation',
+  'shipments',
+  'payments',
+  'addresses',
+  'support',
+  'notifications',
+  'profile',
+];
+
+export interface ParsedRoute {
+  page: Page;
+  dashboardTab: DashboardTab;
+  adminTab: AdminTab;
+  openTrackModal?: boolean;
+}
+
+export const resolveRouteFromUrl = (): ParsedRoute => {
+  if (typeof window === 'undefined') {
+    return { page: 'home', dashboardTab: 'overview', adminTab: 'dashboard' };
   }
 
-  // 2. Check query parameter: ?page=pricing
+  let pathStr = window.location.pathname;
+
+  // 1. Check legacy hash e.g. #/admin/notifications or #pricing
+  if (window.location.hash) {
+    const rawHash = window.location.hash.split('?')[0].replace(/^#\/?/, '').trim();
+    if (rawHash) {
+      pathStr = `/${rawHash}`;
+    }
+  }
+
+  const segments = pathStr
+    .split('/')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+
+  const primary = segments[0] || '';
+  const secondary = segments[1] || '';
   const params = new URLSearchParams(window.location.search);
+
+  // 1. Admin paths: /admin or /admin/:adminTab
+  if (primary === 'admin') {
+    let adminTab: AdminTab = 'dashboard';
+    if (secondary && VALID_ADMIN_TABS.includes(secondary as AdminTab)) {
+      adminTab = secondary as AdminTab;
+    } else {
+      const qTab = params.get('adminTab') as AdminTab;
+      if (qTab && VALID_ADMIN_TABS.includes(qTab)) {
+        adminTab = qTab;
+      }
+    }
+    return { page: 'admin', dashboardTab: 'overview', adminTab };
+  }
+
+  // 2. Admin Login: /admin-login
+  if (primary === 'admin-login') {
+    return { page: 'admin-login', dashboardTab: 'overview', adminTab: 'dashboard' };
+  }
+
+  // 3. Customer Dashboard: /dashboard or /dashboard/:tab
+  if (primary === 'dashboard') {
+    let dashTab: DashboardTab = 'overview';
+    if (secondary && VALID_DASHBOARD_TABS.includes(secondary as DashboardTab)) {
+      dashTab = secondary as DashboardTab;
+    } else {
+      const qTab = params.get('tab') as DashboardTab;
+      if (qTab && VALID_DASHBOARD_TABS.includes(qTab)) {
+        dashTab = qTab;
+      }
+    }
+    return { page: 'dashboard', dashboardTab: dashTab, adminTab: 'dashboard' };
+  }
+
+  // 4. Buy-For-Me: /buy-for-me
+  if (primary === 'buy-for-me') {
+    return { page: 'buy-for-me', dashboardTab: 'buy-for-me', adminTab: 'dashboard' };
+  }
+
+  // 5. Auth: /auth, /login, /signup
+  if (primary === 'auth' || primary === 'login' || primary === 'signup') {
+    return { page: 'auth', dashboardTab: 'overview', adminTab: 'dashboard' };
+  }
+
+  // 6. Track modal: /track
+  if (primary === 'track') {
+    return { page: 'home', dashboardTab: 'overview', adminTab: 'dashboard', openTrackModal: true };
+  }
+
+  // 7. Other public pages: /pricing, /how-it-works, /countries, /stores, /help, /home
+  if (primary && VALID_PAGES.includes(primary as Page)) {
+    return { page: primary as Page, dashboardTab: 'overview', adminTab: 'dashboard' };
+  }
+
+  // 8. Query parameter fallback: ?page=pricing etc.
   const queryPage = params.get('page')?.toLowerCase() as Page;
   if (queryPage && VALID_PAGES.includes(queryPage)) {
-    return queryPage;
+    const qAdminTab = (params.get('adminTab') as AdminTab) || 'dashboard';
+    const qDashTab = (params.get('tab') as DashboardTab) || 'overview';
+    return {
+      page: queryPage,
+      dashboardTab: VALID_DASHBOARD_TABS.includes(qDashTab) ? qDashTab : 'overview',
+      adminTab: VALID_ADMIN_TABS.includes(qAdminTab) ? qAdminTab : 'dashboard',
+    };
   }
 
-  // 3. Fallback: check legacy hash if user arrived via an old bookmarked link e.g. #/pricing or #/home
-  const rawHash = window.location.hash.split('?')[0].replace('#/', '').replace('#', '').trim().toLowerCase();
-  if (rawHash && VALID_PAGES.includes(rawHash as Page)) {
-    return rawHash as Page;
-  }
-
-  return 'home';
+  return { page: 'home', dashboardTab: 'overview', adminTab: 'dashboard' };
 };
 
-const resolveDashboardTabFromUrl = (): DashboardTab => {
-  if (typeof window === 'undefined') return 'overview';
-  const params = new URLSearchParams(window.location.search);
-  const hashParams = window.location.hash.includes('?')
-    ? new URLSearchParams(window.location.hash.split('?')[1])
-    : null;
-  const tab = (params.get('tab') || hashParams?.get('tab')) as DashboardTab;
-  return tab || 'overview';
-};
-
-const buildCleanPathForPage = (page: Page, tab?: DashboardTab): string => {
-  const basePath = page === 'home' ? '/' : `/${page}`;
-  const params = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
-  params.delete('page');
-
-  if ((page === 'dashboard' || page === 'buy-for-me') && tab && tab !== 'overview') {
-    params.set('tab', tab);
-  } else {
-    params.delete('tab');
+export const buildCleanPath = (
+  page: Page,
+  dashboardTab?: DashboardTab,
+  adminTab?: AdminTab
+): string => {
+  if (page === 'home') {
+    return '/';
   }
-
-  const query = params.toString() ? `?${params.toString()}` : '';
-  return `${basePath}${query}`;
+  if (page === 'admin') {
+    return `/admin/${adminTab || 'dashboard'}`;
+  }
+  if (page === 'dashboard') {
+    if (dashboardTab && dashboardTab !== 'overview') {
+      return `/dashboard/${dashboardTab}`;
+    }
+    return '/dashboard';
+  }
+  if (page === 'buy-for-me') {
+    return '/buy-for-me';
+  }
+  return `/${page}`;
 };
 
 function AppContent() {
   const { isAuthenticated } = useAdminAuth();
+  const initialRoute = resolveRouteFromUrl();
 
   const [authRedirectIntent, setAuthRedirectIntent] = useState<Page | null>(null);
 
   const getInitialPage = (): Page => {
-    const resolved = resolvePageFromUrl();
-    if ((resolved === 'buy-for-me' || resolved === 'dashboard') && !isUserAuthenticated()) {
+    if ((initialRoute.page === 'buy-for-me' || initialRoute.page === 'dashboard') && !isUserAuthenticated()) {
       return 'auth';
     }
-    return resolved;
+    return initialRoute.page;
   };
 
   const [currentPage, setCurrentPage] = useState<Page>(getInitialPage);
+  const [dashboardTab, setDashboardTab] = useState<DashboardTab>(initialRoute.dashboardTab);
+  const [adminTab, setAdminTab] = useState<AdminTab>(initialRoute.adminTab);
   const [initialBuyForMeUrl, setInitialBuyForMeUrl] = useState('');
-  const [trackingModalOpen, setTrackingModalOpen] = useState(false);
+  const [trackingModalOpen, setTrackingModalOpen] = useState(Boolean(initialRoute.openTrackModal));
   const [currencyModalOpen, setCurrencyModalOpen] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState<string>(() => {
     try {
-      return localStorage.getItem('i2w_selected_currency') || 'INR (?)';
+      return localStorage.getItem('i2w_selected_currency') || 'INR (₹)';
     } catch {
-      return 'INR (?)';
+      return 'INR (₹)';
     }
   });
 
@@ -113,12 +226,10 @@ function AppContent() {
     } catch {}
   };
 
-  const [dashboardTab, setDashboardTab] = useState<DashboardTab>(resolveDashboardTabFromUrl);
-
-  // Sync URL (clean HTML5 History without '#') and scroll to top on page navigation
+  // Sync URL (clean HTML5 History without '#') and scroll to top on page/tab navigation
   useEffect(() => {
-    const targetUrl = buildCleanPathForPage(currentPage, dashboardTab);
-    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    const targetUrl = buildCleanPath(currentPage, dashboardTab, adminTab);
+    const currentUrl = `${window.location.pathname}`;
 
     if (window.location.hash) {
       // Instantly remove any legacy # hash from the address bar
@@ -135,7 +246,7 @@ function AppContent() {
     if (viewportCanvas) {
       viewportCanvas.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [currentPage, dashboardTab]);
+  }, [currentPage, dashboardTab, adminTab]);
 
   // Auth gate listener: If logged out, redirect protected pages to auth
   useEffect(() => {
@@ -154,26 +265,24 @@ function AppContent() {
   // Handle browser Back / Forward navigation (popstate) & strip any legacy hash changes
   useEffect(() => {
     const handlePopState = () => {
-      const page = resolvePageFromUrl();
-      if ((page === 'buy-for-me' || page === 'dashboard') && !isUserAuthenticated()) {
-        setAuthRedirectIntent(page);
+      const route = resolveRouteFromUrl();
+      if ((route.page === 'buy-for-me' || route.page === 'dashboard') && !isUserAuthenticated()) {
+        setAuthRedirectIntent(route.page);
         setCurrentPage('auth');
       } else {
-        setCurrentPage(page);
+        setCurrentPage(route.page);
       }
-      setDashboardTab(resolveDashboardTabFromUrl());
+      setDashboardTab(route.dashboardTab);
+      setAdminTab(route.adminTab);
+      if (route.openTrackModal) {
+        setTrackingModalOpen(true);
+      }
     };
 
     const handleHashChange = () => {
-      const page = resolvePageFromUrl();
-      if ((page === 'buy-for-me' || page === 'dashboard') && !isUserAuthenticated()) {
-        setAuthRedirectIntent(page);
-        setCurrentPage('auth');
-      } else {
-        setCurrentPage(page);
-      }
-      setDashboardTab(resolveDashboardTabFromUrl());
-      const cleanUrl = buildCleanPathForPage(page, resolveDashboardTabFromUrl());
+      handlePopState();
+      const route = resolveRouteFromUrl();
+      const cleanUrl = buildCleanPath(route.page, route.dashboardTab, route.adminTab);
       window.history.replaceState(null, '', cleanUrl);
     };
 
@@ -207,7 +316,23 @@ function AppContent() {
     }
   };
 
-  const handleNavigate = (page: Page, dashTab?: DashboardTab) => {
+  const handleAdminTabChange = (tab: AdminTab) => {
+    setAdminTab(tab);
+    if (currentPage !== 'admin') {
+      setCurrentPage('admin');
+    }
+  };
+
+  const handleDashboardTabChange = (tab: DashboardTab) => {
+    setDashboardTab(tab);
+    if (tab === 'buy-for-me') {
+      setCurrentPage('buy-for-me');
+    } else if (currentPage !== 'dashboard') {
+      setCurrentPage('dashboard');
+    }
+  };
+
+  const handleNavigate = (page: Page, dashTab?: DashboardTab, admTab?: AdminTab) => {
     if (page === 'track') {
       setTrackingModalOpen(true);
       return;
@@ -222,6 +347,9 @@ function AppContent() {
       setDashboardTab(dashTab);
     } else if (page === 'buy-for-me') {
       setDashboardTab('buy-for-me');
+    }
+    if (admTab) {
+      setAdminTab(admTab);
     }
     setCurrentPage(page);
   };
@@ -280,6 +408,7 @@ function AppContent() {
             <CustomerDashboard
               initialTab={currentPage === 'buy-for-me' ? 'buy-for-me' : dashboardTab}
               onNavigatePage={handleNavigate}
+              onTabChange={handleDashboardTabChange}
               initialBuyForMeUrl={initialBuyForMeUrl}
             />
           )}
@@ -327,7 +456,11 @@ function AppContent() {
 
           {currentPage === 'admin' &&
             (isAuthenticated ? (
-              <AdminPanel onNavigateHome={() => handleNavigate('home')} />
+              <AdminPanel
+                currentTab={adminTab}
+                onSelectTab={handleAdminTabChange}
+                onNavigateHome={() => handleNavigate('home')}
+              />
             ) : (
               <AdminLoginPage
                 onSuccess={() => setCurrentPage('admin')}

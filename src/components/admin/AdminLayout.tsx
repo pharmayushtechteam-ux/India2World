@@ -194,8 +194,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         <div className="h-16 px-5 flex items-center justify-between border-b border-white/10 shrink-0">
           <div
             onClick={() => {
-              markTabBadgeAsCleared('consolidation');
-              onSelectTab('consolidation');
+              markTabBadgeAsCleared('dashboard');
+              onSelectTab('dashboard');
             }}
             className="flex items-center gap-2.5 cursor-pointer group"
           >

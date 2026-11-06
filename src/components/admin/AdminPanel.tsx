@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminTab } from '../../types/admin';
 import { AdminLayout } from './AdminLayout';
 import { AdminDashboard } from './AdminDashboard';
@@ -24,14 +24,23 @@ import { AdminCustomersModule } from './AdminCustomersModule';
 interface AdminPanelProps {
   onNavigateHome: () => void;
   initialTab?: AdminTab;
+  currentTab?: AdminTab;
+  onSelectTab?: (tab: AdminTab) => void;
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
   onNavigateHome,
-  initialTab = 'create-consolidation',
+  initialTab = 'dashboard',
+  currentTab: controlledTab,
+  onSelectTab,
 }) => {
   const getInitialTab = (): AdminTab => {
+    if (controlledTab) return controlledTab;
     if (typeof window !== 'undefined') {
+      const pathParts = window.location.pathname.split('/').map(s => s.trim().toLowerCase()).filter(Boolean);
+      if (pathParts[0] === 'admin' && pathParts[1]) {
+        return pathParts[1] as AdminTab;
+      }
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('adminTab') as AdminTab;
       if (tabParam) return tabParam;
@@ -39,9 +48,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     return initialTab;
   };
 
-  const [currentTab, setCurrentTab] = useState<AdminTab>(getInitialTab);
+  const [internalTab, setInternalTab] = useState<AdminTab>(getInitialTab);
   const [selectedRequestId, setSelectedRequestId] = useState<string>('REQ-20482');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const currentTab = controlledTab || internalTab;
+
+  useEffect(() => {
+    if (controlledTab && controlledTab !== internalTab) {
+      setInternalTab(controlledTab);
+    }
+  }, [controlledTab]);
+
+  const setCurrentTab = (tab: AdminTab) => {
+    setInternalTab(tab);
+    if (onSelectTab) {
+      onSelectTab(tab);
+    }
+  };
 
   const handleSelectRequest = (id: string) => {
     setSelectedRequestId(id);

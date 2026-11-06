@@ -159,19 +159,28 @@ const defaultSupportTickets: SupportTicket[] = [
 interface CustomerDashboardProps {
   initialTab?: DashboardTab;
   onNavigatePage: (page: Page) => void;
+  onTabChange?: (tab: DashboardTab) => void;
   initialBuyForMeUrl?: string;
 }
 
 export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
   initialTab = 'overview',
   onNavigatePage,
+  onTabChange,
   initialBuyForMeUrl = '',
 }) => {
-  const [activeTab, setActiveTab] = useState<DashboardTab>(initialTab);
+  const [activeTab, setActiveTabState] = useState<DashboardTab>(initialTab);
+
+  const setActiveTab = (tab: DashboardTab) => {
+    setActiveTabState(tab);
+    if (onTabChange) {
+      onTabChange(tab);
+    }
+  };
 
   useEffect(() => {
-    if (initialTab) {
-      setActiveTab(initialTab);
+    if (initialTab && initialTab !== activeTab) {
+      setActiveTabState(initialTab);
     }
   }, [initialTab]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
