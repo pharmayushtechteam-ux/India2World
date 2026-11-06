@@ -445,7 +445,7 @@ export const AdminPurchaseRequestDetails: React.FC<AdminPurchaseRequestDetailsPr
       `--------------------------------------------------\n\n` +
       `NEXT STEPS:\n` +
       `You can review the invoice and complete payment via international card or wire transfer at:\n` +
-      `https://india2world.com/#/dashboard\n\n` +
+      `https://boxmyindia.com/dashboard\n\n` +
       `Upon receipt of payment, our procurement team will purchase your products within 24 hours.\n\n` +
       `Need assistance? Reply directly to this email or contact support@india2world.com.\n\n` +
       `Best regards,\n` +
