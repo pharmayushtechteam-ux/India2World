@@ -118,25 +118,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Mobile Controls (< md) */}
-        <div className="flex md:hidden items-center gap-1 sm:gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => onNavigate('auth')}
-            className="px-1.5 sm:px-2.5 py-1.5 text-[11px] sm:text-sm font-bold text-[#0B1940] hover:text-[#0066FF] cursor-pointer whitespace-nowrap"
-          >
-            Login
-          </button>
-          <button
-            type="button"
-            onClick={() => onNavigate('auth')}
-            className="px-2.5 sm:px-3.5 py-1.5 bg-[#0066FF] hover:bg-[#0052cc] text-white text-[11px] sm:text-sm font-bold rounded-lg sm:rounded-xl shadow-xs transition-colors cursor-pointer whitespace-nowrap"
-          >
-            Sign Up
-          </button>
+        <div className="flex md:hidden items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             type="button"
             onClick={onOpenCurrencyModal}
-            className="h-7.5 sm:h-9 px-2 sm:px-2.5 rounded-full flex items-center justify-center gap-1 bg-white hover:bg-slate-50 text-[#0B1940] border border-slate-200/90 shadow-2xs cursor-pointer transition-colors shrink-0 text-[10.5px] sm:text-xs font-bold"
+            className="h-8 sm:h-9 px-2 sm:px-2.5 rounded-full flex items-center justify-center gap-1 bg-slate-50 hover:bg-slate-100 text-[#0B1940] border border-slate-200 shadow-2xs cursor-pointer transition-colors shrink-0 text-[11px] sm:text-xs font-bold"
             title={`Select Currency (${currentCurrency})`}
             aria-label={`Select Currency (${currentCurrency})`}
           >
@@ -145,8 +131,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
           <button
             type="button"
+            onClick={() => onNavigate('auth')}
+            className="px-2.5 sm:px-3 py-1.5 bg-[#0066FF] hover:bg-[#0052cc] text-white text-xs font-bold rounded-lg sm:rounded-xl shadow-xs transition-colors cursor-pointer whitespace-nowrap"
+          >
+            Sign Up
+          </button>
+          <button
+            type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="w-7.5 h-7.5 sm:w-9 sm:h-9 rounded-full flex items-center justify-center bg-white hover:bg-slate-50 text-[#0B1940] hover:text-[#0066FF] border border-slate-200/90 shadow-2xs cursor-pointer transition-colors shrink-0"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center bg-white hover:bg-slate-50 text-[#0B1940] hover:text-[#0066FF] border border-slate-200 shadow-2xs cursor-pointer transition-colors shrink-0"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="w-4 h-4 text-[#0B1940]" /> : <Menu className="w-4 h-4 text-[#0B1940]" />}
@@ -154,29 +147,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </div>
 
-      {/* Mobile Sub-Navbar: Touch-friendly navigation pills below md */}
-      <div className="md:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar px-2.5 sm:px-4 py-2 bg-slate-50 border-t border-slate-100 text-xs font-semibold text-slate-700">
-        {navLinks.map((link) => (
-          <button
-            key={link.label}
-            type="button"
-            onClick={() => {
-              if (link.action) {
-                link.action();
-              } else {
-                onNavigate(link.page);
-              }
-            }}
-            className={`px-3 py-1.5 rounded-full shrink-0 transition-colors cursor-pointer ${
-              currentPage === link.page
-                ? 'bg-[#0066FF] text-white font-bold shadow-xs'
-                : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/80'
-            }`}
-          >
-            {link.label}
-          </button>
-        ))}
-      </div>
+
 
       {/* Mobile / Tablet Drawer */}
       {mobileMenuOpen && (

@@ -325,29 +325,7 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
         </div>
 
-        {/* Touch-Friendly Mobile Sub-Navbar (< md) */}
-        <div className="md:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar px-2.5 sm:px-4 py-2 bg-slate-50 border-t border-slate-100 text-xs font-semibold text-slate-700">
-          {navLinks.map((link) => (
-            <button
-              key={link.label}
-              type="button"
-              onClick={() => {
-                if (link.action) {
-                  link.action();
-                } else {
-                  onNavigate(link.page);
-                }
-              }}
-              className={`px-3 py-1.5 rounded-full shrink-0 transition-colors cursor-pointer ${
-                link.page === 'home'
-                  ? 'bg-[#0066FF] text-white font-bold shadow-xs'
-                  : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200/80'
-              }`}
-            >
-              {link.label}
-            </button>
-          ))}
-        </div>
+
       </header>
 
       {/* Responsive Navigation Drawer (Works for Mobile, Tablet, and Desktop System) */}
@@ -467,13 +445,102 @@ export const HomePage: React.FC<HomePageProps> = ({
 
       {/* BEGIN: HTML Hero Banner Section */}
       <section className="relative w-full bg-white border-b border-slate-100 overflow-hidden">
-        <div className="relative w-full px-2.5 sm:px-6 md:px-7 lg:px-10 xl:px-12 py-3 sm:py-5 md:py-7 lg:py-8 xl:py-6 flex flex-row items-center justify-between">
+        {/* Mobile View (< sm) */}
+        <div className="sm:hidden px-4 pt-5 pb-4 flex flex-col space-y-3.5">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAF2FF] border border-[#D4E4FF] shadow-2xs self-start">
+            <svg
+              className="w-4 h-2.5 rounded-[2px] shrink-0 shadow-2xs"
+              viewBox="0 0 24 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect width="24" height="5.33" fill="#FF9933" />
+              <rect y="5.33" width="24" height="5.33" fill="#FFFFFF" />
+              <rect y="10.67" width="24" height="5.33" fill="#138808" />
+              <circle cx="12" cy="8" r="2.1" stroke="#000080" strokeWidth="0.9" />
+              <circle cx="12" cy="8" r="0.6" fill="#000080" />
+            </svg>
+            <span className="text-xs font-bold text-[#1849A9] tracking-tight">
+              From India to Your Doorstep
+            </span>
+          </div>
+
+          {/* Heading */}
+          <h1 className="font-extrabold tracking-tight text-[#050F2C] text-2xl min-[375px]:text-[27px] leading-[1.18]">
+            Shop Anywhere in India.{' '}
+            <span className="text-[#0D59F2] block mt-0.5">We Deliver Worldwide.</span>
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-slate-600 text-xs min-[375px]:text-[13px] leading-relaxed">
+            Found something you love on an Indian website? Send us the product link. We&apos;ll purchase it in India, receive it at our warehouse, combine your orders, and ship them to your doorstep worldwide.
+          </p>
+
+          {/* Mobile Search Form */}
+          <form
+            onSubmit={handleGetStarted}
+            className="w-full bg-white rounded-xl p-1.5 flex flex-row items-center gap-1.5 border-2 border-[#2563EB] shadow-[0_4px_16px_rgba(37,99,235,0.18)]"
+          >
+            <div className="flex-1 min-w-0 flex items-center gap-2 pl-2 pr-1 py-1">
+              <Link2 className="w-4 h-4 text-slate-400 shrink-0 -rotate-45" />
+              <input
+                type="url"
+                value={productUrl}
+                onChange={(e) => setProductUrl(e.target.value)}
+                placeholder="Paste an Indian product link..."
+                className="w-full min-w-0 bg-transparent text-slate-800 placeholder:text-slate-400 text-xs sm:text-sm font-medium focus:outline-hidden"
+              />
+            </div>
+            <button
+              type="submit"
+              className="shrink-0 inline-flex items-center justify-center gap-1 bg-[#0057FF] hover:bg-[#0047D4] text-white font-bold text-xs px-3.5 py-2.5 rounded-lg shadow-xs transition-colors cursor-pointer whitespace-nowrap"
+            >
+              <span>Get Started</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </form>
+
+          {/* 3 Feature Checkmarks */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-semibold text-slate-700">
+            <div className="inline-flex items-center gap-1.5">
+              <span className="w-4 h-4 rounded-full bg-[#22C55E] flex items-center justify-center text-white shrink-0">
+                <Check className="w-2.5 h-2.5 stroke-[3]" />
+              </span>
+              <span>Purchase on your behalf</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5">
+              <span className="w-4 h-4 rounded-full bg-[#22C55E] flex items-center justify-center text-white shrink-0">
+                <Check className="w-2.5 h-2.5 stroke-[3]" />
+              </span>
+              <span>Combine multiple orders</span>
+            </div>
+            <div className="inline-flex items-center gap-1.5">
+              <span className="w-4 h-4 rounded-full bg-[#22C55E] flex items-center justify-center text-white shrink-0">
+                <Check className="w-2.5 h-2.5 stroke-[3]" />
+              </span>
+              <span>Ship worldwide</span>
+            </div>
+          </div>
+
+          {/* Mobile Illustration Banner */}
+          <div className="w-full rounded-2xl overflow-hidden shadow-xs border border-slate-100 bg-gradient-to-r from-blue-50/50 via-white to-slate-50 mt-1">
+            <img
+              src="/assets/hero-redesigned-hd.jpg?v=6"
+              alt="Shop in India, Deliver Worldwide - India Gate, Taj Mahal, Airplane and India2World Parcels"
+              className="w-full h-auto max-h-[175px] object-cover object-center"
+            />
+          </div>
+        </div>
+
+        {/* Desktop / Tablet View (sm+) */}
+        <div className="hidden sm:flex relative w-full px-6 md:px-7 lg:px-10 xl:px-12 py-5 md:py-7 lg:py-8 xl:py-6 flex-row items-center justify-between">
           {/* Left Side: HTML Text & HTML Search Bar */}
-          <div className="relative z-10 w-[56%] sm:w-[55%] md:w-[56%] lg:w-[54%] xl:w-[52%] shrink-0">
+          <div className="relative z-10 w-[55%] md:w-[56%] lg:w-[54%] xl:w-[52%] shrink-0">
             {/* Badge: From India to Your Doorstep */}
-            <div className="inline-flex items-center gap-1 sm:gap-2 md:gap-2.5 px-1.5 sm:px-3 md:px-3.5 py-0.5 sm:py-1 md:py-1.5 rounded-full bg-[#EAF2FF] border border-[#D4E4FF] mb-1 sm:mb-2.5 md:mb-3 shadow-2xs max-w-full">
+            <div className="inline-flex items-center gap-2 md:gap-2.5 px-3 md:px-3.5 py-1 md:py-1.5 rounded-full bg-[#EAF2FF] border border-[#D4E4FF] mb-2.5 md:mb-3 shadow-2xs max-w-full">
               <svg
-                className="w-2.5 h-2 sm:w-4.5 sm:h-3 md:w-5 md:h-3.5 rounded-[2px] shrink-0 shadow-2xs"
+                className="w-4.5 h-3 md:w-5 md:h-3.5 rounded-[2px] shrink-0 shadow-2xs"
                 viewBox="0 0 24 16"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -482,22 +549,22 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <rect y="5.33" width="24" height="5.33" fill="#FFFFFF" />
                 <rect y="10.67" width="24" height="5.33" fill="#138808" />
                 <circle cx="12" cy="8" r="2.1" stroke="#000080" strokeWidth="0.9" />
-                <circle cx="12" cy="8" r="0.6" fill="#000080" />
+                <circle cx="12" cy="0.6" fill="#000080" />
               </svg>
-              <span className="text-[7px] min-[375px]:text-[8px] sm:text-[11.5px] md:text-[13px] lg:text-[13.5px] xl:text-[13.5px] font-semibold text-[#1849A9] tracking-tight truncate">
+              <span className="text-[11.5px] md:text-[13px] lg:text-[13.5px] xl:text-[13.5px] font-semibold text-[#1849A9] tracking-tight truncate">
                 From India to Your Doorstep
               </span>
             </div>
 
-            {/* Main Heading (HTML Text) */}
-            <h1 className="font-extrabold tracking-tight leading-[1.08] text-[#050F2C] text-[13px] min-[375px]:text-[15px] min-[430px]:text-[17px] sm:text-[26px] md:text-[34px] min-[820px]:text-[37px] lg:text-[42px] xl:text-[50px] mb-1 sm:mb-2.5 md:mb-3">
+            {/* Main Heading */}
+            <h1 className="font-extrabold tracking-tight leading-[1.08] text-[#050F2C] text-[26px] md:text-[34px] min-[820px]:text-[37px] lg:text-[42px] xl:text-[50px] mb-2.5 md:mb-3">
               <span className="block whitespace-nowrap">Shop Anywhere</span>
               <span className="block whitespace-nowrap">in India.</span>
               <span className="block text-[#0D59F2] mt-0.5 whitespace-nowrap">We Deliver Worldwide.</span>
             </h1>
 
-            {/* Subtitle / Description (HTML Text) */}
-            <p className="text-[#334155] text-[7px] min-[375px]:text-[8px] min-[430px]:text-[9px] sm:text-[12px] md:text-[14px] min-[820px]:text-[14.5px] lg:text-[15px] xl:text-[15.5px] leading-[1.35] sm:leading-[1.48] md:leading-[1.5] font-normal max-w-[92%] sm:max-w-[380px] md:max-w-[430px] min-[820px]:max-w-[455px] lg:max-w-[480px] xl:max-w-[500px] mb-1.5 sm:mb-3.5 md:mb-4">
+            {/* Subtitle / Description */}
+            <p className="text-[#334155] text-[12px] md:text-[14px] min-[820px]:text-[14.5px] lg:text-[15px] xl:text-[15.5px] leading-[1.48] md:leading-[1.5] font-normal max-w-[380px] md:max-w-[430px] min-[820px]:max-w-[455px] lg:max-w-[480px] xl:max-w-[500px] mb-3.5 md:mb-4">
               Found something you love on an Indian website?
               <br className="hidden md:inline" /> Send us the product link. We&apos;ll purchase it in India,
               <br className="hidden md:inline" /> receive it at our warehouse, combine your orders,
@@ -507,14 +574,14 @@ export const HomePage: React.FC<HomePageProps> = ({
             {/* HTML Search Bar Form */}
             <form
               onSubmit={handleGetStarted}
-              className={`w-full max-w-[680px] md:max-w-[450px] min-[820px]:max-w-[485px] lg:max-w-[560px] xl:max-w-[680px] bg-white rounded-lg sm:rounded-2xl p-0.5 sm:p-1.5 md:p-2 flex flex-row items-center gap-1 sm:gap-2 border sm:border-2 transition-all mb-1.5 sm:mb-3 md:mb-3.5 ${
+              className={`w-full max-w-[680px] md:max-w-[450px] min-[820px]:max-w-[485px] lg:max-w-[560px] xl:max-w-[680px] bg-white rounded-xl sm:rounded-2xl p-1.5 md:p-2 flex flex-row items-center gap-2 border-2 transition-all mb-3 md:mb-3.5 ${
                 isSearchFocused
                   ? 'border-[#0D59F2] shadow-[0_0_22px_rgba(13,89,242,0.32)]'
                   : 'border-[#2563EB] shadow-[0_0_16px_rgba(37,99,235,0.22)]'
               }`}
             >
-              <div className="flex-1 min-w-0 flex items-center gap-1 sm:gap-2.5 pl-1.5 sm:pl-3.5 pr-0.5 sm:pr-2 py-0.5 sm:py-1.5">
-                <Link2 className="w-2.5 h-2.5 min-[375px]:w-3 min-[375px]:h-3 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 text-slate-400 shrink-0 -rotate-45" />
+              <div className="flex-1 min-w-0 flex items-center gap-2.5 pl-3.5 pr-2 py-1.5">
+                <Link2 className="w-4.5 h-4.5 md:w-5 md:h-5 text-slate-400 shrink-0 -rotate-45" />
                 <input
                   type="url"
                   value={productUrl}
@@ -522,52 +589,52 @@ export const HomePage: React.FC<HomePageProps> = ({
                   onBlur={() => setIsSearchFocused(false)}
                   onChange={(e) => setProductUrl(e.target.value)}
                   placeholder="Paste an Indian product link (e.g. Amazon, Myntra, Flipkart...)"
-                  className="w-full min-w-0 bg-transparent text-slate-800 placeholder:text-slate-400 text-[7px] min-[375px]:text-[8px] min-[430px]:text-[9px] sm:text-[12.5px] md:text-[14px] lg:text-[14.5px] xl:text-[15px] font-medium focus:outline-hidden text-ellipsis"
+                  className="w-full min-w-0 bg-transparent text-slate-800 placeholder:text-slate-400 text-[12.5px] md:text-[14px] lg:text-[14.5px] xl:text-[15px] font-medium focus:outline-hidden text-ellipsis"
                 />
               </div>
 
               <button
                 type="submit"
-                className="shrink-0 inline-flex items-center justify-center gap-0.5 sm:gap-1.5 md:gap-2 bg-[#0057FF] hover:bg-[#0047D4] active:bg-[#003BB3] text-white font-semibold text-[7.5px] min-[375px]:text-[8.5px] min-[430px]:text-[9.5px] sm:text-[13px] md:text-[14.5px] lg:text-[15px] xl:text-[15.5px] px-1.5 min-[375px]:px-2.5 sm:px-4 md:px-5 lg:px-6 xl:px-7 py-1 min-[375px]:py-1.5 sm:py-2.5 md:py-3 rounded-md sm:rounded-xl shadow-xs transition-colors cursor-pointer whitespace-nowrap"
+                className="shrink-0 inline-flex items-center justify-center gap-1.5 md:gap-2 bg-[#0057FF] hover:bg-[#0047D4] active:bg-[#003BB3] text-white font-semibold text-[13px] md:text-[14.5px] lg:text-[15px] xl:text-[15.5px] px-4 md:px-5 lg:px-6 xl:px-7 py-2.5 md:py-3 rounded-xl shadow-xs transition-colors cursor-pointer whitespace-nowrap"
               >
                 <span>Get Started</span>
-                <ArrowRight className="w-2.5 h-2.5 min-[375px]:w-3 min-[375px]:h-3 sm:w-4 sm:h-4 md:w-4.5 md:h-4.5 xl:w-5 xl:h-5 stroke-[2.2]" />
+                <ArrowRight className="w-4 h-4 md:w-4.5 md:h-4.5 xl:w-5 xl:h-5 stroke-[2.2]" />
               </button>
             </form>
 
-            {/* 3 Feature Checkmarks (HTML Text) */}
-            <div className="flex flex-wrap items-center gap-x-1.5 min-[375px]:gap-x-2 sm:gap-x-3 md:gap-x-4 min-[820px]:gap-x-5 lg:gap-x-6 xl:gap-x-7 gap-y-1 pt-0.5">
-              <div className="inline-flex items-center gap-0.5 sm:gap-1.5 md:gap-2">
-                <span className="w-2.5 h-2.5 min-[375px]:w-3 min-[375px]:h-3 sm:w-4 sm:h-4 md:w-4.5 md:h-4.5 xl:w-5 xl:h-5 rounded-full bg-[#22C55E] flex items-center justify-center text-white shadow-2xs shrink-0">
-                  <Check className="w-1.5 h-1.5 min-[375px]:w-2 min-[375px]:h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 xl:w-3.5 xl:h-3.5 stroke-[3]" />
+            {/* 3 Feature Checkmarks */}
+            <div className="flex flex-wrap items-center gap-x-3 md:gap-x-4 min-[820px]:gap-x-5 lg:gap-x-6 xl:gap-x-7 gap-y-1 pt-0.5">
+              <div className="inline-flex items-center gap-1.5 md:gap-2">
+                <span className="w-4 h-4 md:w-4.5 md:h-4.5 xl:w-5 xl:h-5 rounded-full bg-[#22C55E] flex items-center justify-center text-white shadow-2xs shrink-0">
+                  <Check className="w-2.5 h-2.5 md:w-3 md:h-3 xl:w-3.5 xl:h-3.5 stroke-[3]" />
                 </span>
-                <span className="text-[6.5px] min-[375px]:text-[7.5px] min-[430px]:text-[8.5px] sm:text-[11px] md:text-[12.5px] min-[820px]:text-[13px] lg:text-[13.5px] xl:text-[14px] font-medium text-[#334155] whitespace-nowrap">
+                <span className="text-[11px] md:text-[12.5px] min-[820px]:text-[13px] lg:text-[13.5px] xl:text-[14px] font-medium text-[#334155] whitespace-nowrap">
                   Purchase on your behalf
                 </span>
               </div>
 
-              <div className="inline-flex items-center gap-0.5 sm:gap-1.5 md:gap-2">
-                <span className="w-2.5 h-2.5 min-[375px]:w-3 min-[375px]:h-3 sm:w-4 sm:h-4 md:w-4.5 md:h-4.5 xl:w-5 xl:h-5 rounded-full bg-[#22C55E] flex items-center justify-center text-white shadow-2xs shrink-0">
-                  <Check className="w-1.5 h-1.5 min-[375px]:w-2 min-[375px]:h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 xl:w-3.5 xl:h-3.5 stroke-[3]" />
+              <div className="inline-flex items-center gap-1.5 md:gap-2">
+                <span className="w-4 h-4 md:w-4.5 md:h-4.5 xl:w-5 xl:h-5 rounded-full bg-[#22C55E] flex items-center justify-center text-white shadow-2xs shrink-0">
+                  <Check className="w-2.5 h-2.5 md:w-3 md:h-3 xl:w-3.5 xl:h-3.5 stroke-[3]" />
                 </span>
-                <span className="text-[6.5px] min-[375px]:text-[7.5px] min-[430px]:text-[8.5px] sm:text-[11px] md:text-[12.5px] min-[820px]:text-[13px] lg:text-[13.5px] xl:text-[14px] font-medium text-[#334155] whitespace-nowrap">
+                <span className="text-[11px] md:text-[12.5px] min-[820px]:text-[13px] lg:text-[13.5px] xl:text-[14px] font-medium text-[#334155] whitespace-nowrap">
                   Combine multiple orders
                 </span>
               </div>
 
-              <div className="inline-flex items-center gap-0.5 sm:gap-1.5 md:gap-2">
-                <span className="w-2.5 h-2.5 min-[375px]:w-3 min-[375px]:h-3 sm:w-4 sm:h-4 md:w-4.5 md:h-4.5 xl:w-5 xl:h-5 rounded-full bg-[#22C55E] flex items-center justify-center text-white shadow-2xs shrink-0">
-                  <Check className="w-1.5 h-1.5 min-[375px]:w-2 min-[375px]:h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3 xl:w-3.5 xl:h-3.5 stroke-[3]" />
+              <div className="inline-flex items-center gap-1.5 md:gap-2">
+                <span className="w-4 h-4 md:w-4.5 md:h-4.5 xl:w-5 xl:h-5 rounded-full bg-[#22C55E] flex items-center justify-center text-white shadow-2xs shrink-0">
+                  <Check className="w-2.5 h-2.5 md:w-3 md:h-3 xl:w-3.5 xl:h-3.5 stroke-[3]" />
                 </span>
-                <span className="text-[6.5px] min-[375px]:text-[7.5px] min-[430px]:text-[8.5px] sm:text-[11px] md:text-[12.5px] min-[820px]:text-[13px] lg:text-[13.5px] xl:text-[14px] font-medium text-[#334155] whitespace-nowrap">
+                <span className="text-[11px] md:text-[12.5px] min-[820px]:text-[13px] lg:text-[13.5px] xl:text-[14px] font-medium text-[#334155] whitespace-nowrap">
                   Ship worldwide
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Right Side: Redesigned HD Illustration — flush right & full banner height across all screen sizes */}
-          <div className="absolute inset-y-0 right-0 w-[62%] sm:w-[65%] md:w-[68%] lg:w-[64%] xl:w-[60%] flex items-center justify-end pointer-events-none select-none z-0">
+          {/* Right Side: Redesigned HD Illustration */}
+          <div className="absolute inset-y-0 right-0 w-[65%] md:w-[68%] lg:w-[64%] xl:w-[60%] flex items-center justify-end pointer-events-none select-none z-0">
             <img
               src="/assets/hero-redesigned-hd.jpg?v=6"
               alt="Shop in India, Deliver Worldwide - India Gate, Taj Mahal, Airplane and India2World Parcels"
@@ -603,7 +670,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <button
               type="button"
               onClick={() => onNavigate('stores')}
-              className="w-full sm:w-auto self-start sm:self-center shrink-0 inline-flex items-center justify-center gap-2 bg-[#0D59F2] hover:bg-[#0047D4] text-white text-xs sm:text-sm font-bold px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl shadow-[0_4px_14px_rgba(13,89,242,0.3)] hover:shadow-[0_6px_20px_rgba(13,89,242,0.4)] transition-all cursor-pointer group whitespace-nowrap"
+              className="hidden sm:inline-flex self-center shrink-0 items-center justify-center gap-2 bg-[#0D59F2] hover:bg-[#0047D4] text-white text-xs sm:text-sm font-bold px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl shadow-[0_4px_14px_rgba(13,89,242,0.3)] hover:shadow-[0_6px_20px_rgba(13,89,242,0.4)] transition-all cursor-pointer group whitespace-nowrap"
             >
               <span>And many more...</span>
               <span className="text-[11px] font-extrabold bg-white/20 px-2 py-0.5 rounded-full">100+</span>
@@ -625,7 +692,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     href="https://www.amazon.in"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[165px] sm:w-[195px] h-[74px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#FF9900] flex flex-col items-center justify-center p-3 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(255,153,0,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    className="w-[138px] min-[375px]:w-[148px] sm:w-[195px] h-[68px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#FF9900] flex flex-col items-center justify-center p-3 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(255,153,0,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
                     title="Visit Amazon.in official website"
                   >
                     <img
@@ -643,7 +710,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     href="https://www.myntra.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[165px] sm:w-[195px] h-[74px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#FF3F6C] flex flex-col items-center justify-center p-3 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(255,63,108,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    className="w-[138px] min-[375px]:w-[148px] sm:w-[195px] h-[68px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#FF3F6C] flex flex-col items-center justify-center p-3 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(255,63,108,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
                     title="Visit Myntra official website"
                   >
                     <img
@@ -661,7 +728,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     href="https://www.flipkart.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[165px] sm:w-[195px] h-[74px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#2874F0] flex flex-col items-center justify-center p-3 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(40,116,240,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    className="w-[138px] min-[375px]:w-[148px] sm:w-[195px] h-[68px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#2874F0] flex flex-col items-center justify-center p-3 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(40,116,240,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
                     title="Visit Flipkart official website"
                   >
                     <img
@@ -679,7 +746,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     href="https://www.tatacliq.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[165px] sm:w-[195px] h-[74px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#DA1C5C] flex flex-col items-center justify-center px-4 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(218,28,92,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    className="w-[138px] min-[375px]:w-[148px] sm:w-[195px] h-[68px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#DA1C5C] flex flex-col items-center justify-center px-4 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(218,28,92,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
                     title="Visit TATA CLiQ official website"
                   >
                     <div className="flex flex-col items-center group-hover:scale-105 transition-transform">
@@ -701,7 +768,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     href="https://www.ajio.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[165px] sm:w-[195px] h-[74px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#2C4152] flex flex-col items-center justify-center px-4 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(44,65,82,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    className="w-[138px] min-[375px]:w-[148px] sm:w-[195px] h-[68px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#2C4152] flex flex-col items-center justify-center px-4 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(44,65,82,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
                     title="Visit AJIO official website"
                   >
                     <span className="text-2xl font-black tracking-[0.16em] text-[#0c2340] group-hover:scale-105 transition-transform leading-none">
@@ -717,7 +784,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     href="https://www.nykaa.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[165px] sm:w-[195px] h-[74px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#FC2779] flex flex-col items-center justify-center px-4 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(252,39,121,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    className="w-[138px] min-[375px]:w-[148px] sm:w-[195px] h-[68px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#FC2779] flex flex-col items-center justify-center px-4 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(252,39,121,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
                     title="Visit NYKAA official website"
                   >
                     <span className="text-2xl font-black italic tracking-tighter text-[#fc2779] -skew-x-6 drop-shadow-2xs group-hover:scale-105 transition-transform leading-none">
@@ -733,7 +800,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     href="https://www.bigbasket.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[165px] sm:w-[195px] h-[74px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#84C225] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(132,194,37,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    className="w-[138px] min-[375px]:w-[148px] sm:w-[195px] h-[68px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#84C225] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(132,194,37,0.28)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
                     title="Visit bigbasket official website"
                   >
                     <div className="flex items-center gap-1.5 group-hover:scale-105 transition-transform">
@@ -752,7 +819,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     href="https://www.fabindia.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[165px] sm:w-[195px] h-[74px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#8B1E24] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(139,30,36,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    className="w-[138px] min-[375px]:w-[148px] sm:w-[195px] h-[68px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#8B1E24] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(139,30,36,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
                     title="Visit Fabindia official website"
                   >
                     <div className="flex items-center gap-2 group-hover:scale-105 transition-transform">
@@ -769,7 +836,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     href="https://www.manyavar.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[165px] sm:w-[195px] h-[74px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#991B1B] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(153,27,27,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    className="w-[138px] min-[375px]:w-[148px] sm:w-[195px] h-[68px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#991B1B] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(153,27,27,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
                     title="Visit Manyavar official website"
                   >
                     <div className="flex items-center gap-2 group-hover:scale-105 transition-transform">
@@ -786,7 +853,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     href="https://www.tanishq.co.in"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[165px] sm:w-[195px] h-[74px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#881337] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(136,19,55,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    className="w-[138px] min-[375px]:w-[148px] sm:w-[195px] h-[68px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#881337] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(136,19,55,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
                     title="Visit Tanishq official website"
                   >
                     <div className="flex items-center gap-2 group-hover:scale-105 transition-transform">
@@ -803,7 +870,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     href="https://www.firstcry.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[165px] sm:w-[195px] h-[74px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#F97316] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(249,115,22,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    className="w-[138px] min-[375px]:w-[148px] sm:w-[195px] h-[68px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#F97316] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(249,115,22,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
                     title="Visit FirstCry official website"
                   >
                     <div className="flex items-center gap-2 group-hover:scale-105 transition-transform">
@@ -820,7 +887,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     href="https://www.croma.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[165px] sm:w-[195px] h-[74px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#0D9488] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(13,148,136,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    className="w-[138px] min-[375px]:w-[148px] sm:w-[195px] h-[68px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#0D9488] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(13,148,136,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
                     title="Visit Croma official website"
                   >
                     <div className="flex items-center gap-2 group-hover:scale-105 transition-transform">
@@ -837,7 +904,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     href="https://www.meesho.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[165px] sm:w-[195px] h-[74px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#F43397] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(244,51,151,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    className="w-[138px] min-[375px]:w-[148px] sm:w-[195px] h-[68px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#F43397] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(244,51,151,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
                     title="Visit Meesho official website"
                   >
                     <div className="flex items-center gap-2 group-hover:scale-105 transition-transform">
@@ -854,7 +921,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     href="https://www.haldirams.com"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[165px] sm:w-[195px] h-[74px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#DC2626] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(220,38,38,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
+                    className="w-[138px] min-[375px]:w-[148px] sm:w-[195px] h-[68px] sm:h-[84px] bg-white rounded-2xl border-2 border-slate-200/90 hover:border-[#DC2626] flex flex-col items-center justify-center px-3 py-2 shadow-sm hover:shadow-[0_10px_25px_-5px_rgba(220,38,38,0.25)] hover:-translate-y-1 transition-all duration-300 cursor-pointer group shrink-0"
                     title="Visit Haldiram's official website"
                   >
                     <div className="flex items-center gap-2 group-hover:scale-105 transition-transform">
@@ -868,6 +935,19 @@ export const HomePage: React.FC<HomePageProps> = ({
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Mobile Bottom Button to explore all stores */}
+          <div className="mt-4 sm:hidden flex justify-center">
+            <button
+              type="button"
+              onClick={() => onNavigate('stores')}
+              className="w-full inline-flex items-center justify-center gap-2 bg-[#0D59F2] hover:bg-[#0047D4] text-white text-xs font-bold px-4 py-3 rounded-xl shadow-sm transition-all cursor-pointer active:scale-98"
+            >
+              <span>Explore 100+ More Indian Stores</span>
+              <span className="text-[10.5px] font-extrabold bg-white/20 px-2 py-0.5 rounded-full">100+</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </section>

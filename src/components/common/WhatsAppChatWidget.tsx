@@ -63,7 +63,7 @@ export const WhatsAppChatWidget: React.FC<WhatsAppChatWidgetProps> = ({
   return (
     <div
       ref={popupRef}
-      className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end pointer-events-none"
+      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col items-end pointer-events-none"
     >
       {/* Interactive Chat Popup Window */}
       {isOpen && (
@@ -214,7 +214,7 @@ export const WhatsAppChatWidget: React.FC<WhatsAppChatWidgetProps> = ({
             setIsOpen(!isOpen);
             setHasInteracted(true);
           }}
-          className={`relative w-13 h-13 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform active:scale-95 cursor-pointer touch-manipulation ${
+          className={`relative w-11 h-11 min-[375px]:w-12 min-[375px]:h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-white shadow-xl hover:shadow-2xl transition-all duration-300 transform active:scale-95 cursor-pointer touch-manipulation ${
             isOpen
               ? 'bg-[#075E54] rotate-90 scale-95'
               : 'bg-[#25D366] hover:bg-[#20ba59] hover:scale-105'
@@ -226,7 +226,7 @@ export const WhatsAppChatWidget: React.FC<WhatsAppChatWidgetProps> = ({
             <X className="w-6 h-6" />
           ) : (
             <>
-              <WhatsAppIcon className="w-7 h-7 sm:w-8 sm:h-8" />
+              <WhatsAppIcon className="w-6 h-6 sm:w-7 sm:h-7" />
               {/* Notification Pulse Dot */}
               {!hasInteracted && (
                 <span className="absolute -top-1 -right-1 flex h-4 w-4">
