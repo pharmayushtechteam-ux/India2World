@@ -2,6 +2,8 @@ import React from 'react';
 import { Logo } from './Logo';
 import { ShieldCheck, Truck, Globe2, Sparkles, Package, MapPin, Calculator, HelpCircle, ArrowRight } from 'lucide-react';
 import { Page, DashboardTab } from '../../types';
+import { openWhatsApp, WHATSAPP_DISPLAY_PHONE } from '../../utils/whatsapp';
+import { WhatsAppIcon } from './WhatsAppChatWidget';
 
 interface FooterProps {
   onNavigate: (page: Page, dashTab?: DashboardTab) => void;
@@ -69,6 +71,19 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal, on
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                 <span>Certified Export Partner • 220+ Countries Served</span>
               </span>
+              <button
+                type="button"
+                onClick={() =>
+                  openWhatsApp(
+                    'Hello BoxMyIndia team! I would like to inquire about international shipping and shopping from India.',
+                    '919747023382'
+                  )
+                }
+                className="flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 font-bold transition-colors cursor-pointer text-left"
+              >
+                <WhatsAppIcon className="w-4 h-4 text-[#25D366] shrink-0" />
+                <span>WhatsApp: {WHATSAPP_DISPLAY_PHONE}</span>
+              </button>
             </div>
           </div>
 
@@ -243,6 +258,21 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal, on
                   </button>
                 </li>
               )}
+              <li>
+                <button
+                  type="button"
+                  onClick={() =>
+                    openWhatsApp(
+                      'Hello BoxMyIndia team! I need help with my international order / shipping inquiry.',
+                      '919747023382'
+                    )
+                  }
+                  className="text-emerald-600 hover:text-emerald-700 font-bold transition-colors text-left cursor-pointer flex items-center gap-1.5"
+                >
+                  <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366] shrink-0" />
+                  <span>WhatsApp Chat</span>
+                </button>
+              </li>
               <li>
                 <button
                   type="button"

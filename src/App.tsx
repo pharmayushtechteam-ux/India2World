@@ -16,6 +16,7 @@ import { CurrencyModal } from './components/common/CurrencyModal';
 import { AdminAuthProvider, useAdminAuth } from './context/AdminAuthContext';
 import { AdminLoginPage } from './components/admin/AdminLoginPage';
 import { AdminPanel } from './components/admin/AdminPanel';
+import { WhatsAppChatWidget } from './components/common/WhatsAppChatWidget';
 import { isUserAuthenticated, USER_CHANGED_EVENT } from './utils/userAuth';
 
 export const VALID_PAGES: Page[] = [
@@ -476,6 +477,11 @@ function AppContent() {
             onOpenTrackModal={() => setTrackingModalOpen(true)}
             onOpenCurrencyModal={() => setCurrencyModalOpen(true)}
           />
+        )}
+
+        {/* WhatsApp Floating Chat Widget with custom message */}
+        {currentPage !== 'admin' && (
+          <WhatsAppChatWidget phoneNumber="919747023382" />
         )}
     </div>
   );

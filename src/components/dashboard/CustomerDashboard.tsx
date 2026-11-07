@@ -60,6 +60,8 @@ import {
   resendInvoiceEmail,
 } from '../../services/orderInvoiceService';
 import { DashboardTab, Page } from '../../types';
+import { openWhatsApp, WHATSAPP_DISPLAY_PHONE } from '../../utils/whatsapp';
+import { WhatsAppIcon } from '../common/WhatsAppChatWidget';
 import { WarehouseAddressModal } from '../common/WarehouseAddressModal';
 import { TrackingModal } from '../common/TrackingModal';
 import { BuyForMePage } from '../buy-for-me/BuyForMePage';
@@ -2204,11 +2206,33 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/40 text-center space-y-2 hover:border-emerald-400 transition-colors shadow-2xs">
+                <div className="flex items-center justify-center gap-1 text-[#25D366]">
+                  <WhatsAppIcon className="w-5 h-5" />
+                  <span className="text-[11px] font-extrabold uppercase text-[#128C7E] tracking-wider">Fastest Reply</span>
+                </div>
+                <h4 className="font-bold text-slate-900 text-sm">WhatsApp Live Chat</h4>
+                <p className="text-xs text-slate-600 font-medium">{WHATSAPP_DISPLAY_PHONE}</p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    openWhatsApp(
+                      'Hello BoxMyIndia support! I am currently logged into my Customer Dashboard and need assistance with my account/packages.',
+                      '919747023382'
+                    )
+                  }
+                  className="px-3.5 py-1.5 bg-[#25D366] hover:bg-[#20ba59] active:scale-95 text-white rounded-lg text-xs font-bold transition-all shadow-xs inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <WhatsAppIcon className="w-3.5 h-3.5" />
+                  Chat on WhatsApp
+                </button>
+              </div>
+
               <div className="p-4 rounded-xl border border-slate-200 text-center space-y-2 hover:border-blue-300 transition-colors">
                 <h4 className="font-bold text-slate-900 text-sm">Customer Care Helpline</h4>
-                <p className="text-xs text-slate-500">+91 98765 43210 (24/7 Priority Support)</p>
+                <p className="text-xs text-slate-500">{WHATSAPP_DISPLAY_PHONE} (Priority Support)</p>
                 <a
-                  href="tel:+919876543210"
+                  href="tel:+919747023382"
                   className="px-3 py-1.5 bg-[#0066FF] hover:bg-[#0052cc] active:scale-95 text-white rounded-lg text-xs font-bold transition-all shadow-xs inline-flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <PhoneCall className="w-3.5 h-3.5" />

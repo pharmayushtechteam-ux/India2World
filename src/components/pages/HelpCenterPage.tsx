@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { HelpCircle, ChevronDown, Search, ShieldAlert, Package, PhoneCall } from 'lucide-react';
+import { HelpCircle, ChevronDown, Search, ShieldAlert, Package, PhoneCall, MessageCircle } from 'lucide-react';
+import { openWhatsApp, WHATSAPP_DISPLAY_PHONE } from '../../utils/whatsapp';
 import { Page } from '../../types';
 
 interface HelpCenterPageProps {
@@ -83,12 +84,27 @@ export const HelpCenterPage: React.FC<HelpCenterPageProps> = ({ onNavigate }) =>
         <p className="text-slate-600 text-xs sm:text-sm max-w-md mx-auto">
           Our international support team in Mumbai is available 7 days a week via Live Support Desk and Email.
         </p>
-        <button
-          onClick={() => onNavigate('dashboard')}
-          className="px-6 py-2.5 bg-[#0066FF] hover:bg-[#0052CC] text-white font-bold rounded-xl text-xs sm:text-sm shadow-xs transition-colors"
-        >
-          Contact Support Desk
-        </button>
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <button
+            onClick={() => onNavigate('dashboard')}
+            className="px-6 py-2.5 bg-[#0066FF] hover:bg-[#0052CC] text-white font-bold rounded-xl text-xs sm:text-sm shadow-xs transition-colors cursor-pointer"
+          >
+            Contact Support Desk
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              openWhatsApp(
+                'Hello BoxMyIndia support! I need assistance with international shipping and shopping from India.',
+                '919747023382'
+              )
+            }
+            className="px-6 py-2.5 bg-[#25D366] hover:bg-[#20ba59] active:scale-95 text-white font-bold rounded-xl text-xs sm:text-sm shadow-xs transition-all inline-flex items-center gap-2 cursor-pointer"
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span>Chat on WhatsApp ({WHATSAPP_DISPLAY_PHONE})</span>
+          </button>
+        </div>
       </div>
     </div>
   );
