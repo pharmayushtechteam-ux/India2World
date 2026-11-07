@@ -1,6 +1,6 @@
 import React from 'react';
 import { Logo } from './Logo';
-import { ShieldCheck, Truck, Globe2, Sparkles, Package, MapPin, Calculator, HelpCircle, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Truck, Globe2, ExternalLink } from 'lucide-react';
 import { Page, DashboardTab } from '../../types';
 import { openWhatsApp, WHATSAPP_DISPLAY_PHONE } from '../../utils/whatsapp';
 import { WhatsAppIcon } from './WhatsAppChatWidget';
@@ -11,66 +11,25 @@ interface FooterProps {
   onOpenCurrencyModal?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal, onOpenCurrencyModal }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal }) => {
   return (
-    <footer className="w-full bg-white border-t border-slate-200 mt-8 sm:mt-16 pt-10 sm:pt-16 pb-10 sm:pb-12 text-slate-600 text-sm overflow-x-hidden">
-      <div className="w-full px-3.5 min-[375px]:px-4 sm:px-6 lg:px-8 xl:px-12">
-        {/* Value Proposition Highlights */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 pb-8 sm:pb-12 mb-8 sm:mb-12 border-b border-slate-100">
-          <div className="flex items-start gap-3.5 sm:gap-4 p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-100">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-100 text-[#0066FF] flex items-center justify-center shrink-0">
-              <Truck className="w-5 h-5 sm:w-6 sm:h-6" />
-            </div>
-            <div className="min-w-0">
-              <h4 className="font-bold text-slate-900 text-sm sm:text-base">Worldwide Express Delivery</h4>
-              <p className="text-slate-500 text-xs mt-1 leading-relaxed">
-                Fast & reliable shipping to over 220+ countries via DHL, FedEx, and Aramex in 3-7 business days.
-              </p>
-            </div>
-          </div>
+    <footer className="w-full bg-[#0B1933] text-slate-300 text-sm mt-10 sm:mt-16 relative overflow-hidden font-['Plus_Jakarta_Sans',sans-serif]">
+      {/* Brand Top Accent Gradient Bar (Royal Blue + Saffron + Green logo theme) */}
+      <div className="h-1 w-full bg-gradient-to-r from-[#0066FF] via-[#FF9933] to-[#22C55E]" />
 
-          <div className="flex items-start gap-3.5 sm:gap-4 p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-100">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6" />
+      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 pt-8 sm:pt-12 pb-16 sm:pb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-12 gap-7 sm:gap-8 lg:gap-10 pb-8 sm:pb-10 border-b border-white/10">
+          {/* Brand Info & Mission */}
+          <div className="sm:col-span-2 md:col-span-5 space-y-3.5">
+            <div className="bg-white px-3.5 py-1.5 rounded-xl inline-flex items-center shadow-xs">
+              <Logo size="md" onClick={() => onNavigate('home')} />
             </div>
-            <div className="min-w-0">
-              <h4 className="font-bold text-slate-900 text-sm sm:text-base">100% Secure & Inspected</h4>
-              <p className="text-slate-500 text-xs mt-1 leading-relaxed">
-                Free 30-day warehouse storage, HD package photos, and damage inspection included.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3.5 sm:gap-4 p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-100">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
-              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
-            </div>
-            <div className="min-w-0">
-              <h4 className="font-bold text-slate-900 text-sm sm:text-base">Save up to 80% on Shipping</h4>
-              <p className="text-slate-500 text-xs mt-1 leading-relaxed">
-                Smart order consolidation combines multiple packages from different Indian stores into one box.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer Navigation Columns covering ALL Webapp Pages */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-x-4 gap-y-7 sm:gap-8 mb-8 sm:mb-12">
-          {/* Brand Info */}
-          <div className="col-span-2">
-            <Logo size="md" onClick={() => onNavigate('home')} />
-            <p className="mt-3 sm:mt-4 text-slate-500 text-xs sm:text-sm max-w-sm leading-relaxed">
-              Your gateway to shopping across Indian stores from anywhere in the world. We purchase, receive, inspect, consolidate, and ship straight to your doorstep.
+            <p className="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-sm">
+              Your trusted cross-border shopping partner. Purchase from any Indian online store, consolidate packages, and ship worldwide with express courier delivery.
             </p>
-            <div className="mt-4 sm:mt-5 flex flex-col gap-2 text-xs text-slate-400">
-              <span className="flex items-center gap-1.5">
-                <Globe2 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                <span>Shipping worldwide from Mumbai Hub, India</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                <span>Certified Export Partner • 220+ Countries Served</span>
-              </span>
+
+            {/* Direct WhatsApp Callout */}
+            <div className="pt-0.5">
               <button
                 type="button"
                 onClick={() =>
@@ -79,70 +38,44 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal, on
                     '919747023382'
                   )
                 }
-                className="flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 font-bold transition-colors cursor-pointer text-left"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#25D366]/15 hover:bg-[#25D366] text-[#25D366] hover:text-white border border-[#25D366]/30 transition-all font-bold text-xs cursor-pointer shadow-xs active:scale-95"
               >
-                <WhatsAppIcon className="w-4 h-4 text-[#25D366] shrink-0" />
+                <WhatsAppIcon className="w-4 h-4 shrink-0" />
                 <span>WhatsApp: {WHATSAPP_DISPLAY_PHONE}</span>
               </button>
             </div>
+
+            {/* Trust Badges */}
+            <div className="flex flex-wrap items-center gap-2.5 pt-1 text-[11px] text-slate-400">
+              <span className="flex items-center gap-1">
+                <Globe2 className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                <span>220+ Countries</span>
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1">
+                <Truck className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span>DHL • FedEx • Aramex</span>
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>100% Inspected</span>
+              </span>
+            </div>
           </div>
 
-          {/* Column 1: Core Services */}
-          <div>
-            <h5 className="font-bold text-slate-900 uppercase text-xs tracking-wider mb-4">
-              Services
+          {/* Quick Links */}
+          <div className="col-span-1 md:col-span-2">
+            <h5 className="font-extrabold text-white text-xs uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0066FF]" />
+              <span>Explore</span>
             </h5>
-            <ul className="space-y-2.5">
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onNavigate('buy-for-me')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
-                >
-                  Buy For Me (Assisted)
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onNavigate('dashboard', 'my-warehouse')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
-                >
-                  Personal Indian Locker
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onNavigate('dashboard', 'consolidation')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
-                >
-                  Order Consolidation
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onNavigate('how-it-works')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
-                >
-                  Repackaging & Photos
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 2: Explore Pages */}
-          <div>
-            <h5 className="font-bold text-slate-900 uppercase text-xs tracking-wider mb-4">
-              Explore Pages
-            </h5>
-            <ul className="space-y-2.5">
+            <ul className="space-y-2 text-xs sm:text-[13px]">
               <li>
                 <button
                   type="button"
                   onClick={() => onNavigate('home')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
+                  className="hover:text-white transition-colors cursor-pointer text-left"
                 >
                   Home
                 </button>
@@ -151,7 +84,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal, on
                 <button
                   type="button"
                   onClick={() => onNavigate('how-it-works')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
+                  className="hover:text-white transition-colors cursor-pointer text-left"
                 >
                   How It Works
                 </button>
@@ -160,124 +93,91 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal, on
                 <button
                   type="button"
                   onClick={() => onNavigate('pricing')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
+                  className="hover:text-white transition-colors cursor-pointer text-left"
                 >
-                  Shipping Rates & Calculator
+                  Pricing & Calculator
                 </button>
               </li>
               <li>
                 <button
                   type="button"
                   onClick={() => onNavigate('countries')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
+                  className="hover:text-white transition-colors cursor-pointer text-left"
                 >
-                  Countries Served (220+)
+                  Countries Served
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('stores')}
+                  className="hover:text-white transition-colors cursor-pointer text-left"
+                >
+                  Indian Stores
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Column 3: Dashboard & Account */}
-          <div>
-            <h5 className="font-bold text-slate-900 uppercase text-xs tracking-wider mb-4">
-              Dashboard & Locker
+          {/* Services */}
+          <div className="col-span-1 md:col-span-2">
+            <h5 className="font-extrabold text-white text-xs uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF9933]" />
+              <span>Services</span>
             </h5>
-            <ul className="space-y-2.5">
+            <ul className="space-y-2 text-xs sm:text-[13px]">
               <li>
                 <button
                   type="button"
-                  onClick={() => onNavigate('dashboard', 'overview')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
+                  onClick={() => onNavigate('buy-for-me')}
+                  className="hover:text-white transition-colors cursor-pointer text-left"
                 >
-                  Customer Dashboard
+                  Buy For Me
                 </button>
               </li>
               <li>
                 <button
                   type="button"
                   onClick={() => onNavigate('dashboard', 'my-warehouse')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
+                  className="hover:text-white transition-colors cursor-pointer text-left"
                 >
-                  My Warehouse Packages
+                  Personal Locker
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  onClick={() => onNavigate('dashboard', 'my-requests')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
+                  onClick={() => onNavigate('dashboard', 'consolidation')}
+                  className="hover:text-white transition-colors cursor-pointer text-left"
                 >
-                  My Purchase Requests
+                  Package Consolidation
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  onClick={() => onNavigate('dashboard', 'shipments')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
+                  onClick={onOpenTrackModal || (() => onNavigate('track'))}
+                  className="hover:text-white transition-colors cursor-pointer text-left flex items-center gap-1.5"
                 >
-                  My International Shipments
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onNavigate('auth')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer font-semibold text-[#0066FF]"
-                >
-                  Sign In / Create Account
+                  <span>Track Shipment</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Column 4: Support & Tracking */}
-          <div>
-            <h5 className="font-bold text-slate-900 uppercase text-xs tracking-wider mb-4">
-              Support & Tools
+          {/* Support & Account */}
+          <div className="sm:col-span-2 md:col-span-3">
+            <h5 className="font-extrabold text-white text-xs uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+              <span>Support & Account</span>
             </h5>
-            <ul className="space-y-2.5">
-              <li>
-                <button
-                  type="button"
-                  onClick={onOpenTrackModal || (() => onNavigate('track'))}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer flex items-center gap-1.5"
-                >
-                  <span>Track Shipment</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                </button>
-              </li>
-              {onOpenCurrencyModal && (
-                <li>
-                  <button
-                    type="button"
-                    onClick={onOpenCurrencyModal}
-                    className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
-                  >
-                    Currency Converter
-                  </button>
-                </li>
-              )}
-              <li>
-                <button
-                  type="button"
-                  onClick={() =>
-                    openWhatsApp(
-                      'Hello BoxMyIndia team! I need help with my international order / shipping inquiry.',
-                      '919747023382'
-                    )
-                  }
-                  className="text-emerald-600 hover:text-emerald-700 font-bold transition-colors text-left cursor-pointer flex items-center gap-1.5"
-                >
-                  <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366] shrink-0" />
-                  <span>WhatsApp Chat</span>
-                </button>
-              </li>
+            <ul className="space-y-2 text-xs sm:text-[13px]">
               <li>
                 <button
                   type="button"
                   onClick={() => onNavigate('help')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
+                  className="hover:text-white transition-colors cursor-pointer text-left"
                 >
                   Help Centre & FAQs
                 </button>
@@ -285,49 +185,64 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal, on
               <li>
                 <button
                   type="button"
-                  onClick={() => onNavigate('help')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
+                  onClick={() => onNavigate('dashboard')}
+                  className="hover:text-white transition-colors cursor-pointer text-left"
                 >
-                  Prohibited Items
+                  Customer Dashboard
                 </button>
               </li>
               <li>
                 <button
                   type="button"
-                  onClick={() => onNavigate('help')}
-                  className="hover:text-[#0066FF] transition-colors text-left cursor-pointer"
+                  onClick={() => onNavigate('auth')}
+                  className="hover:text-white transition-colors cursor-pointer text-left text-blue-400 font-semibold"
                 >
-                  Customs & Duties Guide
+                  Sign In / Create Account
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() =>
+                    openWhatsApp(
+                      'Hello BoxMyIndia support team! I need assistance with shipping/shopping from India.',
+                      '919747023382'
+                    )
+                  }
+                  className="text-emerald-400 hover:text-emerald-300 font-bold transition-colors cursor-pointer text-left flex items-center gap-1.5"
+                >
+                  <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366] shrink-0" />
+                  <span>WhatsApp Chat Support</span>
                 </button>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* Bottom copyright and disclaimer */}
-        <div className="pt-6 sm:pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 text-center sm:text-left">
+        {/* Bottom copyright and legal */}
+        <div className="pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400 text-center sm:text-left">
           <div>
-            © {new Date().getFullYear()} India2World. All rights reserved. Built for seamless cross-border shopping from India.
+            © {new Date().getFullYear()} BoxMyIndia. All rights reserved.
           </div>
-          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4 sm:gap-6">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4 sm:gap-6 text-slate-400">
             <button
               type="button"
               onClick={() => onNavigate('help')}
-              className="hover:text-slate-600 cursor-pointer"
+              className="hover:text-slate-200 transition-colors cursor-pointer"
             >
               Privacy Policy
             </button>
             <button
               type="button"
               onClick={() => onNavigate('help')}
-              className="hover:text-slate-600 cursor-pointer"
+              className="hover:text-slate-200 transition-colors cursor-pointer"
             >
               Terms of Service
             </button>
             <button
               type="button"
               onClick={() => onNavigate('help')}
-              className="hover:text-slate-600 cursor-pointer"
+              className="hover:text-slate-200 transition-colors cursor-pointer"
             >
               Shipping Policy
             </button>

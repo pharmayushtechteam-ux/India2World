@@ -438,7 +438,7 @@ export const StoresDirectoryPage: React.FC<StoresDirectoryPageProps> = ({
               </div>
 
               {/* 10 Brands Grid */}
-              <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+              <div className="p-4 sm:p-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3.5">
                 {category.brands.map((brand) => {
                   const initials = brand.name
                     .replace(/[^a-zA-Z0-9\s]/g, '')
