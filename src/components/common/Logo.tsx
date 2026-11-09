@@ -15,17 +15,17 @@ export const Logo: React.FC<LogoProps> = ({
   iconOnly = false,
 }) => {
   const heightClasses = {
-    sm: 'h-6 sm:h-7',
-    md: 'h-7 sm:h-8 md:h-9',
-    lg: 'h-9 sm:h-11',
-    xl: 'h-12',
+    sm: 'h-5 min-[375px]:h-6 sm:h-7',
+    md: 'h-6 sm:h-7 md:h-8 lg:h-9',
+    lg: 'h-8 sm:h-10 lg:h-11',
+    xl: 'h-10 sm:h-12',
   };
 
   const iconHeightClasses = {
-    sm: 'h-6 w-auto',
-    md: 'h-8 w-auto',
-    lg: 'h-10 w-auto',
-    xl: 'h-12 w-auto',
+    sm: 'h-5 min-[375px]:h-6 w-auto',
+    md: 'h-7 sm:h-8 w-auto',
+    lg: 'h-9 sm:h-10 w-auto',
+    xl: 'h-11 sm:h-12 w-auto',
   };
 
   if (iconOnly) {
@@ -44,14 +44,14 @@ export const Logo: React.FC<LogoProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`inline-flex items-center select-none ${
+      className={`inline-flex items-center min-w-0 select-none ${
         onClick ? 'cursor-pointer hover:opacity-95 transition-opacity' : ''
       } ${className}`}
     >
       <img
         src="/assets/boxmyindia-logo.png?v=2"
         alt="boxmyindia.com"
-        className={`w-auto max-w-full object-contain ${heightClasses[size]}`}
+        className={`w-auto max-w-full object-contain object-left ${heightClasses[size]}`}
       />
     </div>
   );
