@@ -15,6 +15,7 @@ import { AdminLiveTracking } from './AdminLiveTracking';
 import { AdminQuotationsModule } from './AdminQuotationsModule';
 import { AdminPurchaseQueueModule } from './AdminPurchaseQueueModule';
 import { AdminOrdersModule } from './AdminOrdersModule';
+import { AdminExternalPurchaseRequestsModule } from './AdminExternalPurchaseRequestsModule';
 import { AdminWarehouseModule } from './AdminWarehouseModule';
 import { AdminPaymentsRefundsModule } from './AdminPaymentsRefundsModule';
 import { AdminSupportNotificationsModule } from './AdminSupportNotificationsModule';
@@ -127,6 +128,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       {/* 7. Orders */}
       {currentTab === 'orders' && (
         <AdminOrdersModule onNavigateTab={handleNavigateTab} />
+      )}
+
+      {/* 7b. External Purchase Requests */}
+      {currentTab === 'external-purchase-requests' && (
+        <AdminExternalPurchaseRequestsModule />
       )}
 
       {/* 8. Incoming Packages List */}

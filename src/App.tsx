@@ -10,6 +10,7 @@ import { CountriesPage } from './components/pages/CountriesPage';
 import { StoresDirectoryPage } from './components/pages/StoresDirectoryPage';
 import { HowItWorksPage } from './components/pages/HowItWorksPage';
 import { HelpCenterPage } from './components/pages/HelpCenterPage';
+import { RequestExternalPurchasePage } from './components/pages/RequestExternalPurchasePage';
 import { Footer } from './components/common/Footer';
 import { TrackingModal } from './components/common/TrackingModal';
 import { CurrencyModal } from './components/common/CurrencyModal';
@@ -23,6 +24,7 @@ export const VALID_PAGES: Page[] = [
   'home',
   'auth',
   'buy-for-me',
+  'request-external-purchase',
   'dashboard',
   'pricing',
   'countries',
@@ -41,6 +43,7 @@ export const VALID_ADMIN_TABS: AdminTab[] = [
   'quotations',
   'purchase-queue',
   'orders',
+  'external-purchase-requests',
   'incoming-packages',
   'receive-package',
   'warehouse',
@@ -59,6 +62,7 @@ export const VALID_ADMIN_TABS: AdminTab[] = [
 export const VALID_DASHBOARD_TABS: DashboardTab[] = [
   'overview',
   'buy-for-me',
+  'request-external-purchase',
   'my-requests',
   'my-purchases',
   'my-warehouse',
@@ -200,6 +204,12 @@ function AppContent() {
   const [authRedirectIntent, setAuthRedirectIntent] = useState<Page | null>(null);
 
   const getInitialPage = (): Page => {
+    if (typeof window !== 'undefined') {
+      const qs = new URLSearchParams(window.location.search);
+      if ((qs.get('externalRequestId') || qs.get('externalRequestForm')) && !isUserAuthenticated()) {
+        return 'request-external-purchase';
+      }
+    }
     if ((initialRoute.page === 'buy-for-me' || initialRoute.page === 'dashboard') && !isUserAuthenticated()) {
       return 'auth';
     }
@@ -239,7 +249,7 @@ function AppContent() {
       currentUrl !== targetUrl &&
       !(currentPage === 'home' && (window.location.pathname === '/' || window.location.pathname === '/home'))
     ) {
-      window.history.pushState(null, '', targetUrl);
+      window.history.pushState(null, '', targetUrl + window.location.search);
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -446,6 +456,10 @@ function AppContent() {
 
           {currentPage === 'help' && (
             <HelpCenterPage onNavigate={handleNavigate} />
+          )}
+
+          {currentPage === 'request-external-purchase' && (
+            <RequestExternalPurchasePage onNavigate={handleNavigate} />
           )}
 
           {currentPage === 'admin-login' && (

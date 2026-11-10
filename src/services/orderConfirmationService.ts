@@ -55,14 +55,29 @@ export async function triggerOrderConfirmationEmail(
     };
   }
 
-  // Cost summary normalization
-  const costSummary = order.costSummary || {
-    subtotal: order.items?.reduce((acc, i) => acc + (i.price || 0) * (i.qty || 1), 0) || order.totalINR,
-    domesticShipping: 0,
-    serviceFee: 350,
-    tax: 0,
-    discount: 0,
-    total: order.totalINR,
+  // Cost summary normalization ensuring subtotal + fees = total
+  const itemsSubtotal = (order.items || []).reduce(
+    (acc, i) => acc + Math.round(Number(i.price) || 0) * Math.max(1, Math.round(Number(i.qty) || 1)),
+    0
+  );
+  const subtotal = itemsSubtotal > 0 ? itemsSubtotal : (invoice?.subtotalINR || order.costSummary?.subtotal || order.totalINR);
+  const domesticShipping = invoice?.domesticShippingINR ?? order.costSummary?.domesticShipping ?? 0;
+  const tax = invoice?.estimatedTaxINR ?? order.costSummary?.tax ?? 0;
+  const discount = invoice?.discountINR ?? order.costSummary?.discount ?? 0;
+  const targetTotal = invoice?.totalINR || order.totalINR || order.costSummary?.total || subtotal;
+  const serviceFee =
+    invoice?.serviceFeeINR !== undefined
+      ? invoice.serviceFeeINR
+      : Math.max(0, targetTotal - subtotal - domesticShipping - tax + discount);
+  const total = Math.max(0, subtotal + domesticShipping + serviceFee + tax - discount);
+
+  const costSummary = {
+    subtotal,
+    domesticShipping,
+    serviceFee,
+    tax,
+    discount,
+    total,
   };
 
   const payload = {
@@ -120,10 +135,30 @@ export async function triggerOrderConfirmationEmail(
     const idx = allOrders.findIndex((o) => o.id === order.id);
     if (idx >= 0) {
       if (data.success && data.status === 'Sent') {
+        allOrders[idx].customerEmail = data.recipient || order.customerEmail;
         allOrders[idx].confirmationEmailStatus = 'Sent';
         allOrders[idx].confirmationEmailSentAt = data.timestamp;
         allOrders[idx].confirmationEmailError = undefined;
         allOrders[idx].confirmationEmailAttempts = (allOrders[idx].confirmationEmailAttempts || 0) + 1;
+
+        // Also update linked invoice in localStorage so both badges reflect Sent to the recipient
+        try {
+          const invRaw = localStorage.getItem('i2w_customer_invoices_v1');
+          if (invRaw) {
+            const invList = JSON.parse(invRaw);
+            if (Array.isArray(invList)) {
+              const iIdx = invList.findIndex((inv: any) => inv.orderId === order.id);
+              if (iIdx >= 0) {
+                invList[iIdx].customerEmail = data.recipient || order.customerEmail;
+                invList[iIdx].emailStatus = 'Sent';
+                invList[iIdx].emailSentAt = data.timestamp;
+                invList[iIdx].emailDeliveryLog = `Delivered via Google SMTP to ${data.recipient || order.customerEmail}.`;
+                localStorage.setItem('i2w_customer_invoices_v1', JSON.stringify(invList));
+                window.dispatchEvent(new CustomEvent('i2w-invoices-updated', { detail: invList }));
+              }
+            }
+          }
+        } catch {}
       } else {
         allOrders[idx].confirmationEmailStatus = 'Failed';
         allOrders[idx].confirmationEmailError = data.error || data.message || 'SMTP delivery failed.';

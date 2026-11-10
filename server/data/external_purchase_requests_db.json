@@ -1,0 +1,263 @@
+[
+  {
+    "requestId": "EPR-2026-37209",
+    "customerId": "CUST-1472",
+    "customerName": "Aarav Mehta",
+    "customerEmail": "durgaluckshmi@gmail.com",
+    "customerPhone": "+971 52 641 8890",
+    "deliveryAddress": "Villa 42, Jumeirah Park, District 7",
+    "city": "Dubai",
+    "state": "Dubai",
+    "country": "United Arab Emirates",
+    "postalCode": "00000",
+    "destinationFlag": "🇦🇪",
+    "requestedProducts": [
+      {
+        "id": "req-prod-1-1794310052960",
+        "productName": "Sony WH-1000XM5 Wireless Noise Cancelling Headphones",
+        "platform": "Amazon",
+        "productUrl": "https://www.amazon.in/dp/B09XS7JWHH",
+        "quantity": 1,
+        "expectedBudgetINR": 26990,
+        "description": "Midnight Blue colour, Indian warranty card included",
+        "additionalRequirements": "Fragile electronics - extra box padding"
+      },
+      {
+        "id": "req-prod-2-1794310052960",
+        "productName": "Manyavar Men Silk Blend Kurta Jacket Set",
+        "platform": "Flipkart",
+        "productUrl": "https://www.flipkart.com/manyavar-men-kurta-pyjama-set/p/itm123456",
+        "quantity": 2,
+        "expectedBudgetINR": 6999,
+        "description": "Size L (40), Ivory Gold",
+        "additionalRequirements": "Include garment cover"
+      }
+    ],
+    "processedProducts": [
+      {
+        "id": "proc-prod-1-1794310052960",
+        "actualProductName": "Sony WH-1000XM5 Wireless Noise Cancelling Headphones",
+        "platform": "Amazon",
+        "verifiedProductUrl": "https://www.amazon.in/dp/B09XS7JWHH",
+        "quantity": 1,
+        "actualPriceINR": 26990,
+        "shippingChargesINR": 0,
+        "additionalChargesINR": 0,
+        "estimatedDeliveryTime": "5-7 Business Days",
+        "productNotes": "Midnight Blue colour, Indian warranty card included",
+        "subtotalINR": 26990
+      },
+      {
+        "id": "proc-prod-2-1794310052960",
+        "actualProductName": "Manyavar Men Silk Blend Kurta Jacket Set",
+        "platform": "Flipkart",
+        "verifiedProductUrl": "https://www.flipkart.com/manyavar-men-kurta-pyjama-set/p/itm123456",
+        "quantity": 2,
+        "actualPriceINR": 6999,
+        "shippingChargesINR": 0,
+        "additionalChargesINR": 0,
+        "estimatedDeliveryTime": "5-7 Business Days",
+        "productNotes": "Size L (40), Ivory Gold",
+        "subtotalINR": 13998
+      }
+    ],
+    "quotation": {
+      "quotationReference": "QTN-2026-37209",
+      "productsTotalINR": 40988,
+      "shippingTotalINR": 0,
+      "additionalChargesTotalINR": 0,
+      "grandTotalINR": 40988
+    },
+    "status": "New Requests",
+    "unreadAdminAlert": false,
+    "createdAt": "10 Nov 2026, 04:57 pm",
+    "updatedAt": "10 Nov 2026, 04:59 pm",
+    "activityHistory": [
+      {
+        "id": "act-1794310142426",
+        "timestamp": "10 Nov 2026, 04:59 pm",
+        "action": "Admin viewed purchase request details",
+        "fromStatus": "New Requests",
+        "toStatus": "New Requests",
+        "actor": "Super Admin",
+        "details": "Admin viewed purchase request details"
+      },
+      {
+        "id": "act-1794310052960",
+        "timestamp": "10 Nov 2026, 04:57 pm",
+        "action": "Customer Submitted External Purchase Request",
+        "toStatus": "New Requests",
+        "actor": "Aarav Mehta (Customer)",
+        "details": "Submitted 2 product(s) from Amazon, Flipkart."
+      }
+    ],
+    "emailHistory": [
+      {
+        "id": "eml-1794310058116-868",
+        "timestamp": "10 Nov 2026, 04:57 pm",
+        "stage": "Request Received",
+        "recipient": "durgaluckshmi@gmail.com",
+        "subject": "[PHARMAYUSH / India2World] We Have Received Your Purchase Request (EPR-2026-37209)",
+        "status": "Sent",
+        "messageId": "<6fe18145-392e-1322-9057-d90fce225245@gmail.com>"
+      }
+    ]
+  },
+  {
+    "requestId": "EPR-2026-36050",
+    "customerId": "CUST-5342",
+    "customerName": "Durga Lakshmi",
+    "customerEmail": "durgaluckshmi@gmail.com",
+    "customerPhone": "+971 50 982 3412",
+    "deliveryAddress": "Building B-14, International City",
+    "city": "Dubai",
+    "state": "Dubai",
+    "country": "United Arab Emirates",
+    "postalCode": "00000",
+    "destinationFlag": "🇦🇪",
+    "requestedProducts": [
+      {
+        "id": "req-prod-1-1794302822400",
+        "productName": "Forest Essentials Soundarya Radiance Cream With 24K Gold",
+        "platform": "Amazon India",
+        "productUrl": "https://www.flipkart.com/wellgiver-memory-foam-desk-pillow-pack-1-solid-lap-working-reading-gaming-desk-laptop/p/itm6f7cf9ffa054f?pid=PLWHKAQK44KJWXAX&lid=LSTPLWHKAQK44KJWXAXJEMZQS&hl_lid=&marketplace=FLIPKART&fm=eyJ3dHAiOiJwbXVfdjMiLCJwcnB0IjoiaHAiLCJtaWQiOiJjb250aW51dW0vaHAifQ%3D%3D&ctx=eyJkZWxpdmVyZWRCeSI6IiIsImRpc3BsYXlQcmljZSI6IjE3OTkifQ%3D%3D&pageUID=1794303870852",
+        "quantity": 2,
+        "expectedBudgetINR": 4800,
+        "description": "50g jar, authentic sealed pack",
+        "additionalRequirements": "Bubble wrap for international transit"
+      },
+      {
+        "id": "req-prod-2-1794302822400",
+        "productName": "Biba Women Festive Embroidered Kurta Set",
+        "platform": "Myntra",
+        "productUrl": "https://www.myntra.com/kurta-sets/biba/1902381",
+        "quantity": 1,
+        "expectedBudgetINR": 3599,
+        "description": "Size M, Royal Blue",
+        "additionalRequirements": "Check size tag before dispatch"
+      }
+    ],
+    "processedProducts": [
+      {
+        "id": "proc-1",
+        "actualProductName": "Forest Essentials Soundarya Radiance Cream With 24K Gold (50g)",
+        "platform": "Amazon India",
+        "verifiedProductUrl": "https://www.amazon.in/dp/B07X8J4921",
+        "quantity": 2,
+        "actualPriceINR": 4650,
+        "shippingChargesINR": 150,
+        "additionalChargesINR": 0,
+        "estimatedDeliveryTime": "5-7 Business Days",
+        "productNotes": "24K Gold 50g Jar",
+        "subtotalINR": 9450
+      },
+      {
+        "id": "proc-2",
+        "actualProductName": "Biba Women Royal Blue Festive Embroidered Kurta Set (Size M)",
+        "platform": "Myntra",
+        "verifiedProductUrl": "https://www.myntra.com/kurta-sets/biba/1902381",
+        "quantity": 1,
+        "actualPriceINR": 3499,
+        "shippingChargesINR": 100,
+        "additionalChargesINR": 50,
+        "estimatedDeliveryTime": "5-7 Business Days",
+        "productNotes": "Size M verified",
+        "subtotalINR": 3649
+      }
+    ],
+    "quotation": {
+      "quotationReference": "QTN-2026-36050",
+      "productsTotalINR": 12799,
+      "shippingTotalINR": 250,
+      "additionalChargesTotalINR": 50,
+      "grandTotalINR": 13099,
+      "customerFacingMessage": "Both products are verified in stock with official sellers on Amazon India and Myntra. Please click Approve below so we can purchase immediately.",
+      "internalAdminNotes": "Internal Note: Verified Prime seller on Amazon & Myntra Studio.",
+      "approvalToken": "c065dcabfb63309f4eb379a583c8ee38f17ef8973eb39671",
+      "approvalTokenExpiresAt": "2026-11-17T09:27:07.130Z",
+      "sentAt": "10 Nov 2026, 02:57 pm",
+      "customerDecision": "Approved",
+      "customerDecisionAt": "10 Nov 2026, 02:57 pm",
+      "customerDecisionNote": "Approved! Please proceed with purchasing."
+    },
+    "status": "Customer Approved",
+    "unreadAdminAlert": false,
+    "createdAt": "10 Nov 2026, 02:57 pm",
+    "updatedAt": "10 Nov 2026, 03:15 pm",
+    "activityHistory": [
+      {
+        "id": "act-1794303922612",
+        "timestamp": "10 Nov 2026, 03:15 pm",
+        "action": "Admin viewed purchase request details",
+        "fromStatus": "Customer Approved",
+        "toStatus": "Customer Approved",
+        "actor": "Super Admin",
+        "details": "Admin viewed purchase request details"
+      },
+      {
+        "id": "act-1794303905045",
+        "timestamp": "10 Nov 2026, 03:15 pm",
+        "action": "Admin edited customer & requested product details",
+        "fromStatus": "Customer Approved",
+        "toStatus": "Customer Approved",
+        "actor": "Super Admin",
+        "details": "Admin edited customer & requested product details"
+      },
+      {
+        "id": "act-1794302836120",
+        "timestamp": "10 Nov 2026, 02:57 pm",
+        "action": "Customer Approved Quotation",
+        "fromStatus": "Quotation Sent",
+        "toStatus": "Customer Approved",
+        "actor": "Durga Lakshmi (Customer)",
+        "details": "Customer approved quotation QTN-2026-36050 (₹13,099). Ready for admin to purchase items."
+      },
+      {
+        "id": "act-1794302831620",
+        "timestamp": "10 Nov 2026, 02:57 pm",
+        "action": "Quotation Prepared & Sent to Customer",
+        "fromStatus": "New Requests",
+        "toStatus": "Quotation Sent",
+        "actor": "Super Admin",
+        "details": "Quotation QTN-2026-36050 for ₹13,099 (2 item(s)) dispatched to durgaluckshmi@gmail.com."
+      },
+      {
+        "id": "act-1794302822400",
+        "timestamp": "10 Nov 2026, 02:57 pm",
+        "action": "Customer Submitted External Purchase Request",
+        "toStatus": "New Requests",
+        "actor": "Durga Lakshmi (Customer)",
+        "details": "Submitted 2 product(s) from Amazon India, Myntra."
+      }
+    ],
+    "emailHistory": [
+      {
+        "id": "eml-1794302836120-886",
+        "timestamp": "10 Nov 2026, 02:57 pm",
+        "stage": "Quotation Approved",
+        "recipient": "durgaluckshmi@gmail.com",
+        "subject": "[PHARMAYUSH / India2World] Quotation Approved – Ready for Procurement (EPR-2026-36050)",
+        "status": "Sent",
+        "messageId": "<ebea994a-e91e-426a-e1c1-8cd014db0445@gmail.com>"
+      },
+      {
+        "id": "eml-1794302831620-762",
+        "timestamp": "10 Nov 2026, 02:57 pm",
+        "stage": "Quotation Sent",
+        "recipient": "durgaluckshmi@gmail.com",
+        "subject": "[PHARMAYUSH / India2World] Purchase Quotation Ready for Approval (EPR-2026-36050)",
+        "status": "Sent",
+        "messageId": "<d04fd1f6-e6f3-5a39-8f0c-3516e2af740f@gmail.com>"
+      },
+      {
+        "id": "eml-1794302827115-96",
+        "timestamp": "10 Nov 2026, 02:57 pm",
+        "stage": "Request Received",
+        "recipient": "durgaluckshmi@gmail.com",
+        "subject": "[PHARMAYUSH / India2World] We Have Received Your Purchase Request (EPR-2026-36050)",
+        "status": "Sent",
+        "messageId": "<98221367-b4a7-c338-cb70-17dcf36fd79c@gmail.com>"
+      }
+    ]
+  }
+]

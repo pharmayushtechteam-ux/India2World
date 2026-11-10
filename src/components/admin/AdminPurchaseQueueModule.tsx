@@ -1,24 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import {
-  ListOrdered,
   Search,
-  Plus,
   CheckCircle2,
-  Clock,
-  AlertCircle,
-  ExternalLink,
-  ShoppingBag,
   User,
   X,
-  CreditCard,
-  Truck,
-  Building,
 } from 'lucide-react';
 import { AdminTab } from '../../types/admin';
 import {
   getAllOrders,
   DATA_SYNC_EVENT,
 } from '../../services/integratedDataService';
+import { TablePaginationBar } from './TablePaginationBar';
 
 export interface PurchaseQueueItem {
   id: string; // PQ-801
@@ -66,7 +58,7 @@ const INITIAL_QUEUE: PurchaseQueueItem[] = [
     destination: 'UAE',
     store: 'Myntra',
     storeUrl: 'https://myntra.com/kurta-set-pink',
-    itemTitle: "Anouk Women Floral Embroidered Kurta with Trousers & Dupatta",
+    itemTitle: 'Anouk Women Floral Embroidered Kurta with Trousers & Dupatta',
     specs: 'Colour: Rose Pink | Size: M',
     priceINR: 1299,
     qty: 1,
@@ -151,7 +143,7 @@ const buildQueueList = (): PurchaseQueueItem[] => {
           store: (item.store as any) || 'Amazon India',
           storeUrl: 'https://www.amazon.in',
           itemTitle: item.title,
-          specs: `Qty: ${item.qty}`,
+          specs: `Verified Store Listing`,
           priceINR: item.price,
           qty: item.qty,
           assignedBuyer: 'Agent Amit Kumar',
@@ -169,7 +161,7 @@ const buildQueueList = (): PurchaseQueueItem[] => {
 
 export const AdminPurchaseQueueModule: React.FC<{
   onNavigateTab: (tab: AdminTab, params?: any) => void;
-}> = ({ onNavigateTab }) => {
+}> = () => {
   const [items, setItems] = useState<PurchaseQueueItem[]>(() => buildQueueList());
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('All');
@@ -177,6 +169,10 @@ export const AdminPurchaseQueueModule: React.FC<{
   const [sellerOrderInput, setSellerOrderInput] = useState('');
   const [sellerTrackingInput, setSellerTrackingInput] = useState('');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Pagination state (default 6 items per page)
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(6);
 
   useEffect(() => {
     const handleUpdate = () => {
@@ -223,12 +219,24 @@ export const AdminPurchaseQueueModule: React.FC<{
     const matchesSearch =
       !search ||
       item.id.toLowerCase().includes(search.toLowerCase()) ||
+      item.requestId.toLowerCase().includes(search.toLowerCase()) ||
       item.itemTitle.toLowerCase().includes(search.toLowerCase()) ||
       item.store.toLowerCase().includes(search.toLowerCase()) ||
       item.customerName.toLowerCase().includes(search.toLowerCase()) ||
       item.assignedBuyer.toLowerCase().includes(search.toLowerCase());
     return matchesStatus && matchesSearch;
   });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const activePage = Math.min(currentPage, totalPages);
+  const paginatedItems = filtered.slice(
+    (activePage - 1) * pageSize,
+    activePage * pageSize
+  );
 
   const pendingCount = items.filter((i) => i.status === 'Pending Purchase').length;
   const orderedCount = items.filter((i) => i.status === 'Ordered').length;
@@ -268,7 +276,7 @@ export const AdminPurchaseQueueModule: React.FC<{
             <span className="text-2xl sm:text-3xl font-extrabold text-[#0B1933]">{pendingCount}</span>
             <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Urgent</span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Payment verified & locked in escrow</div>
+          <div className="text-[11px] text-slate-400 mt-1">Payment verified &amp; locked in escrow</div>
         </div>
 
         <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-2xs">
@@ -305,6 +313,7 @@ export const AdminPurchaseQueueModule: React.FC<{
           {['All', 'Pending Purchase', 'Ordered', 'Shipped by Seller'].map((status) => (
             <button
               key={status}
+              type="button"
               onClick={() => setStatusFilter(status)}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer touch-manipulation ${
                 statusFilter === status
@@ -329,9 +338,9 @@ export const AdminPurchaseQueueModule: React.FC<{
         </div>
       </div>
 
-      {/* Procurement Cards Grid */}
+      {/* Procurement Cards Grid (Paginated) */}
       <div className="space-y-3">
-        {filtered.map((item) => (
+        {paginatedItems.map((item) => (
           <div
             key={item.id}
             className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 shadow-2xs hover:border-[#0066FF] transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-4"
@@ -362,22 +371,34 @@ export const AdminPurchaseQueueModule: React.FC<{
               <div className="text-xs text-slate-500 flex flex-wrap items-center gap-3">
                 <span>{item.specs}</span>
                 <span>&bull;</span>
-                <span>Qty: <strong className="text-slate-800">{item.qty}</strong></span>
+                <span>
+                  Qty: <strong className="text-slate-800">{item.qty}</strong>
+                </span>
                 <span>&bull;</span>
-                <span>Customer: <strong className="text-slate-800">{item.customerName}</strong> ({item.destination})</span>
+                <span>
+                  Customer: <strong className="text-slate-800">{item.customerName}</strong> ({item.destination})
+                </span>
               </div>
 
               <div className="text-[11px] text-slate-400 flex items-center gap-2 pt-0.5">
                 <User className="w-3.5 h-3.5 text-slate-400" />
-                <span>Assigned Buyer: <strong className="text-slate-700">{item.assignedBuyer}</strong></span>
+                <span>
+                  Assigned Buyer: <strong className="text-slate-700">{item.assignedBuyer}</strong>
+                </span>
                 <span>&bull;</span>
                 <span>Paid: {item.paymentConfirmedAt}</span>
               </div>
 
               {item.sellerOrderNumber && (
                 <div className="text-xs font-mono bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200 inline-flex items-center gap-2 mt-1">
-                  <span>Seller Order: <strong>{item.sellerOrderNumber}</strong></span>
-                  {item.sellerTracking && <span>| Courier AWB: <strong>{item.sellerTracking}</strong></span>}
+                  <span>
+                    Seller Order: <strong>{item.sellerOrderNumber}</strong>
+                  </span>
+                  {item.sellerTracking && (
+                    <span>
+                      | Courier AWB: <strong>{item.sellerTracking}</strong>
+                    </span>
+                  )}
                 </div>
               )}
             </div>
@@ -394,6 +415,7 @@ export const AdminPurchaseQueueModule: React.FC<{
               <div className="flex items-center gap-2">
                 {item.status === 'Pending Purchase' ? (
                   <button
+                    type="button"
                     onClick={() => setSelectedItemForOrder(item)}
                     className="px-4 py-2.5 bg-[#0066FF] hover:bg-[#0052cc] text-white text-xs font-bold rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer touch-manipulation whitespace-nowrap"
                   >
@@ -411,6 +433,19 @@ export const AdminPurchaseQueueModule: React.FC<{
         ))}
       </div>
 
+      {/* Pagination Bar */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+        <TablePaginationBar
+          totalItems={filtered.length}
+          currentPage={activePage}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          itemLabel="procurement items"
+          pageSizeOptions={[5, 6, 8, 10, 15]}
+        />
+      </div>
+
       {/* Mark Ordered Modal */}
       {selectedItemForOrder && (
         <div
@@ -424,6 +459,7 @@ export const AdminPurchaseQueueModule: React.FC<{
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-lg font-extrabold text-[#0B1933]">Log Merchant Purchase</h3>
               <button
+                type="button"
                 onClick={() => setSelectedItemForOrder(null)}
                 className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 cursor-pointer"
               >
@@ -452,7 +488,7 @@ export const AdminPurchaseQueueModule: React.FC<{
 
               <div>
                 <label className="text-xs font-bold text-slate-700 block mb-1">
-                  Domestic Courier & Tracking ID
+                  Domestic Courier &amp; Tracking ID
                 </label>
                 <input
                   type="text"
@@ -475,7 +511,7 @@ export const AdminPurchaseQueueModule: React.FC<{
                   type="submit"
                   className="px-4 py-2 text-xs font-bold text-white bg-[#0066FF] hover:bg-[#0052cc] rounded-xl cursor-pointer"
                 >
-                  Confirm & Move to Inbound
+                  Confirm &amp; Move to Inbound
                 </button>
               </div>
             </form>

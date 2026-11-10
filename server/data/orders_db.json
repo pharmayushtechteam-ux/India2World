@@ -1,19 +1,281 @@
 [
   {
-    "orderId": "ORD-22033",
+    "orderId": "ORD-48897",
     "orderDate": "13 Oct 2026",
-    "customerId": "CUS-49006",
-    "customerName": "riya",
-    "customerEmail": "pharmayushonline@gmail.com",
-    "customerPhone": "+91 98765 12347",
+    "customerId": "CUS-10286",
+    "customerName": "durga",
+    "customerEmail": "durgaluckshmi@gmail.com",
+    "customerPhone": "+91 9847457539",
     "deliveryAddress": {
-      "street": "I2W-CUS-49006, Central Hub",
-      "city": "Dubai",
+      "street": "I2W-CUS-10286, Central Hub",
+      "city": "International City",
       "country": "United Arab Emirates"
     },
     "products": [
       {
-        "name": "Cil&srno=b 1 13&otracker=browse&fm=organic&iid=12e5f5e1 4727 4366 91b4 66b6dac74d11.shohf8fgurjk4mys.search&ppt=browse&ppn=browse&ssid=emrv1wpyqo0000001791877654729&ov Redirect=true",
+        "name": "Kuchipoo Boys Typographic Print Regular Fit Sweatshirt",
+        "store": "AJIO",
+        "price": 1299,
+        "qty": 1,
+        "imageUrl": "https://kuchipoo.in/cdn/shop/files/KUC-HOD-227FRONT.jpg?v=1759291947"
+      },
+      {
+        "name": "Eridani Women Eva Kolhapuri Flats Gold",
+        "store": "Indian Store",
+        "price": 1499,
+        "qty": 1,
+        "imageUrl": "https://images-static.nykaa.com/media/catalog/product/5/6/567ab8bOERIDA00028644_5.jpg"
+      },
+      {
+        "name": "Flipkart Verified Product #3",
+        "store": "Flipkart",
+        "price": 98,
+        "qty": 1,
+        "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/lipstick/9/t/t/12-lipstick-waterproof-combo-set-superior-quality-liquid-matte-original-imahpjg7ughr8zfz.jpeg"
+      },
+      {
+        "name": "Xaipro 20t Hycrox Premium Quality Cycle 5 9 Year Kids 20 T Inch Bmx",
+        "store": "Flipkart",
+        "price": 1499,
+        "qty": 1,
+        "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/cycle/u/v/u/20t-hycrox-premium-quality-cycle-5-to-9-year-kids-20-16-xaipro-resized-original-imahmjy5xmfxuh5g.jpeg"
+      },
+      {
+        "name": "Mokobara Lucky Charm The Sunflower Medium Leather Tote",
+        "store": "Tata CLiQ",
+        "price": 5999,
+        "qty": 1,
+        "imageUrl": "https://img.tatacliq.com/images/i30//437Wx649H/MP000000030156716_437Wx649H_202602191944271.jpeg"
+      },
+      {
+        "name": "Kisah Blue Embellished Kurta With Sherwani And Trouser Set Of 3",
+        "store": "Indian Store",
+        "price": 1299,
+        "qty": 1,
+        "imageUrl": "https://images-static.nykaa.com/media/catalog/product/9/f/9fbf00eKA-5585-7236-T306_3.jpg"
+      },
+      {
+        "name": "IRTH by House of Titan Black Logo Satchel Handbag",
+        "store": "Tata CLiQ",
+        "price": 2997,
+        "qty": 1,
+        "imageUrl": "https://img.tatacliq.com/images/i28/437Wx649H/MP000000029327864_437Wx649H_202511251935551.jpeg"
+      },
+      {
+        "name": "Indian Store Apparel Item (#12345196)",
+        "store": "Indian Store",
+        "price": 1299,
+        "qty": 1,
+        "imageUrl": "https://images-static.nykaa.com/media/catalog/product/1/6/1642789KA-0965-T303_1.jpg"
+      },
+      {
+        "name": "PHILIPS 9-Watts B22 LED Cool Day White LED Bulb, Pack of 1, (Ace Saver)",
+        "store": "Amazon India",
+        "price": 59,
+        "qty": 1,
+        "imageUrl": "https://m.media-amazon.com/images/I/51okYm6FETL._SL1080_.jpg"
+      },
+      {
+        "name": "Nike Men's Running Shoes",
+        "store": "amazon.in",
+        "price": 3999,
+        "qty": 1,
+        "imageUrl": "/assets/product-shoes.jpg"
+      },
+      {
+        "name": "Women's Kurta Set",
+        "store": "Myntra",
+        "price": 1299,
+        "qty": 1,
+        "imageUrl": "/assets/product-kurta.jpg"
+      },
+      {
+        "name": "Atomic Habits",
+        "store": "amazon.in",
+        "price": 499,
+        "qty": 1,
+        "imageUrl": "/assets/product-book.jpg"
+      }
+    ],
+    "costSummary": {
+      "subtotal": 21845,
+      "domesticShipping": 0,
+      "serviceFee": 1748,
+      "tax": 0,
+      "discount": 0,
+      "total": 23593
+    },
+    "paymentStatus": "Paid",
+    "orderStatus": "Procuring",
+    "orderType": "Assisted Purchase (Buy For Me)",
+    "stores": [
+      "AJIO",
+      "Indian Store",
+      "Flipkart",
+      "Tata CLiQ",
+      "Amazon India",
+      "amazon.in",
+      "Myntra"
+    ],
+    "invoice": {
+      "id": "INV-2026-48897",
+      "orderId": "ORD-48897",
+      "invoiceNumber": "INV-2026-48897",
+      "createdAt": "13 Oct 2026, 01:07 pm",
+      "customerId": "CUS-10286",
+      "customerName": "durga",
+      "customerEmail": "durgaluckshmi@gmail.com",
+      "customerPhone": "+91 9847457539",
+      "destinationCity": "International City",
+      "destinationCountry": "United Arab Emirates",
+      "destinationFlag": "📍",
+      "shippingAddress": {
+        "street": "I2W-CUS-10286, Central Hub",
+        "city": "International City",
+        "state": "International City",
+        "postalCode": "00000",
+        "country": "United Arab Emirates"
+      },
+      "billingAddress": {
+        "name": "durga",
+        "email": "durgaluckshmi@gmail.com",
+        "country": "United Arab Emirates"
+      },
+      "items": [
+        {
+          "id": "item-1",
+          "title": "Kuchipoo Boys Typographic Print Regular Fit Sweatshirt",
+          "store": "AJIO",
+          "price": 1299,
+          "qty": 1,
+          "total": 1299
+        },
+        {
+          "id": "item-2",
+          "title": "Eridani Women Eva Kolhapuri Flats Gold",
+          "store": "Indian Store",
+          "price": 1499,
+          "qty": 1,
+          "total": 1499
+        },
+        {
+          "id": "item-3",
+          "title": "Flipkart Verified Product #3",
+          "store": "Flipkart",
+          "price": 98,
+          "qty": 1,
+          "total": 98
+        },
+        {
+          "id": "item-4",
+          "title": "Xaipro 20t Hycrox Premium Quality Cycle 5 9 Year Kids 20 T Inch Bmx",
+          "store": "Flipkart",
+          "price": 1499,
+          "qty": 1,
+          "total": 1499
+        },
+        {
+          "id": "item-5",
+          "title": "Mokobara Lucky Charm The Sunflower Medium Leather Tote",
+          "store": "Tata CLiQ",
+          "price": 5999,
+          "qty": 1,
+          "total": 5999
+        },
+        {
+          "id": "item-6",
+          "title": "Kisah Blue Embellished Kurta With Sherwani And Trouser Set Of 3",
+          "store": "Indian Store",
+          "price": 1299,
+          "qty": 1,
+          "total": 1299
+        },
+        {
+          "id": "item-7",
+          "title": "IRTH by House of Titan Black Logo Satchel Handbag",
+          "store": "Tata CLiQ",
+          "price": 2997,
+          "qty": 1,
+          "total": 2997
+        },
+        {
+          "id": "item-8",
+          "title": "Indian Store Apparel Item (#12345196)",
+          "store": "Indian Store",
+          "price": 1299,
+          "qty": 1,
+          "total": 1299
+        },
+        {
+          "id": "item-9",
+          "title": "PHILIPS 9-Watts B22 LED Cool Day White LED Bulb, Pack of 1, (Ace Saver)",
+          "store": "Amazon India",
+          "price": 59,
+          "qty": 1,
+          "total": 59
+        },
+        {
+          "id": "item-10",
+          "title": "Nike Men's Running Shoes",
+          "store": "amazon.in",
+          "price": 3999,
+          "qty": 1,
+          "total": 3999
+        },
+        {
+          "id": "item-11",
+          "title": "Women's Kurta Set",
+          "store": "Myntra",
+          "price": 1299,
+          "qty": 1,
+          "total": 1299
+        },
+        {
+          "id": "item-12",
+          "title": "Atomic Habits",
+          "store": "amazon.in",
+          "price": 499,
+          "qty": 1,
+          "total": 499
+        }
+      ],
+      "subtotalINR": 21845,
+      "domesticShippingINR": 0,
+      "serviceFeeINR": 1748,
+      "estimatedTaxINR": 0,
+      "discountINR": 0,
+      "totalINR": 23593,
+      "paymentMethod": "Pre-Approved Account / Instant Wire",
+      "paymentStatus": "Paid",
+      "emailStatus": "Sent",
+      "emailSentAt": "10 Nov 2026, 12:41 pm",
+      "emailDeliveryLog": "Accepted by Google SMTP relay (250 2.0.0 OK  1791956726 5a478bee46e88-3537cb2954bsm50867948eec.26 - gsmtp). The message has departed our server. If not received in the Primary inbox within 1–2 minutes, verify the recipient's Spam / Junk folder or Promotions / Updates category tabs. | Response: 250 2.0.0 OK  1791956726 5a478bee46e88-3537cb2954bsm50867948eec.26 - gsmtp | MsgId: <3e7604a3-a291-ad0a-63ba-36bcd1fdf299@gmail.com>",
+      "emailAttemptCount": 3
+    },
+    "attachInvoicePdf": true,
+    "isRetry": true,
+    "savedAt": "2026-11-10T06:32:12.115Z",
+    "updatedAt": "2026-11-10T07:11:22.652Z",
+    "confirmationEmailStatus": "Sent",
+    "confirmationEmailAttempts": 5,
+    "confirmationEmailSentAt": "10 Nov 2026, 12:41 pm",
+    "confirmationMessageId": "<36c3ecb2-71b6-93ba-3eb2-7006c3ae1bde@gmail.com>"
+  },
+  {
+    "orderId": "ORD-31026",
+    "orderDate": "13 Oct 2026",
+    "customerId": "CUS-67630",
+    "customerName": "rohith",
+    "customerEmail": "pharmayushtechteam@gmail.com",
+    "customerPhone": "+91 98765 43789",
+    "deliveryAddress": {
+      "street": "I2W-CUS-67630, Central Hub",
+      "city": "International City",
+      "country": "United Arab Emirates"
+    },
+    "products": [
+      {
+        "name": "Flipkart Verified Product #1",
         "store": "Flipkart",
         "price": 1782,
         "qty": 1,
@@ -62,7 +324,7 @@
         "imageUrl": "https://img.tatacliq.com/images/i28/437Wx649H/MP000000029327864_437Wx649H_202511251935551.jpeg"
       },
       {
-        "name": "12345196",
+        "name": "Indian Store Apparel Item (#12345196)",
         "store": "Indian Store",
         "price": 1299,
         "qty": 1,
@@ -100,7 +362,7 @@
     "costSummary": {
       "subtotal": 23529,
       "domesticShipping": 0,
-      "serviceFee": 350,
+      "serviceFee": 1882,
       "tax": 0,
       "discount": 0,
       "total": 25411
@@ -117,40 +379,34 @@
       "amazon.in",
       "Myntra"
     ],
-    "attachInvoicePdf": true,
-    "isRetry": true,
-    "savedAt": "2026-10-13T10:12:17.355Z",
-    "updatedAt": "2026-10-13T10:14:26.265Z",
-    "confirmationEmailStatus": "Sent",
-    "confirmationEmailAttempts": 2,
     "invoice": {
-      "id": "INV-2026-22033",
-      "orderId": "ORD-22033",
-      "invoiceNumber": "INV-2026-22033",
-      "createdAt": "13 Oct 2026, 03:42 pm",
-      "customerId": "CUS-49006",
-      "customerName": "riya",
-      "customerEmail": "pharmayushonline@gmail.com",
-      "customerPhone": "+91 98765 12347",
-      "destinationCity": "Dubai",
+      "id": "INV-2026-31026",
+      "orderId": "ORD-31026",
+      "invoiceNumber": "INV-2026-31026",
+      "createdAt": "13 Oct 2026, 01:19 pm",
+      "customerId": "CUS-67630",
+      "customerName": "rohith",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "customerPhone": "+91 98765 43789",
+      "destinationCity": "International City",
       "destinationCountry": "United Arab Emirates",
       "destinationFlag": "📍",
       "shippingAddress": {
-        "street": "I2W-CUS-49006, Central Hub",
-        "city": "Dubai",
-        "state": "Dubai",
+        "street": "I2W-CUS-67630, Central Hub",
+        "city": "International City",
+        "state": "International City",
         "postalCode": "00000",
         "country": "United Arab Emirates"
       },
       "billingAddress": {
-        "name": "riya",
-        "email": "pharmayushonline@gmail.com",
+        "name": "rohith",
+        "email": "pharmayushtechteam@gmail.com",
         "country": "United Arab Emirates"
       },
       "items": [
         {
           "id": "item-1",
-          "title": "Cil&srno=b 1 13&otracker=browse&fm=organic&iid=12e5f5e1 4727 4366 91b4 66b6dac74d11.shohf8fgurjk4mys.search&ppt=browse&ppn=browse&ssid=emrv1wpyqo0000001791877654729&ov Redirect=true",
+          "title": "Flipkart Verified Product #1",
           "store": "Flipkart",
           "price": 1782,
           "qty": 1,
@@ -206,7 +462,7 @@
         },
         {
           "id": "item-8",
-          "title": "12345196",
+          "title": "Indian Store Apparel Item (#12345196)",
           "store": "Indian Store",
           "price": 1299,
           "qty": 1,
@@ -254,106 +510,124 @@
       "paymentMethod": "Pre-Approved Account / Instant Wire",
       "paymentStatus": "Paid",
       "emailStatus": "Sent",
-      "emailDeliveryLog": "Official invoice INV-2026-22033 with attached PDF successfully sent to pharmayushonline@gmail.com.",
-      "emailAttemptCount": 1,
-      "emailSentAt": "13 Oct 2026, 03:42 pm"
+      "emailSentAt": "10 Nov 2026, 12:41 pm",
+      "emailDeliveryLog": "Accepted by Google SMTP relay (250 2.0.0 OK  1791887981 a92af1059eb24-169a2f17feasm49534847c88.9 - gsmtp). The message has departed our server. If not received in the Primary inbox within 1–2 minutes, verify the recipient's Spam / Junk folder or Promotions / Updates category tabs. | Response: 250 2.0.0 OK  1791887981 a92af1059eb24-169a2f17feasm49534847c88.9 - gsmtp | MsgId: <e9d8b779-5942-fd7c-76d4-525e56c8022d@gmail.com>",
+      "emailAttemptCount": 15
     },
-    "confirmationEmailSentAt": "13 Oct 2026, 03:44 pm",
-    "confirmationMessageId": "<990969a9-6c82-0d55-56b2-9ccee1bc6007@gmail.com>"
+    "attachInvoicePdf": true,
+    "isRetry": true,
+    "savedAt": "2026-11-10T06:30:37.753Z",
+    "updatedAt": "2026-11-10T07:11:30.407Z",
+    "confirmationEmailStatus": "Sent",
+    "confirmationEmailAttempts": 3,
+    "confirmationEmailSentAt": "10 Nov 2026, 12:41 pm",
+    "confirmationMessageId": "<b6da501b-51e5-8634-784b-8311661aa906@gmail.com>"
   },
   {
-    "orderId": "ORD-77755",
+    "orderId": "ORD-22033",
     "orderDate": "13 Oct 2026",
     "customerId": "CUS-49006",
     "customerName": "riya",
     "customerEmail": "pharmayushonline@gmail.com",
     "customerPhone": "+91 98765 12347",
     "deliveryAddress": {
-      "street": "I2W-49006, Central Hub",
-      "city": "United Arab Emirates",
+      "street": "I2W-CUS-49006, Central Hub",
+      "city": "Dubai",
       "country": "United Arab Emirates"
     },
     "products": [
       {
-        "name": "Cil&srno=b 1 13&otracker=browse&fm=organic&iid=12e5f5e1 4727 4366 91b4 66b6dac74d11.shohf8fgurjk4mys.search&ppt=browse&ppn=browse&ssid=emrv1wpyqo0000001791877654729&ov Redirect=true",
+        "name": "Flipkart Verified Product #1",
         "store": "Flipkart",
         "price": 1782,
-        "qty": 1
+        "qty": 1,
+        "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/shoe/i/5/v/8-bbmg8267-8-bacca-bucci-obsidian-black-watermarked-original-imahf8fhezk5bctg.jpeg"
       },
       {
         "name": "Kuchipoo Boys Typographic Print Regular Fit Sweatshirt",
         "store": "AJIO",
         "price": 1299,
-        "qty": 1
+        "qty": 1,
+        "imageUrl": "https://kuchipoo.in/cdn/shop/files/KUC-HOD-227FRONT.jpg?v=1759291947"
       },
       {
         "name": "Eridani Women Eva Kolhapuri Flats Gold",
         "store": "Indian Store",
         "price": 1499,
-        "qty": 1
+        "qty": 1,
+        "imageUrl": "https://images-static.nykaa.com/media/catalog/product/5/6/567ab8bOERIDA00028644_5.jpg"
       },
       {
         "name": "Xaipro 20t Hycrox Premium Quality Cycle 5 9 Year Kids 20 T Inch Bmx",
         "store": "Flipkart",
         "price": 1499,
-        "qty": 1
+        "qty": 1,
+        "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/cycle/u/v/u/20t-hycrox-premium-quality-cycle-5-to-9-year-kids-20-16-xaipro-resized-original-imahmjy5xmfxuh5g.jpeg"
       },
       {
         "name": "Mokobara Lucky Charm The Sunflower Medium Leather Tote",
         "store": "Tata CLiQ",
         "price": 5999,
-        "qty": 1
+        "qty": 1,
+        "imageUrl": "https://img.tatacliq.com/images/i30//437Wx649H/MP000000030156716_437Wx649H_202602191944271.jpeg"
       },
       {
         "name": "Kisah Blue Embellished Kurta With Sherwani And Trouser Set Of 3",
         "store": "Indian Store",
         "price": 1299,
-        "qty": 1
+        "qty": 1,
+        "imageUrl": "https://images-static.nykaa.com/media/catalog/product/9/f/9fbf00eKA-5585-7236-T306_3.jpg"
       },
       {
         "name": "IRTH by House of Titan Black Logo Satchel Handbag",
         "store": "Tata CLiQ",
         "price": 2997,
-        "qty": 1
+        "qty": 1,
+        "imageUrl": "https://img.tatacliq.com/images/i28/437Wx649H/MP000000029327864_437Wx649H_202511251935551.jpeg"
       },
       {
-        "name": "12345196",
+        "name": "Indian Store Apparel Item (#12345196)",
         "store": "Indian Store",
         "price": 1299,
-        "qty": 1
+        "qty": 1,
+        "imageUrl": "https://images-static.nykaa.com/media/catalog/product/1/6/1642789KA-0965-T303_1.jpg"
       },
       {
         "name": "PHILIPS 9-Watts B22 LED Cool Day White LED Bulb, Pack of 1, (Ace Saver)",
         "store": "Amazon India",
         "price": 59,
-        "qty": 1
+        "qty": 1,
+        "imageUrl": "https://m.media-amazon.com/images/I/51okYm6FETL._SL1080_.jpg"
       },
       {
         "name": "Nike Men's Running Shoes",
         "store": "amazon.in",
         "price": 3999,
-        "qty": 1
+        "qty": 1,
+        "imageUrl": "/assets/product-shoes.jpg"
       },
       {
         "name": "Women's Kurta Set",
         "store": "Myntra",
         "price": 1299,
-        "qty": 1
+        "qty": 1,
+        "imageUrl": "/assets/product-kurta.jpg"
       },
       {
         "name": "Atomic Habits",
         "store": "amazon.in",
         "price": 499,
-        "qty": 1
+        "qty": 1,
+        "imageUrl": "/assets/product-book.jpg"
       }
     ],
     "costSummary": {
       "subtotal": 23529,
       "domesticShipping": 0,
-      "serviceFee": 350,
+      "serviceFee": 1882,
       "tax": 0,
       "discount": 0,
-      "total": 24941
+      "total": 25411
     },
     "paymentStatus": "Paid",
     "orderStatus": "Procuring",
@@ -367,22 +641,28 @@
       "amazon.in",
       "Myntra"
     ],
+    "attachInvoicePdf": true,
+    "isRetry": true,
+    "savedAt": "2026-10-13T10:12:17.355Z",
+    "updatedAt": "2026-11-10T06:54:13.690Z",
+    "confirmationEmailStatus": "Sent",
+    "confirmationEmailAttempts": 3,
     "invoice": {
-      "id": "INV-2026-77755",
-      "orderId": "ORD-77755",
-      "invoiceNumber": "INV-2026-77755",
-      "createdAt": "13 Oct 2026, 03:41 pm",
+      "id": "INV-2026-22033",
+      "orderId": "ORD-22033",
+      "invoiceNumber": "INV-2026-22033",
+      "createdAt": "13 Oct 2026, 03:42 pm",
       "customerId": "CUS-49006",
       "customerName": "riya",
       "customerEmail": "pharmayushonline@gmail.com",
       "customerPhone": "+91 98765 12347",
-      "destinationCity": "United Arab Emirates",
+      "destinationCity": "Dubai",
       "destinationCountry": "United Arab Emirates",
       "destinationFlag": "📍",
       "shippingAddress": {
-        "street": "I2W-49006, Central Hub",
-        "city": "United Arab Emirates",
-        "state": "United Arab Emirates",
+        "street": "I2W-CUS-49006, Central Hub",
+        "city": "Dubai",
+        "state": "Dubai",
         "postalCode": "00000",
         "country": "United Arab Emirates"
       },
@@ -394,7 +674,7 @@
       "items": [
         {
           "id": "item-1",
-          "title": "Cil&srno=b 1 13&otracker=browse&fm=organic&iid=12e5f5e1 4727 4366 91b4 66b6dac74d11.shohf8fgurjk4mys.search&ppt=browse&ppn=browse&ssid=emrv1wpyqo0000001791877654729&ov Redirect=true",
+          "title": "Flipkart Verified Product #1",
           "store": "Flipkart",
           "price": 1782,
           "qty": 1,
@@ -450,7 +730,251 @@
         },
         {
           "id": "item-8",
-          "title": "12345196",
+          "title": "Indian Store Apparel Item (#12345196)",
+          "store": "Indian Store",
+          "price": 1299,
+          "qty": 1,
+          "total": 1299
+        },
+        {
+          "id": "item-9",
+          "title": "PHILIPS 9-Watts B22 LED Cool Day White LED Bulb, Pack of 1, (Ace Saver)",
+          "store": "Amazon India",
+          "price": 59,
+          "qty": 1,
+          "total": 59
+        },
+        {
+          "id": "item-10",
+          "title": "Nike Men's Running Shoes",
+          "store": "amazon.in",
+          "price": 3999,
+          "qty": 1,
+          "total": 3999
+        },
+        {
+          "id": "item-11",
+          "title": "Women's Kurta Set",
+          "store": "Myntra",
+          "price": 1299,
+          "qty": 1,
+          "total": 1299
+        },
+        {
+          "id": "item-12",
+          "title": "Atomic Habits",
+          "store": "amazon.in",
+          "price": 499,
+          "qty": 1,
+          "total": 499
+        }
+      ],
+      "subtotalINR": 23529,
+      "domesticShippingINR": 0,
+      "serviceFeeINR": 1882,
+      "estimatedTaxINR": 0,
+      "discountINR": 0,
+      "totalINR": 25411,
+      "paymentMethod": "Pre-Approved Account / Instant Wire",
+      "paymentStatus": "Paid",
+      "emailStatus": "Sent",
+      "emailDeliveryLog": "Accepted by Google SMTP relay (250 2.0.0 OK  1791887856 a92af1059eb24-1699718c547sm37213970c88.3 - gsmtp). The message has departed our server. If not received in the Primary inbox within 1–2 minutes, verify the recipient's Spam / Junk folder or Promotions / Updates category tabs. | Response: 250 2.0.0 OK  1791887856 a92af1059eb24-1699718c547sm37213970c88.3 - gsmtp | MsgId: <5e72266d-c473-9a99-651c-d8546a540dcf@gmail.com>",
+      "emailAttemptCount": 4,
+      "emailSentAt": "13 Oct 2026, 04:07 pm"
+    },
+    "confirmationEmailSentAt": "10 Nov 2026, 12:24 pm",
+    "confirmationMessageId": "<5c24cc27-607e-1316-787b-1fc9e29c93dd@gmail.com>"
+  },
+  {
+    "orderId": "ORD-77755",
+    "orderDate": "13 Oct 2026",
+    "customerId": "CUS-49006",
+    "customerName": "riya",
+    "customerEmail": "pharmayushonline@gmail.com",
+    "customerPhone": "+91 98765 12347",
+    "deliveryAddress": {
+      "street": "I2W-49006, Central Hub",
+      "city": "United Arab Emirates",
+      "country": "United Arab Emirates"
+    },
+    "products": [
+      {
+        "name": "Flipkart Verified Product #1",
+        "store": "Flipkart",
+        "price": 1782,
+        "qty": 1
+      },
+      {
+        "name": "Kuchipoo Boys Typographic Print Regular Fit Sweatshirt",
+        "store": "AJIO",
+        "price": 1299,
+        "qty": 1
+      },
+      {
+        "name": "Eridani Women Eva Kolhapuri Flats Gold",
+        "store": "Indian Store",
+        "price": 1499,
+        "qty": 1
+      },
+      {
+        "name": "Xaipro 20t Hycrox Premium Quality Cycle 5 9 Year Kids 20 T Inch Bmx",
+        "store": "Flipkart",
+        "price": 1499,
+        "qty": 1
+      },
+      {
+        "name": "Mokobara Lucky Charm The Sunflower Medium Leather Tote",
+        "store": "Tata CLiQ",
+        "price": 5999,
+        "qty": 1
+      },
+      {
+        "name": "Kisah Blue Embellished Kurta With Sherwani And Trouser Set Of 3",
+        "store": "Indian Store",
+        "price": 1299,
+        "qty": 1
+      },
+      {
+        "name": "IRTH by House of Titan Black Logo Satchel Handbag",
+        "store": "Tata CLiQ",
+        "price": 2997,
+        "qty": 1
+      },
+      {
+        "name": "Indian Store Apparel Item (#12345196)",
+        "store": "Indian Store",
+        "price": 1299,
+        "qty": 1
+      },
+      {
+        "name": "PHILIPS 9-Watts B22 LED Cool Day White LED Bulb, Pack of 1, (Ace Saver)",
+        "store": "Amazon India",
+        "price": 59,
+        "qty": 1
+      },
+      {
+        "name": "Nike Men's Running Shoes",
+        "store": "amazon.in",
+        "price": 3999,
+        "qty": 1
+      },
+      {
+        "name": "Women's Kurta Set",
+        "store": "Myntra",
+        "price": 1299,
+        "qty": 1
+      },
+      {
+        "name": "Atomic Habits",
+        "store": "amazon.in",
+        "price": 499,
+        "qty": 1
+      }
+    ],
+    "costSummary": {
+      "subtotal": 23529,
+      "domesticShipping": 0,
+      "serviceFee": 1412,
+      "tax": 0,
+      "discount": 0,
+      "total": 24941
+    },
+    "paymentStatus": "Paid",
+    "orderStatus": "Procuring",
+    "orderType": "Assisted Purchase (Buy For Me)",
+    "stores": [
+      "Flipkart",
+      "AJIO",
+      "Indian Store",
+      "Tata CLiQ",
+      "Amazon India",
+      "amazon.in",
+      "Myntra"
+    ],
+    "invoice": {
+      "id": "INV-2026-77755",
+      "orderId": "ORD-77755",
+      "invoiceNumber": "INV-2026-77755",
+      "createdAt": "13 Oct 2026, 03:41 pm",
+      "customerId": "CUS-49006",
+      "customerName": "riya",
+      "customerEmail": "pharmayushonline@gmail.com",
+      "customerPhone": "+91 98765 12347",
+      "destinationCity": "United Arab Emirates",
+      "destinationCountry": "United Arab Emirates",
+      "destinationFlag": "📍",
+      "shippingAddress": {
+        "street": "I2W-49006, Central Hub",
+        "city": "United Arab Emirates",
+        "state": "United Arab Emirates",
+        "postalCode": "00000",
+        "country": "United Arab Emirates"
+      },
+      "billingAddress": {
+        "name": "riya",
+        "email": "pharmayushonline@gmail.com",
+        "country": "United Arab Emirates"
+      },
+      "items": [
+        {
+          "id": "item-1",
+          "title": "Flipkart Verified Product #1",
+          "store": "Flipkart",
+          "price": 1782,
+          "qty": 1,
+          "total": 1782
+        },
+        {
+          "id": "item-2",
+          "title": "Kuchipoo Boys Typographic Print Regular Fit Sweatshirt",
+          "store": "AJIO",
+          "price": 1299,
+          "qty": 1,
+          "total": 1299
+        },
+        {
+          "id": "item-3",
+          "title": "Eridani Women Eva Kolhapuri Flats Gold",
+          "store": "Indian Store",
+          "price": 1499,
+          "qty": 1,
+          "total": 1499
+        },
+        {
+          "id": "item-4",
+          "title": "Xaipro 20t Hycrox Premium Quality Cycle 5 9 Year Kids 20 T Inch Bmx",
+          "store": "Flipkart",
+          "price": 1499,
+          "qty": 1,
+          "total": 1499
+        },
+        {
+          "id": "item-5",
+          "title": "Mokobara Lucky Charm The Sunflower Medium Leather Tote",
+          "store": "Tata CLiQ",
+          "price": 5999,
+          "qty": 1,
+          "total": 5999
+        },
+        {
+          "id": "item-6",
+          "title": "Kisah Blue Embellished Kurta With Sherwani And Trouser Set Of 3",
+          "store": "Indian Store",
+          "price": 1299,
+          "qty": 1,
+          "total": 1299
+        },
+        {
+          "id": "item-7",
+          "title": "IRTH by House of Titan Black Logo Satchel Handbag",
+          "store": "Tata CLiQ",
+          "price": 2997,
+          "qty": 1,
+          "total": 2997
+        },
+        {
+          "id": "item-8",
+          "title": "Indian Store Apparel Item (#12345196)",
           "store": "Indian Store",
           "price": 1299,
           "qty": 1,
@@ -518,6 +1042,10 @@
     "products": [],
     "costSummary": {
       "subtotal": 100,
+      "domesticShipping": 0,
+      "serviceFee": 0,
+      "tax": 0,
+      "discount": 0,
       "total": 100
     },
     "paymentStatus": "Paid",
@@ -543,6 +1071,10 @@
     ],
     "costSummary": {
       "subtotal": 100,
+      "domesticShipping": 0,
+      "serviceFee": 0,
+      "tax": 0,
+      "discount": 0,
       "total": 100
     },
     "paymentStatus": "Paid",
@@ -569,6 +1101,10 @@
     "products": [],
     "costSummary": {
       "subtotal": 4075,
+      "domesticShipping": 0,
+      "serviceFee": 350,
+      "tax": 0,
+      "discount": 0,
       "total": 4425
     },
     "paymentStatus": "Paid",
@@ -623,6 +1159,10 @@
     "products": [],
     "costSummary": {
       "subtotal": 1000,
+      "domesticShipping": 0,
+      "serviceFee": 0,
+      "tax": 0,
+      "discount": 0,
       "total": 1000
     },
     "paymentStatus": "Paid",
@@ -649,6 +1189,10 @@
     "products": [],
     "costSummary": {
       "subtotal": 5498,
+      "domesticShipping": 0,
+      "serviceFee": 440,
+      "tax": 0,
+      "discount": 0,
       "total": 5938
     },
     "paymentStatus": "Paid",

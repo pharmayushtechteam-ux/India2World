@@ -345,8 +345,8 @@ export const AdminQuotationsModule: React.FC<{
     setIsEditingEmail(false);
   };
 
-  // Handler: Save corrected recipient email
-  const handleSaveCorrectedEmail = () => {
+  // Handler: Save corrected recipient email and automatically send
+  const handleSaveCorrectedEmail = async () => {
     if (!selectedQuote) return;
     const trimmed = editedEmail.trim();
     if (!trimmed || !trimmed.includes('@') || !trimmed.includes('.')) {
@@ -381,13 +381,13 @@ export const AdminQuotationsModule: React.FC<{
       customerEmail: trimmed,
       invoiceSentTo: trimmed,
       emailStatus: 'Pending',
-      emailDeliveryLog: `Recipient email updated to ${trimmed}. Ready to dispatch.`,
+      emailDeliveryLog: `Recipient email updated to ${trimmed}. Automatically dispatching...`,
     };
     setSelectedQuote(updatedQuote);
     setIsEditingEmail(false);
     setQuotations(buildQuotationsList());
 
-    triggerToast(`✅ Recipient email corrected to ${trimmed}! Ready to send.`);
+    await handleResendInvoiceEmail(updatedQuote);
   };
 
   // Handler: Confirm Order and Automatically Email Invoice to Customer

@@ -42,6 +42,7 @@ import {
   CustomerOrderInvoice,
   createOrderAndAutomateInvoice,
   lookupRegisteredCustomer,
+  resendInvoiceEmail,
 } from './orderInvoiceService';
 import { triggerOrderConfirmationEmail } from './orderConfirmationService';
 
@@ -560,14 +561,27 @@ const INITIAL_SEED_ORDERS: IntegratedOrderRecord[] = [
     orderStatus: 'Procuring',
     createdAt: '13 Oct 2026',
     items: [
-      { title: 'Puma Men Lightweight Running Sneakers', store: 'Flipkart', price: 2999, qty: 1 },
-      { title: 'FabIndia Linen Long Kurta Set', store: 'Tata CLIQ', price: 2499, qty: 1 },
-      { title: 'Organic India Tulsi Herbal Infusion Teas (Pack of 4)', store: 'Amazon India', price: 400, qty: 4 },
-      { title: 'Boat Wireless Bluetooth Earbuds', store: 'amazon.in', price: 949.5, qty: 2 },
-      { title: 'Biotique Bio Kelp Protein Shampoo 340ml', store: 'Myntra', price: 410, qty: 2 },
-      { title: 'Handcrafted Brass Incense Holder', store: 'Indian Store', price: 1250, qty: 1 },
-      { title: 'AJIO Denim Jacket Indigo Blue', store: 'AJIO', price: 2199, qty: 1 },
+      { title: 'Flipkart Verified Product #1', store: 'Flipkart', price: 1782, qty: 1 },
+      { title: 'Kuchipoo Boys Typographic Print Regular Fit', store: 'AJIO', price: 1299, qty: 1 },
+      { title: 'Eridani Women Eva Kolhapuri Flats Gold', store: 'Indian Store', price: 1499, qty: 1 },
+      { title: 'Xaipro 20t Hycrox Premium Quality Cycle', store: 'Flipkart', price: 1499, qty: 1 },
+      { title: 'Mokobara Lucky Charm The Sunflower Medium', store: 'Tata CLiQ', price: 5999, qty: 1 },
+      { title: 'Kisah Blue Embellished Kurta With Sherwani', store: 'Indian Store', price: 1299, qty: 1 },
+      { title: 'IRTH by House of Titan Black Logo Satchel', store: 'Tata CLiQ', price: 2997, qty: 1 },
+      { title: 'Indian Store Apparel Item (#12345196)', store: 'Indian Store', price: 1299, qty: 1 },
+      { title: 'PHILIPS 9-Watts B22 LED Cool Day White Bulb', store: 'Amazon India', price: 59, qty: 1 },
+      { title: "Nike Men's Running Shoes", store: 'amazon.in', price: 3999, qty: 1 },
+      { title: "Women's Kurta Set", store: 'Myntra', price: 1299, qty: 1 },
+      { title: 'Atomic Habits', store: 'amazon.in', price: 499, qty: 1 },
     ],
+    costSummary: {
+      subtotal: 23529,
+      domesticShipping: 0,
+      serviceFee: 1882,
+      tax: 0,
+      discount: 0,
+      total: 25411,
+    },
   },
   {
     id: 'ORD-90241',
@@ -588,7 +602,7 @@ const INITIAL_SEED_ORDERS: IntegratedOrderRecord[] = [
     items: [
       { title: 'Nike Air Zoom Pegasus Running Shoes', store: 'Amazon India', price: 3999, qty: 1 },
       { title: 'Anouk Women Pink Embroidered Kurta', store: 'Myntra', price: 1299, qty: 1 },
-      { title: 'Milton Thermosteel Flask 1000ml', store: 'Flipkart', price: 1598, qty: 2 },
+      { title: 'Milton Thermosteel Flask 1000ml', store: 'Flipkart', price: 799, qty: 2 },
     ],
   },
   {
@@ -641,11 +655,57 @@ export function getAllOrders(): IntegratedOrderRecord[] {
     if (raw) {
       const parsed: IntegratedOrderRecord[] = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
+        let modified = false;
+        const invoices = getAllInvoices();
+        for (const ord of parsed) {
+          const linkedInv = invoices.find((i) => i.orderId === ord.id);
+          if (linkedInv) {
+            if (linkedInv.items && linkedInv.items.length > 0 && ord.items) {
+              ord.items = ord.items.map((item, idx) => ({
+                ...item,
+                title: linkedInv.items[idx]?.title || item.title,
+                price: linkedInv.items[idx]?.price ?? item.price,
+                qty: linkedInv.items[idx]?.qty ?? item.qty,
+              }));
+            }
+            const nextCostSummary = {
+              subtotal: linkedInv.subtotalINR,
+              domesticShipping: linkedInv.domesticShippingINR,
+              serviceFee: linkedInv.serviceFeeINR,
+              tax: linkedInv.estimatedTaxINR,
+              discount: linkedInv.discountINR,
+              total: linkedInv.totalINR,
+            };
+            if (
+              !ord.costSummary ||
+              ord.costSummary.subtotal !== nextCostSummary.subtotal ||
+              ord.costSummary.serviceFee !== nextCostSummary.serviceFee ||
+              ord.costSummary.total !== nextCostSummary.total ||
+              ord.totalINR !== linkedInv.totalINR
+            ) {
+              ord.costSummary = nextCostSummary;
+              ord.totalINR = linkedInv.totalINR;
+              modified = true;
+            }
+          }
+          if (
+            ord.confirmationEmailStatus === 'Failed' &&
+            linkedInv?.emailStatus === 'Sent'
+          ) {
+            ord.confirmationEmailStatus = 'Sent';
+            ord.confirmationEmailSentAt = linkedInv.emailSentAt || ord.createdAt;
+            ord.confirmationEmailError = undefined;
+            modified = true;
+          }
+        }
         const has31026 = parsed.some((o) => o.id === 'ORD-31026');
         if (!has31026) {
           const merged = [INITIAL_SEED_ORDERS[0], ...parsed];
           saveOrders(merged);
           return merged;
+        }
+        if (modified) {
+          localStorage.setItem(STORAGE_ORDERS_KEY, JSON.stringify(parsed));
         }
         return parsed;
       }
@@ -680,7 +740,7 @@ export function getOrdersByCustomerId(customerId: string, email?: string): Integ
   );
 }
 
-export function createOrderRecord(order: IntegratedOrderRecord): IntegratedOrderRecord {
+export function createOrderRecord(order: IntegratedOrderRecord, skipAutoConfirmationEmail: boolean = false): IntegratedOrderRecord {
   const existing = getAllOrders();
   // Deduplicate
   const duplicate = existing.find((o) => o.id === order.id);
@@ -732,7 +792,7 @@ export function createOrderRecord(order: IntegratedOrderRecord): IntegratedOrder
   });
 
   // Automatically trigger backend order confirmation email if not already sent
-  if (order.confirmationEmailStatus !== 'Sent') {
+  if (!skipAutoConfirmationEmail && order.confirmationEmailStatus !== 'Sent') {
     triggerOrderConfirmationEmail(order).catch((err) => {
       console.warn('[Confirmation Email] Automated dispatch error:', err);
     });
@@ -814,7 +874,7 @@ export function confirmPurchaseOrderAndEmailInvoice(requestId: string): {
   };
 
   // 1. Save order into orders repository (and update customer totalOrders & totalSpentINR)
-  createOrderRecord(orderRecord);
+  createOrderRecord(orderRecord, true);
 
   // 2. Generate official invoice & automatically simulate transactional email delivery
   const { invoice } = createOrderAndAutomateInvoice({
@@ -852,9 +912,12 @@ export function confirmPurchaseOrderAndEmailInvoice(requestId: string): {
   // 3. Update request status to 'Purchasing'
   updatePurchaseRequestStatus(req.id, 'Purchasing');
 
-  // 4. Automatically trigger real order confirmation email with attached invoice via backend SMTP
+  // 4. Automatically trigger real order confirmation email + invoice email via backend SMTP
   triggerOrderConfirmationEmail(orderRecord, invoice).catch((err) => {
     console.warn('[Confirmation Email] Background dispatch failed:', err);
+  });
+  resendInvoiceEmail(invoice.invoiceNumber, recipientEmail).catch((err) => {
+    console.warn('[Invoice Email] Background dispatch failed:', err);
   });
 
   // 5. Emit sync events for all open views
@@ -1945,11 +2008,32 @@ export function getDynamicSidebarBadges(): Record<string, number | undefined> {
   const readyConsolidation = packages.filter((p) => p.status === 'Received' || p.status === 'Inspected').length;
   const pendingPayments = payments.filter((p) => p.status === 'Pending').length;
   const pendingRefunds = refunds.filter((r) => r.status === 'Under Review').length;
+  let externalPending = 0;
+  if (typeof window !== 'undefined') {
+    try {
+      const extRaw = localStorage.getItem('i2w_external_purchase_requests_v1');
+      if (extRaw) {
+        const extList = JSON.parse(extRaw);
+        if (Array.isArray(extList)) {
+          externalPending = extList.filter(
+            (r: any) =>
+              r.unreadAdminAlert ||
+              r.status === 'New Requests' ||
+              r.status === 'Under Review' ||
+              r.status === 'Customer Approved'
+          ).length;
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
 
   return {
     'purchase-requests': pendingRequests > 0 ? pendingRequests : undefined,
     'quotations': quotesPending > 0 ? quotesPending : undefined,
     'purchase-queue': purchaseQueue > 0 ? purchaseQueue : undefined,
+    'external-purchase-requests': externalPending > 0 ? externalPending : undefined,
     'incoming-packages': incomingPkgs > 0 ? incomingPkgs : undefined,
     'consolidation': readyConsolidation > 0 ? readyConsolidation : undefined,
     'shipping': activeShipments > 0 ? activeShipments : undefined,

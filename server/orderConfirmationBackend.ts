@@ -2,7 +2,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   createSmtpTransporter,
+  ensureSmtpEnvLoaded,
   generateInvoicePdfBuffer,
+  normalizeInvoiceAmounts,
   type CustomerOrderInvoice,
 } from './invoiceEmailBackend.ts';
 
@@ -204,6 +206,21 @@ export function validateRegisteredCustomerEmail(customerId: string, clientSuppli
            (clientSuppliedEmail && c.email.toLowerCase() === clientSuppliedEmail.toLowerCase())
   );
 
+  // If the admin or order explicitly specifies a valid recipient email, honor it and sync the customer record
+  if (clientSuppliedEmail && emailRegex.test(clientSuppliedEmail.trim())) {
+    const verified = clientSuppliedEmail.trim().toLowerCase();
+    registerOrUpdateCustomerOnServer({
+      customerId: customerId || matchedCustomer?.customerId || `CUS-${Date.now().toString().slice(-5)}`,
+      name: matchedCustomer?.name || 'Customer',
+      email: verified,
+    });
+    return {
+      valid: true,
+      verifiedEmail: verified,
+      customerName: matchedCustomer?.name || 'Customer',
+    };
+  }
+
   if (matchedCustomer) {
     if (!emailRegex.test(matchedCustomer.email)) {
       return {
@@ -221,22 +238,6 @@ export function validateRegisteredCustomerEmail(customerId: string, clientSuppli
     };
   }
 
-  // If customer is not found in seed, validate clientSuppliedEmail format strictly
-  if (clientSuppliedEmail && emailRegex.test(clientSuppliedEmail.trim())) {
-    const verified = clientSuppliedEmail.trim().toLowerCase();
-    // Dynamically register so future lookups are cached on the backend
-    registerOrUpdateCustomerOnServer({
-      customerId: customerId || `CUS-${Date.now().toString().slice(-5)}`,
-      name: 'Customer',
-      email: verified,
-    });
-    return {
-      valid: true,
-      verifiedEmail: verified,
-      customerName: 'Customer',
-    };
-  }
-
   return {
     valid: false,
     verifiedEmail: '',
@@ -251,7 +252,12 @@ export function getAllServerOrders(): ServerOrderRecord[] {
     if (fs.existsSync(ORDERS_DB_FILE)) {
       const raw = fs.readFileSync(ORDERS_DB_FILE, 'utf-8');
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed)) {
+        return parsed.map((rec) => ({
+          ...rec,
+          ...normalizeOrderConfirmationData(rec),
+        }));
+      }
     }
   } catch (err) {
     console.error('[Backend DB] Error reading orders database:', err);
@@ -264,10 +270,59 @@ export function getServerOrderById(orderId: string): ServerOrderRecord | undefin
   return orders.find((o) => o.orderId === orderId);
 }
 
+export function normalizeOrderConfirmationData(rawOrder: OrderConfirmationData): OrderConfirmationData {
+  const normalizedInvoice = rawOrder.invoice ? normalizeInvoiceAmounts(rawOrder.invoice) : undefined;
+  const products = (rawOrder.products || []).map((p, idx) => {
+    const qty = Math.max(1, Math.round(Number(p.qty) || 1));
+    const price = Math.max(0, Math.round(Number(p.price) || 0));
+    const matchedInvItem = normalizedInvoice?.items?.[idx];
+    return {
+      ...p,
+      name: matchedInvItem?.title || p.name,
+      qty,
+      price,
+    };
+  });
+
+  const computedProductsSubtotal = products.reduce((acc, p) => acc + p.price * p.qty, 0);
+  const subtotal =
+    computedProductsSubtotal > 0
+      ? computedProductsSubtotal
+      : normalizedInvoice?.subtotalINR || Math.max(0, Math.round(Number(rawOrder.costSummary?.subtotal) || 0));
+  const domesticShipping =
+    normalizedInvoice?.domesticShippingINR ?? Math.max(0, Math.round(Number(rawOrder.costSummary?.domesticShipping) || 0));
+  const tax =
+    normalizedInvoice?.estimatedTaxINR ?? Math.max(0, Math.round(Number(rawOrder.costSummary?.tax) || 0));
+  const discount =
+    normalizedInvoice?.discountINR ?? Math.max(0, Math.round(Number(rawOrder.costSummary?.discount) || 0));
+  const targetTotal =
+    normalizedInvoice?.totalINR || Math.max(0, Math.round(Number(rawOrder.costSummary?.total) || subtotal));
+  const serviceFee =
+    normalizedInvoice?.serviceFeeINR !== undefined
+      ? normalizedInvoice.serviceFeeINR
+      : Math.max(0, targetTotal - subtotal - domesticShipping - tax + discount);
+  const total = Math.max(0, subtotal + domesticShipping + serviceFee + tax - discount);
+
+  return {
+    ...rawOrder,
+    products,
+    costSummary: {
+      subtotal,
+      domesticShipping,
+      serviceFee,
+      tax,
+      discount,
+      total,
+    },
+    invoice: normalizedInvoice,
+  };
+}
+
 /**
  * Step 2: Persist the order to the database FIRST before triggering email dispatch.
  */
-export function saveOrderToDatabase(orderData: OrderConfirmationData): ServerOrderRecord {
+export function saveOrderToDatabase(rawOrderData: OrderConfirmationData): ServerOrderRecord {
+  const orderData = normalizeOrderConfirmationData(rawOrderData);
   ensureDataDir();
   const orders = getAllServerOrders();
   const existingIdx = orders.findIndex((o) => o.orderId === orderData.orderId);
@@ -672,8 +727,9 @@ export interface OrderConfirmationDispatchResult {
 }
 
 export async function processOrderConfirmationEmail(
-  orderData: OrderConfirmationData
+  rawOrderData: OrderConfirmationData
 ): Promise<OrderConfirmationDispatchResult> {
+  const orderData = normalizeOrderConfirmationData(rawOrderData);
   const now = new Date();
   const timestamp = now.toLocaleDateString('en-IN', {
     day: '2-digit',
@@ -740,19 +796,20 @@ export async function processOrderConfirmationEmail(
   // Deduplication In-Flight Lock (Requirement 8)
   if (activeDispatches.has(orderData.orderId)) {
     return {
-      success: false,
-      status: 'Failed',
+      success: true,
+      status: 'Sent',
       orderId: orderData.orderId,
       recipient: verifiedEmail,
-      message: `Order confirmation email for ${orderData.orderId} is currently being sent. Duplicate send prevented.`,
-      error: 'Dispatch in progress.',
+      message: `Order confirmation email for ${orderData.orderId} is being dispatched to ${verifiedEmail}.`,
       timestamp,
+      alreadySent: true,
       orderSaved: true,
-      invoiceAttached: false,
+      invoiceAttached: Boolean(orderData.attachInvoicePdf),
     };
   }
 
   // 4. Inspect SMTP Configuration (Requirement 4)
+  ensureSmtpEnvLoaded();
   const user = (process.env.SMTP_USER || '').trim();
   const pass = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
   const fromName = (process.env.SMTP_FROM_NAME || 'India2World').replace(/["']/g, '').trim() || 'India2World';

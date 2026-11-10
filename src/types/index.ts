@@ -2,6 +2,7 @@ export type Page =
   | 'home'
   | 'auth'
   | 'buy-for-me'
+  | 'request-external-purchase'
   | 'dashboard'
   | 'pricing'
   | 'countries'
@@ -15,6 +16,7 @@ export type Page =
 export type DashboardTab =
   | 'overview'
   | 'buy-for-me'
+  | 'request-external-purchase'
   | 'my-requests'
   | 'my-purchases'
   | 'my-warehouse'

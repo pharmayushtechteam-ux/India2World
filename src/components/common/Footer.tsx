@@ -74,6 +74,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal }) 
               <li>
                 <button
                   type="button"
+                  onClick={() => onNavigate('request-external-purchase')}
+                  className="text-blue-300 hover:text-white font-bold transition-colors cursor-pointer text-left"
+                >
+                  Request a Product from Another Platform
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
                   onClick={() => onNavigate('home')}
                   className="hover:text-white transition-colors cursor-pointer text-left"
                 >
@@ -129,6 +138,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal }) 
               <li>
                 <button
                   type="button"
+                  onClick={() => onNavigate('request-external-purchase')}
+                  className="text-blue-300 hover:text-white font-bold transition-colors cursor-pointer text-left"
+                >
+                  Request a Product from Another Platform
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
                   onClick={() => onNavigate('buy-for-me')}
                   className="hover:text-white transition-colors cursor-pointer text-left"
                 >
@@ -173,6 +191,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal }) 
               <span>Support & Account</span>
             </h5>
             <ul className="space-y-2 text-xs sm:text-[13px]">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('request-external-purchase')}
+                  className="text-blue-300 hover:text-white font-bold transition-colors cursor-pointer text-left"
+                >
+                  Request a Product from Another Platform
+                </button>
+              </li>
               <li>
                 <button
                   type="button"

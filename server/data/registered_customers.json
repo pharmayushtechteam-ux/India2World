@@ -1,9 +1,9 @@
 [
   {
-    "customerId": "CUS-31026",
-    "name": "rohith",
+    "customerId": "CUS-20261",
+    "name": "Rohith Kumar",
     "email": "pharmayushtechteam@gmail.com",
-    "phone": "+971 50 123 4567",
+    "phone": "+971 50 987 6543",
     "country": "United Arab Emirates",
     "city": "Dubai",
     "lockerId": "I2W-CUS-31026",
@@ -162,10 +162,10 @@
     "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Ananya%20Verma&backgroundColor=0066FF"
   },
   {
-    "customerId": "CUS-10286",
-    "name": "Durgaluckshmi",
+    "customerId": "CUST-1472",
+    "name": "Aarav Mehta",
     "email": "durgaluckshmi@gmail.com",
-    "phone": "+91 98765 43210",
+    "phone": "+971 52 641 8890",
     "country": "United Arab Emirates",
     "city": "Dubai",
     "lockerId": "I2W-10286",

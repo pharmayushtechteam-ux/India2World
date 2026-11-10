@@ -30,6 +30,7 @@ import {
   LogIn,
 } from 'lucide-react';
 import { StoreBadge } from '../common/StoreBadge';
+import { CustomerExternalPlatformRequestPortal } from './CustomerExternalPlatformRequestPortal';
 import { ProductItem, Page, BuyForMeStep } from '../../types';
 import { getCurrentUser, isUserAuthenticated, loginWithEmailAndPassword, fetchWithAuth, logoutUser, UserProfile } from '../../utils/userAuth';
 import {
@@ -754,6 +755,9 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
           </button>
         </div>
       </div>
+
+      {/* Request a Product from Another Platform (External Platform Purchase Request System) */}
+      <CustomerExternalPlatformRequestPortal />
 
       {/* 5-Step Stepper Bar */}
       <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-xs border border-slate-100">
@@ -1806,7 +1810,7 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
                             discount: 0,
                             total: totalINR,
                           },
-                        });
+                        }, true);
 
                         // Trigger automatic order confirmation email with attached PDF invoice
                         triggerOrderConfirmationEmail(newOrder, invoice).catch(console.warn);

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link2, ArrowRight, Check, ShoppingBag, ExternalLink, Calculator } from 'lucide-react';
 import { Logo } from '../common/Logo';
+import { CustomerExternalPlatformRequestPortal } from '../buy-for-me/CustomerExternalPlatformRequestPortal';
 import { Page } from '../../types';
 import { countriesList } from '../../data/mockData';
 import { formatINR, formatUSD, getCurrencyInfo } from '../../utils/currency';
@@ -247,6 +248,13 @@ export const HomePage: React.FC<HomePageProps> = ({
               className="text-[#0B1940] font-bold hover:text-[#0066FF] transition-colors cursor-pointer py-1.5 px-0.5 select-none"
             >
               Track
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('request-external-purchase')}
+              className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200 font-extrabold text-xs cursor-pointer transition-colors"
+            >
+              Request a Product from Another Platform
             </button>
           </nav>
 
@@ -538,6 +546,11 @@ export const HomePage: React.FC<HomePageProps> = ({
         </div>
       </section>
       {/* END: HTML Hero Banner Section */}
+
+      {/* Request a Product from Another Platform (External Purchase Request Section) */}
+      <section className="w-full px-3 sm:px-6 md:px-7 lg:px-12 pt-6 bg-white">
+        <CustomerExternalPlatformRequestPortal />
+      </section>
 
       {/* BEGIN: Top Online Stores Section matching stitch clone */}
       <section className="w-full px-3 sm:px-6 md:px-7 lg:px-12 py-5 sm:py-6 md:py-7 lg:py-8 bg-white border-b border-slate-100">

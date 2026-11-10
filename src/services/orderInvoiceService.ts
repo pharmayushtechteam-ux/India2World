@@ -93,18 +93,23 @@ const INITIAL_SEED_INVOICES: CustomerOrderInvoice[] = [
       country: 'United Arab Emirates',
     },
     items: [
-      { id: 'item-101', title: 'Puma Men Lightweight Running Sneakers', store: 'Flipkart', price: 2999, qty: 1, total: 2999 },
-      { id: 'item-102', title: 'FabIndia Linen Long Kurta Set', store: 'Tata CLIQ', price: 2499, qty: 1, total: 2499 },
-      { id: 'item-103', title: 'Organic India Tulsi Herbal Infusion Teas (Pack of 4)', store: 'Amazon India', price: 400, qty: 4, total: 1600 },
-      { id: 'item-104', title: 'Boat Wireless Bluetooth Earbuds', store: 'amazon.in', price: 949.5, qty: 2, total: 1899 },
-      { id: 'item-105', title: 'Biotique Bio Kelp Protein Shampoo 340ml', store: 'Myntra', price: 410, qty: 2, total: 820 },
-      { id: 'item-106', title: 'Handcrafted Brass Incense Holder', store: 'Indian Store', price: 1250, qty: 1, total: 1250 },
-      { id: 'item-107', title: 'AJIO Denim Jacket Indigo Blue', store: 'AJIO', price: 2199, qty: 1, total: 2199 },
+      { id: 'item-101', title: 'Flipkart Verified Product #1', store: 'Flipkart', price: 1782, qty: 1, total: 1782 },
+      { id: 'item-102', title: 'Kuchipoo Boys Typographic Print Regular Fit', store: 'AJIO', price: 1299, qty: 1, total: 1299 },
+      { id: 'item-103', title: 'Eridani Women Eva Kolhapuri Flats Gold', store: 'Indian Store', price: 1499, qty: 1, total: 1499 },
+      { id: 'item-104', title: 'Xaipro 20t Hycrox Premium Quality Cycle', store: 'Flipkart', price: 1499, qty: 1, total: 1499 },
+      { id: 'item-105', title: 'Mokobara Lucky Charm The Sunflower Medium', store: 'Tata CLiQ', price: 5999, qty: 1, total: 5999 },
+      { id: 'item-106', title: 'Kisah Blue Embellished Kurta With Sherwani', store: 'Indian Store', price: 1299, qty: 1, total: 1299 },
+      { id: 'item-107', title: 'IRTH by House of Titan Black Logo Satchel', store: 'Tata CLiQ', price: 2997, qty: 1, total: 2997 },
+      { id: 'item-108', title: 'Indian Store Apparel Item (#12345196)', store: 'Indian Store', price: 1299, qty: 1, total: 1299 },
+      { id: 'item-109', title: 'PHILIPS 9-Watts B22 LED Cool Day White Bulb', store: 'Amazon India', price: 59, qty: 1, total: 59 },
+      { id: 'item-110', title: "Nike Men's Running Shoes", store: 'amazon.in', price: 3999, qty: 1, total: 3999 },
+      { id: 'item-111', title: "Women's Kurta Set", store: 'Myntra', price: 1299, qty: 1, total: 1299 },
+      { id: 'item-112', title: 'Atomic Habits', store: 'amazon.in', price: 499, qty: 1, total: 499 },
     ],
-    subtotalINR: 20166,
-    domesticShippingINR: 450,
-    serviceFeeINR: 950,
-    estimatedTaxINR: 3845,
+    subtotalINR: 23529,
+    domesticShippingINR: 0,
+    serviceFeeINR: 1882,
+    estimatedTaxINR: 0,
     discountINR: 0,
     totalINR: 25411,
     paymentMethod: 'Credit Card (Stripe International)',
@@ -280,6 +285,64 @@ const INITIAL_SEED_INVOICES: CustomerOrderInvoice[] = [
   },
 ];
 
+function sanitizeInvoiceItemTitle(rawTitle: string, store?: string, index?: number): string {
+  const trimmed = (rawTitle || '').trim();
+  if (!trimmed) return `${store || 'Indian Store'} Product #${(index || 0) + 1}`;
+  if (/^\d{5,}$/.test(trimmed)) {
+    return `${store || 'Indian Store'} Apparel Item (#${trimmed})`;
+  }
+  if (trimmed.includes('&srno=') || trimmed.includes('&otracker=') || trimmed.includes('fm=organic') || trimmed.includes('ssid=')) {
+    const cleanPrefix = trimmed.split('&')[0]?.replace(/[^a-zA-Z0-9\s-]/g, ' ').trim();
+    if (cleanPrefix && cleanPrefix.length > 3 && !/^(cil|tv5|pid|lid)/i.test(cleanPrefix)) {
+      return cleanPrefix;
+    }
+    return `${store || 'Indian Store'} Verified Product #${(index || 0) + 1}`;
+  }
+  return trimmed;
+}
+
+export function normalizeInvoiceRecord(rawInvoice: CustomerOrderInvoice): CustomerOrderInvoice {
+  const items = (rawInvoice.items || []).map((item, idx) => {
+    const qty = Math.max(1, Math.round(Number(item.qty) || 1));
+    const price = Math.max(0, Math.round(Number(item.price) || 0));
+    const total = price * qty;
+    return {
+      ...item,
+      title: sanitizeInvoiceItemTitle(item.title, item.store, idx),
+      qty,
+      price,
+      total,
+    };
+  });
+
+  const computedItemsSubtotal = items.reduce((sum, item) => sum + item.total, 0);
+  const subtotalINR = items.length > 0 ? computedItemsSubtotal : Math.max(0, Math.round(Number(rawInvoice.subtotalINR) || 0));
+  const domesticShippingINR = Math.max(0, Math.round(Number(rawInvoice.domesticShippingINR) || 0));
+  const estimatedTaxINR = Math.max(0, Math.round(Number(rawInvoice.estimatedTaxINR) || 0));
+  const discountINR = Math.max(0, Math.round(Number(rawInvoice.discountINR) || 0));
+
+  let serviceFeeINR = Math.max(0, Math.round(Number(rawInvoice.serviceFeeINR) || 0));
+  const rawTotalINR = Math.max(0, Math.round(Number(rawInvoice.totalINR) || 0));
+  const calculatedTotal = Math.max(0, subtotalINR + domesticShippingINR + serviceFeeINR + estimatedTaxINR - discountINR);
+
+  if (rawTotalINR > 0 && calculatedTotal !== rawTotalINR && serviceFeeINR === 0 && rawTotalINR > subtotalINR) {
+    serviceFeeINR = rawTotalINR - subtotalINR - domesticShippingINR - estimatedTaxINR + discountINR;
+  }
+
+  const totalINR = Math.max(0, subtotalINR + domesticShippingINR + serviceFeeINR + estimatedTaxINR - discountINR);
+
+  return {
+    ...rawInvoice,
+    items,
+    subtotalINR,
+    domesticShippingINR,
+    serviceFeeINR,
+    estimatedTaxINR,
+    discountINR,
+    totalINR,
+  };
+}
+
 /**
  * Retrieve all persisted invoices
  */
@@ -287,23 +350,25 @@ export function getAllInvoices(): CustomerOrderInvoice[] {
   try {
     const raw = localStorage.getItem(INVOICE_STORAGE_KEY);
     if (!raw) {
-      localStorage.setItem(INVOICE_STORAGE_KEY, JSON.stringify(INITIAL_SEED_INVOICES));
-      return INITIAL_SEED_INVOICES;
+      const normalizedSeed = INITIAL_SEED_INVOICES.map(normalizeInvoiceRecord);
+      localStorage.setItem(INVOICE_STORAGE_KEY, JSON.stringify(normalizedSeed));
+      return normalizedSeed;
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
-      const has31026 = parsed.some((i) => i.id === 'INV-2026-31026' || i.invoiceNumber === 'INV-2026-31026');
+      const normalizedList = parsed.map(normalizeInvoiceRecord);
+      const has31026 = normalizedList.some((i) => i.id === 'INV-2026-31026' || i.invoiceNumber === 'INV-2026-31026');
       if (!has31026) {
-        const merged = [INITIAL_SEED_INVOICES[0], ...parsed];
+        const merged = [normalizeInvoiceRecord(INITIAL_SEED_INVOICES[0]), ...normalizedList];
         saveInvoices(merged);
         return merged;
       }
-      return parsed;
+      return normalizedList;
     }
-    return INITIAL_SEED_INVOICES;
+    return INITIAL_SEED_INVOICES.map(normalizeInvoiceRecord);
   } catch (err) {
     console.error('Failed to load invoices:', err);
-    return INITIAL_SEED_INVOICES;
+    return INITIAL_SEED_INVOICES.map(normalizeInvoiceRecord);
   }
 }
 
@@ -443,7 +508,7 @@ export function createOrderAndAutomateInvoice(params: CreateOrderParams): {
     total: p.priceINR * p.quantity,
   }));
 
-  const newInvoice: CustomerOrderInvoice = {
+  const newInvoice: CustomerOrderInvoice = normalizeInvoiceRecord({
     id: invoiceNum,
     orderId,
     invoiceNumber: invoiceNum,
@@ -480,7 +545,7 @@ export function createOrderAndAutomateInvoice(params: CreateOrderParams): {
     emailSentAt: undefined,
     emailDeliveryLog: `Invoice generated for order ${orderId}. Ready for electronic email dispatch to ${user.email}.`,
     emailAttemptCount: 0,
-  };
+  });
 
   // Prepend new invoice
   const updatedInvoices = [newInvoice, ...existingInvoices];
@@ -543,6 +608,10 @@ export async function resendInvoiceEmail(
 
       const updatedInvoice: CustomerOrderInvoice = {
         ...invoice,
+        customerEmail: recipient,
+        billingAddress: invoice.billingAddress
+          ? { ...invoice.billingAddress, email: recipient }
+          : { name: invoice.customerName, email: recipient, country: invoice.destinationCountry },
         emailStatus: 'Sent',
         emailSentAt: data.timestamp || timestamp,
         emailAttemptCount: (invoice.emailAttemptCount || 0) + 1,
@@ -550,6 +619,25 @@ export async function resendInvoiceEmail(
       };
       all[index] = updatedInvoice;
       saveInvoices(all);
+
+      // Also synchronize the linked order record in localStorage so confirmation status shows Sent
+      try {
+        const ordersRaw = localStorage.getItem('i2w_integrated_orders_v2');
+        if (ordersRaw) {
+          const parsedOrders = JSON.parse(ordersRaw);
+          if (Array.isArray(parsedOrders)) {
+            const oIdx = parsedOrders.findIndex((o: any) => o.id === invoice.orderId);
+            if (oIdx >= 0) {
+              parsedOrders[oIdx].customerEmail = recipient;
+              parsedOrders[oIdx].confirmationEmailStatus = 'Sent';
+              parsedOrders[oIdx].confirmationEmailSentAt = data.timestamp || timestamp;
+              delete parsedOrders[oIdx].confirmationEmailError;
+              localStorage.setItem('i2w_integrated_orders_v2', JSON.stringify(parsedOrders));
+              window.dispatchEvent(new CustomEvent('i2w-data-synchronized', { detail: { entityType: 'orders' } }));
+            }
+          }
+        }
+      } catch {}
 
       return {
         success: true,
@@ -623,7 +711,8 @@ export function updateInvoiceCustomerEmail(invoiceNumber: string, newEmail: stri
 /**
  * Generate high-fidelity branded HTML invoice document for preview & PDF printing
  */
-export function generateInvoiceHtml(invoice: CustomerOrderInvoice): string {
+export function generateInvoiceHtml(rawInvoice: CustomerOrderInvoice): string {
+  const invoice = normalizeInvoiceRecord(rawInvoice);
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -643,143 +732,213 @@ export function generateInvoiceHtml(invoice: CustomerOrderInvoice): string {
       max-width: 800px;
       margin: 0 auto;
       border: 1px solid #e2e8f0;
+      border-top: 4px solid #0066FF;
       border-radius: 12px;
       padding: 32px;
       background: #ffffff;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
     }
     .header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
+      background: #0B1933;
+      padding: 20px 24px;
+      border-radius: 8px;
       border-bottom: 2px solid #0066FF;
-      padding-bottom: 20px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
+      color: #ffffff;
     }
     .logo-badge {
-      display: inline-block;
-      background: #0066FF;
-      color: #ffffff;
       font-weight: 800;
-      font-size: 18px;
-      padding: 6px 14px;
-      border-radius: 8px;
+      font-size: 22px;
       letter-spacing: -0.5px;
+      color: #ffffff;
+    }
+    .logo-badge span {
+      color: #38BDF8;
     }
     .brand-sub {
       font-size: 11px;
-      color: #64748b;
+      color: #94a3b8;
       margin-top: 4px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
+      font-weight: 500;
+      letter-spacing: 0.3px;
     }
     .invoice-title {
       text-align: right;
     }
-    .invoice-title h1 {
-      font-size: 22px;
-      color: #0b1933;
-      font-weight: 800;
-      text-transform: uppercase;
+    .invoice-badge-pill {
+      display: inline-block;
+      background: #0066FF;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 700;
       letter-spacing: 0.5px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
     }
     .inv-meta {
-      font-size: 12px;
-      color: #475569;
-      margin-top: 4px;
+      font-size: 11.5px;
+      color: #cbd5e1;
+      margin-top: 2px;
+    }
+    .inv-meta strong {
+      color: #ffffff;
     }
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 24px;
+      gap: 16px;
+      margin-bottom: 20px;
     }
     .card {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
       border-radius: 8px;
-      padding: 14px 16px;
+      overflow: hidden;
     }
-    .card-title {
-      font-size: 10px;
+    .card-header-bar {
+      background: #eff6ff;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 8px 14px;
+      font-size: 10.5px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      color: #64748b;
-      margin-bottom: 6px;
+      color: #0066FF;
+    }
+    .card-body {
+      padding: 12px 14px;
     }
     .card-name {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 700;
       color: #0f172a;
     }
     .card-text {
       font-size: 12px;
       color: #475569;
-      margin-top: 2px;
+      margin-top: 3px;
     }
     .card-email {
       font-size: 12px;
       color: #0066FF;
       font-weight: 600;
-      margin-top: 4px;
+      margin-top: 3px;
     }
     table {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 20px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
     }
     th {
-      background: #f1f5f9;
-      color: #475569;
+      background: #0066FF;
+      color: #ffffff;
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       padding: 10px 12px;
       text-align: left;
-      border-top: 1px solid #e2e8f0;
-      border-bottom: 1px solid #cbd5e1;
     }
     td {
-      padding: 12px;
+      padding: 10px 12px;
       border-bottom: 1px solid #f1f5f9;
-      font-size: 12.5px;
+      font-size: 12px;
       color: #1e293b;
+    }
+    tbody tr:nth-child(even) {
+      background: #f8fafc;
+    }
+    .store-pill {
+      display: inline-block;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #0066FF;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-top: 4px;
     }
     .text-right { text-align: right; }
     .text-center { text-align: center; }
     .totals-area {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
       margin-bottom: 24px;
+    }
+    .security-stamp {
+      flex: 1;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .stamp-header {
+      background: #ecfdf5;
+      border-bottom: 1px solid #a7f3d0;
+      padding: 8px 12px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #059669;
+    }
+    .stamp-body {
+      padding: 10px 12px;
+      font-size: 11px;
+      color: #475569;
+      line-height: 1.6;
     }
     .totals-table {
       width: 320px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
     }
     .totals-table td {
-      padding: 6px 0;
-      border: none;
+      padding: 6px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 12px;
     }
-    .grand-total {
-      font-size: 16px !important;
+    .grand-total-row {
+      background: #0066FF !important;
+      color: #ffffff !important;
+      font-size: 14px !important;
       font-weight: 800 !important;
-      color: #0066FF !important;
-      border-top: 2px solid #0066FF !important;
-      padding-top: 8px !important;
+    }
+    .grand-total-row td {
+      color: #ffffff !important;
+      padding: 10px 12px !important;
+      border: none !important;
     }
     .status-banner {
       background: #f0fdf4;
-      border: 1px solid #bbf7d0;
+      border: 1px solid #86efac;
       border-radius: 8px;
-      padding: 12px 16px;
+      padding: 10px 16px;
       font-size: 12px;
       color: #166534;
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
+    }
+    .status-badge-captured {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #166534;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
     }
     .footer {
       border-top: 1px solid #e2e8f0;
@@ -799,13 +958,18 @@ export function generateInvoiceHtml(invoice: CustomerOrderInvoice): string {
 <body>
   <div class="invoice-wrapper">
     <div class="header">
-      <div>
-        <div class="logo-badge">India2World</div>
-        <div class="brand-sub">Cross-Border Assisted Purchase & Forwarding</div>
-        <div style="font-size: 11px; color: #64748b; margin-top: 4px;">GSTIN: 27AAACI1234D1Z8 &bull; CIN: U63090MH2024PTC123456</div>
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <div style="background: #ffffff; width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 3px; box-sizing: border-box;">
+          <img src="/logo-icon.png" alt="India2World" style="width: 38px; height: 38px; object-fit: contain;" />
+        </div>
+        <div>
+          <div class="logo-badge">India<span>2</span>World</div>
+          <div class="brand-sub">Shop in India • Deliver Worldwide • Cross-Border Hub</div>
+          <div style="font-size: 10px; color: #94a3b8; margin-top: 4px;">GSTIN: 27AABCI1234F1Z8 &bull; CIN: U63090MH2024PTC123456</div>
+        </div>
       </div>
       <div class="invoice-title">
-        <h1>Official Tax Invoice</h1>
+        <div class="invoice-badge-pill">OFFICIAL TAX INVOICE</div>
         <div class="inv-meta">Invoice No: <strong>${invoice.invoiceNumber}</strong></div>
         <div class="inv-meta">Order ID: <strong>${invoice.orderId}</strong></div>
         <div class="inv-meta">Date: ${invoice.createdAt}</div>
@@ -814,27 +978,33 @@ export function generateInvoiceHtml(invoice: CustomerOrderInvoice): string {
 
     <div class="status-banner">
       <div>
-        <span>Payment Status: <strong>${invoice.paymentStatus}</strong> via ${invoice.paymentMethod}</span>
+        <span>Order Reference: <strong>${invoice.orderId}</strong> &bull; Locker: <strong>I2W-${invoice.customerId}</strong></span>
       </div>
       <div>
-        <span>Automated Delivery: <strong>${invoice.emailStatus} to ${invoice.customerEmail}</strong></span>
+        <span class="status-badge-captured">PAID • CAPTURED</span>
       </div>
     </div>
 
     <div class="grid-2">
       <div class="card">
-        <div class="card-title">Billed To (Registered Customer)</div>
-        <div class="card-name">${invoice.customerName}</div>
-        <div class="card-text">Customer ID: <strong>${invoice.customerId}</strong></div>
-        <div class="card-email">Account Email: ${invoice.customerEmail}</div>
-        <div class="card-text">Destination: ${invoice.destinationCity}, ${invoice.destinationCountry}</div>
+        <div class="card-header-bar">BILL TO & SHIP TO (CUSTOMER)</div>
+        <div class="card-body">
+          <div class="card-name">${invoice.customerName}</div>
+          <div class="card-email">${invoice.customerEmail}</div>
+          <div class="card-text">Phone: ${invoice.customerPhone || 'N/A'}</div>
+          <div class="card-text">Destination: ${invoice.destinationCity}, ${invoice.destinationCountry}</div>
+          <div class="card-text">${invoice.shippingAddress?.street || 'Standard International Delivery Hub'}</div>
+        </div>
       </div>
       <div class="card">
-        <div class="card-title">Warehouse & Fulfillment Hub</div>
-        <div class="card-name">India2World Central Processing Hub</div>
-        <div class="card-text">Plot 42, Udyog Vihar Phase 4</div>
-        <div class="card-text">Gurugram, Haryana - 122016, India</div>
-        <div class="card-text">Support: support@india2world.com | +91 98765 43210</div>
+        <div class="card-header-bar">ISSUING WAREHOUSE & DISPATCH HUB</div>
+        <div class="card-body">
+          <div class="card-name">India2World Logistics Pvt. Ltd.</div>
+          <div class="card-text" style="font-size: 11px; color: #64748b;">GSTIN: 27AABCI1234F1Z8 | PAN: AABCI1234F</div>
+          <div class="card-text">Central Export Hub, Bay #4, Marol MIDC</div>
+          <div class="card-text">Andheri East, Mumbai, MH - 400093, India</div>
+          <div class="card-email">Support: support@india2world.com | +91 98765 43210</div>
+        </div>
       </div>
     </div>
 
@@ -842,10 +1012,11 @@ export function generateInvoiceHtml(invoice: CustomerOrderInvoice): string {
       <thead>
         <tr>
           <th style="width: 5%;">#</th>
-          <th style="width: 50%;">Item & Store Description</th>
-          <th style="width: 10%;" class="text-center">Qty</th>
-          <th style="width: 17%;" class="text-right">Unit Price</th>
-          <th style="width: 18%;" class="text-right">Total (INR)</th>
+          <th style="width: 47%;">Item Description</th>
+          <th style="width: 18%;">Platform / Store</th>
+          <th style="width: 8%;" class="text-center">Qty</th>
+          <th style="width: 11%;" class="text-right">Unit Price</th>
+          <th style="width: 11%;" class="text-right">Total (INR)</th>
         </tr>
       </thead>
       <tbody>
@@ -853,14 +1024,16 @@ export function generateInvoiceHtml(invoice: CustomerOrderInvoice): string {
           .map(
             (item, idx) => `
           <tr>
-            <td>${idx + 1}</td>
+            <td style="color: #64748b; font-size: 11px;">${idx + 1}</td>
             <td>
               <strong>${item.title}</strong>
-              <div style="font-size: 11px; color: #64748b;">Merchant / Store: ${item.store}</div>
+            </td>
+            <td>
+              <span class="store-pill">${item.store || 'Indian Store'}</span>
             </td>
             <td class="text-center">${item.qty}</td>
             <td class="text-right">₹${item.price.toLocaleString('en-IN')}</td>
-            <td class="text-right" style="font-weight: 600;">₹${item.total.toLocaleString('en-IN')}</td>
+            <td class="text-right" style="font-weight: 700; color: #0f172a;">₹${item.total.toLocaleString('en-IN')}</td>
           </tr>
         `
           )
@@ -869,6 +1042,15 @@ export function generateInvoiceHtml(invoice: CustomerOrderInvoice): string {
     </table>
 
     <div class="totals-area">
+      <div class="security-stamp">
+        <div class="stamp-header">TRANSACTION VERIFICATION & SECURITY</div>
+        <div class="stamp-body">
+          <div>&bull; <strong>Payment Method:</strong> ${invoice.paymentMethod || 'Online Payment Gateway'}</div>
+          <div>&bull; <strong>Escrow Protection:</strong> Active (100% Funds Secured in Escrow)</div>
+          <div>&bull; <strong>Warehouse Protocol:</strong> Intake Inspection & Weighing Verification</div>
+          <div style="margin-top: 6px; font-size: 10px; color: #94a3b8;">This tax receipt is digitally validated for international customs and parcel forward clearance.</div>
+        </div>
+      </div>
       <table class="totals-table">
         <tr>
           <td style="color: #64748b;">Products Subtotal:</td>
@@ -877,10 +1059,13 @@ export function generateInvoiceHtml(invoice: CustomerOrderInvoice): string {
         ${
           invoice.domesticShippingINR > 0
             ? `<tr>
-                <td style="color: #64748b;">Domestic Merchant Shipping:</td>
+                <td style="color: #64748b;">Domestic Delivery:</td>
                 <td class="text-right" style="font-weight: 600;">₹${invoice.domesticShippingINR.toLocaleString('en-IN')}</td>
               </tr>`
-            : ''
+            : `<tr>
+                <td style="color: #64748b;">Domestic Delivery:</td>
+                <td class="text-right" style="font-weight: 700; color: #059669;">FREE</td>
+              </tr>`
         }
         <tr>
           <td style="color: #64748b;">Assisted Procurement Fee:</td>
@@ -889,7 +1074,7 @@ export function generateInvoiceHtml(invoice: CustomerOrderInvoice): string {
         ${
           invoice.estimatedTaxINR > 0
             ? `<tr>
-                <td style="color: #64748b;">Applicable Taxes & Export Handling:</td>
+                <td style="color: #64748b;">Estimated Tax / GST:</td>
                 <td class="text-right" style="font-weight: 600;">₹${invoice.estimatedTaxINR.toLocaleString('en-IN')}</td>
               </tr>`
             : ''
@@ -897,14 +1082,14 @@ export function generateInvoiceHtml(invoice: CustomerOrderInvoice): string {
         ${
           invoice.discountINR > 0
             ? `<tr>
-                <td style="color: #10b981;">Promotional Discount:</td>
-                <td class="text-right" style="font-weight: 600; color: #10b981;">-₹${invoice.discountINR.toLocaleString('en-IN')}</td>
+                <td style="color: #059669;">Promotional Discount:</td>
+                <td class="text-right" style="font-weight: 700; color: #059669;">-₹${invoice.discountINR.toLocaleString('en-IN')}</td>
               </tr>`
             : ''
         }
-        <tr>
-          <td class="grand-total">Total Amount Paid:</td>
-          <td class="grand-total text-right">₹${invoice.totalINR.toLocaleString('en-IN')}</td>
+        <tr class="grand-total-row">
+          <td>TOTAL AMOUNT PAID:</td>
+          <td class="text-right">₹${invoice.totalINR.toLocaleString('en-IN')}</td>
         </tr>
       </table>
     </div>

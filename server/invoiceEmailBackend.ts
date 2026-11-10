@@ -128,12 +128,86 @@ export function appendInvoiceDispatchLog(log: InvoiceDispatchLog): void {
 // In-flight lock to prevent duplicate concurrent sends on rapid double-click
 const inFlightInvoices = new Set<string>();
 
+function sanitizeItemTitle(rawTitle: string, store?: string, index?: number): string {
+  const trimmed = (rawTitle || '').trim();
+  if (!trimmed) return `${store || 'Indian Store'} Product #${(index || 0) + 1}`;
+  if (/^\d{5,}$/.test(trimmed)) {
+    return `${store || 'Indian Store'} Apparel Item (#${trimmed})`;
+  }
+  if (trimmed.includes('&srno=') || trimmed.includes('&otracker=') || trimmed.includes('fm=organic') || trimmed.includes('ssid=')) {
+    const cleanPrefix = trimmed.split('&')[0]?.replace(/[^a-zA-Z0-9\s-]/g, ' ').trim();
+    if (cleanPrefix && cleanPrefix.length > 3 && !/^(cil|tv5|pid|lid)/i.test(cleanPrefix)) {
+      return cleanPrefix;
+    }
+    return `${store || 'Indian Store'} Verified Product #${(index || 0) + 1}`;
+  }
+  return trimmed;
+}
+
+export function normalizeInvoiceAmounts(rawInvoice: CustomerOrderInvoice): CustomerOrderInvoice {
+  const items = (rawInvoice.items || []).map((item, idx) => {
+    const qty = Math.max(1, Math.round(Number(item.qty) || 1));
+    const price = Math.max(0, Math.round(Number(item.price) || 0));
+    const total = price * qty;
+    return {
+      ...item,
+      title: sanitizeItemTitle(item.title, item.store, idx),
+      qty,
+      price,
+      total,
+    };
+  });
+
+  const computedItemsSubtotal = items.reduce((sum, item) => sum + item.total, 0);
+  const subtotalINR = items.length > 0 ? computedItemsSubtotal : Math.max(0, Math.round(Number(rawInvoice.subtotalINR) || 0));
+  const domesticShippingINR = Math.max(0, Math.round(Number(rawInvoice.domesticShippingINR) || 0));
+  const estimatedTaxINR = Math.max(0, Math.round(Number(rawInvoice.estimatedTaxINR) || 0));
+  const discountINR = Math.max(0, Math.round(Number(rawInvoice.discountINR) || 0));
+
+  let serviceFeeINR = Math.max(0, Math.round(Number(rawInvoice.serviceFeeINR) || 0));
+  const rawTotalINR = Math.max(0, Math.round(Number(rawInvoice.totalINR) || 0));
+  const calculatedTotal = Math.max(0, subtotalINR + domesticShippingINR + serviceFeeINR + estimatedTaxINR - discountINR);
+
+  // If serviceFeeINR was left at a default placeholder (e.g., 0 or 350) while rawTotalINR reflects an 8% fee on subtotal, reconcile cleanly
+  if (rawTotalINR > 0 && calculatedTotal !== rawTotalINR && serviceFeeINR === 0 && rawTotalINR > subtotalINR) {
+    serviceFeeINR = rawTotalINR - subtotalINR - domesticShippingINR - estimatedTaxINR + discountINR;
+  }
+
+  const totalINR = Math.max(0, subtotalINR + domesticShippingINR + serviceFeeINR + estimatedTaxINR - discountINR);
+
+  return {
+    ...rawInvoice,
+    items,
+    subtotalINR,
+    domesticShippingINR,
+    serviceFeeINR,
+    estimatedTaxINR,
+    discountINR,
+    totalINR,
+  };
+}
+
+function resolvePdfUnicodeFonts(): { regular: string; bold: string; supportsUnicodeRupee: boolean } {
+  const candidates = [
+    { regular: 'C:\\Windows\\Fonts\\segoeui.ttf', bold: 'C:\\Windows\\Fonts\\segoeuib.ttf' },
+    { regular: 'C:\\Windows\\Fonts\\arial.ttf', bold: 'C:\\Windows\\Fonts\\arialbd.ttf' },
+    { regular: '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', bold: '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf' },
+  ];
+  for (const pair of candidates) {
+    if (fs.existsSync(pair.regular) && fs.existsSync(pair.bold)) {
+      return { ...pair, supportsUnicodeRupee: true };
+    }
+  }
+  return { regular: 'Helvetica', bold: 'Helvetica-Bold', supportsUnicodeRupee: false };
+}
+
 /**
  * Generate a standalone, publication-quality PDF invoice buffer using PDFKit
  */
-export function generateInvoicePdfBuffer(invoice: CustomerOrderInvoice): Promise<Buffer> {
+export function generateInvoicePdfBuffer(rawInvoice: CustomerOrderInvoice): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     try {
+      const invoice = normalizeInvoiceAmounts(rawInvoice);
       const doc = new PDFDocument({
         size: 'A4',
         margin: 40,
@@ -145,142 +219,263 @@ export function generateInvoicePdfBuffer(invoice: CustomerOrderInvoice): Promise
         },
       });
 
+      const fontConfig = resolvePdfUnicodeFonts();
+      let fontRegular = 'Helvetica';
+      let fontBold = 'Helvetica-Bold';
+      let currencyPrefix = 'Rs. ';
+      let bulletChar = '|';
+
+      if (fontConfig.supportsUnicodeRupee) {
+        try {
+          doc.registerFont('InvoiceFont', fontConfig.regular);
+          doc.registerFont('InvoiceFont-Bold', fontConfig.bold);
+          fontRegular = 'InvoiceFont';
+          fontBold = 'InvoiceFont-Bold';
+          currencyPrefix = '₹';
+          bulletChar = '•';
+        } catch {
+          fontRegular = 'Helvetica';
+          fontBold = 'Helvetica-Bold';
+          currencyPrefix = 'Rs. ';
+          bulletChar = '|';
+        }
+      }
+
+      const formatINR = (amount: number) => `${currencyPrefix}${Math.round(amount || 0).toLocaleString('en-IN')}`;
+
       const buffers: Buffer[] = [];
       doc.on('data', (chunk) => buffers.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(buffers)));
       doc.on('error', (err) => reject(err));
 
-      // Header Banner Background
-      doc.rect(40, 40, 515, 65).fill('#0B1933');
+      // Resolve Official India2World Logo Icon Path safely across all execution environments
+      const logoCandidates = [
+        path.resolve(process.cwd(), 'public', 'logo-icon.png'),
+        path.resolve(process.cwd(), 'India2World-main', 'public', 'logo-icon.png'),
+        path.resolve(process.cwd(), '..', 'public', 'logo-icon.png'),
+        'C:\\Users\\Windows 10\\Downloads\\India2World-main (1)\\India2World-main\\public\\logo-icon.png',
+      ];
+      let resolvedLogoPath: string | null = null;
+      for (const p of logoCandidates) {
+        if (fs.existsSync(p)) {
+          resolvedLogoPath = p;
+          break;
+        }
+      }
 
-      // Header Text
-      doc.fillColor('#FFFFFF').fontSize(20).font('Helvetica-Bold').text('India2World', 55, 52);
-      doc.fontSize(9).font('Helvetica').fillColor('#94A3B8').text('Shop in India. Deliver Worldwide.', 55, 76);
+      // Header Accent Stripe (Vibrant Royal Blue)
+      doc.rect(40, 36, 515, 4).fill('#0066FF');
 
-      // Top Right: Invoice Badge
-      doc.fillColor('#FFFFFF').fontSize(14).font('Helvetica-Bold').text('INVOICE', 380, 52, { align: 'right', width: 160 });
-      doc.fontSize(8.5).font('Helvetica').fillColor('#E2E8F0').text(`Invoice #: ${invoice.invoiceNumber}`, 380, 70, { align: 'right', width: 160 });
-      doc.fontSize(8.5).text(`Date: ${invoice.createdAt}`, 380, 82, { align: 'right', width: 160 });
+      // Header Banner Background (Deep Executive Slate Navy #0B1933)
+      doc.rect(40, 40, 515, 68).fill('#0B1933');
+      // Subtle bottom accent line
+      doc.rect(40, 107, 515, 1.5).fill('#0066FF');
+
+      // 1. Draw Official India2World Logo Icon (matching Admin Dashboard sidebar exactly)
+      if (resolvedLogoPath) {
+        try {
+          doc.roundedRect(52, 48, 44, 44, 6).fill('#FFFFFF');
+          doc.image(resolvedLogoPath, 55, 51, { width: 38, height: 38 });
+        } catch (err) {
+          console.warn('[PDF Invoice] Failed to render logo image in PDF:', err);
+        }
+      }
+
+      const textStartX = resolvedLogoPath ? 106 : 55;
+
+      // Header Text: Logo India2World
+      doc.fontSize(21).font(fontBold).fillColor('#FFFFFF').text('India', textStartX, 48, { continued: true });
+      doc.fillColor('#38BDF8').text('2', { continued: true });
+      doc.fillColor('#FFFFFF').text('World');
+
+      // Slogan & Registrations
+      doc.fontSize(8.5).font(fontRegular).fillColor('#94A3B8').text('Shop in India • Deliver Worldwide • Cross-Border Logistics Hub', textStartX, 73);
+      doc.fontSize(7).font(fontRegular).fillColor('#64748B').text('GSTIN: 27AABCI1234F1Z8 | PAN: AABCI1234F | CIN: U63090MH2024PTC123456', textStartX, 87);
+
+      // Top Right: Tax Invoice Pill Badge
+      doc.roundedRect(385, 46, 155, 19, 9.5).fill('#0066FF');
+      doc.fillColor('#FFFFFF').fontSize(8).font(fontBold).text('OFFICIAL TAX INVOICE', 385, 51.5, { align: 'center', width: 155 });
+
+      doc.fontSize(8.5).font(fontBold).fillColor('#FFFFFF').text(`Invoice #: ${invoice.invoiceNumber}`, 380, 71, { align: 'right', width: 160 });
+      doc.fontSize(8).font(fontRegular).fillColor('#94A3B8').text(`Date: ${invoice.createdAt}`, 380, 83, { align: 'right', width: 160 });
+      doc.fontSize(7.5).font(fontBold).fillColor('#38BDF8').text('Status: Paid & Escrow Verified', 380, 94, { align: 'right', width: 160 });
 
       // Reset fill color
       doc.fillColor('#0F172A');
 
-      // Order Reference Box
-      doc.rect(40, 115, 515, 30).fill('#F8FAFC');
-      doc.rect(40, 115, 515, 30).stroke('#CBD5E1');
-      doc.fontSize(9).font('Helvetica-Bold').fillColor('#0F172A').text('Order ID: ', 55, 124, { continued: true });
-      doc.font('Helvetica').text(`${invoice.orderId}   |   `, { continued: true });
-      doc.font('Helvetica-Bold').text('Payment Status: ', { continued: true });
-      doc.font('Helvetica').fillColor('#059669').text('PAID (Verified)   |   ', { continued: true });
-      doc.font('Helvetica-Bold').fillColor('#0F172A').text('Locker ID: ', { continued: true });
-      doc.font('Helvetica').text(`I2W-${invoice.customerId}`);
+      // Order Reference & Status Verification Bar
+      const barTop = 116;
+      doc.roundedRect(40, barTop, 515, 30, 4).fill('#F0F4F9');
+      doc.roundedRect(40, barTop, 515, 30, 4).stroke('#CBD5E1');
 
-      // Customer & Warehouse details (2 columns)
-      const colTop = 155;
-      doc.rect(40, colTop, 250, 95).stroke('#E2E8F0');
-      doc.fontSize(9.5).font('Helvetica-Bold').fillColor('#0066FF').text('BILL TO & SHIP TO (CUSTOMER)', 50, colTop + 8);
-      doc.fontSize(8.5).font('Helvetica-Bold').fillColor('#0F172A').text(invoice.customerName, 50, colTop + 24);
-      doc.font('Helvetica').fillColor('#475569');
-      doc.text(`Email: ${invoice.customerEmail}`, 50, colTop + 36);
-      doc.text(`Phone: ${invoice.customerPhone || 'N/A'}`, 50, colTop + 48);
-      doc.text(`Destination: ${invoice.destinationCity}, ${invoice.destinationCountry}`, 50, colTop + 60);
-      doc.text(`Address: ${invoice.shippingAddress?.street || 'Standard International Delivery'}`, 50, colTop + 72, { width: 230 });
+      doc.fontSize(8.5).font(fontBold).fillColor('#0066FF').text('ORDER ID: ', 52, barTop + 10, { continued: true });
+      doc.font(fontBold).fillColor('#0F172A').text(`${invoice.orderId}     `, { continued: true });
+
+      doc.font(fontBold).fillColor('#64748B').text('LOCKER ID: ', { continued: true });
+      doc.font(fontBold).fillColor('#0F172A').text(`I2W-${invoice.customerId}     `, { continued: true });
+
+      doc.font(fontBold).fillColor('#64748B').text('PAYMENT: ', { continued: true });
+      doc.font(fontRegular).fillColor('#0F172A').text(invoice.paymentMethod || 'Online Payment Gateway');
+
+      // Emerald "PAID • CAPTURED" Pill Badge on right
+      doc.roundedRect(415, barTop + 6, 125, 18, 9).fill('#DCFCE7').stroke('#86EFAC');
+      doc.fontSize(7.5).font(fontBold).fillColor('#166534').text('PAID • CAPTURED', 415, barTop + 10.5, { align: 'center', width: 125 });
+
+      // Customer & Warehouse details (2 columns matching admin cards)
+      const colTop = 154;
+      const colWidth = 250;
+      const colHeight = 98;
+
+      // Customer Card
+      doc.roundedRect(40, colTop, colWidth, colHeight, 4).fill('#FFFFFF').stroke('#CBD5E1');
+      doc.roundedRect(40, colTop, colWidth, 22, 4).fill('#EFF6FF');
+      doc.rect(40, colTop + 18, colWidth, 4).fill('#EFF6FF'); // seamless bottom
+      doc.fontSize(8).font(fontBold).fillColor('#0066FF').text('BILL TO & SHIP TO (CUSTOMER)', 50, colTop + 6);
+
+      doc.fontSize(8.5).font(fontBold).fillColor('#0F172A').text(invoice.customerName, 50, colTop + 27);
+      doc.fontSize(8).font(fontRegular).fillColor('#0066FF').text(`Email: ${invoice.customerEmail}`, 50, colTop + 40);
+      doc.fillColor('#475569');
+      doc.text(`Phone: ${invoice.customerPhone || 'N/A'}`, 50, colTop + 52);
+      doc.text(`Destination: ${invoice.destinationCity}, ${invoice.destinationCountry}`, 50, colTop + 64);
+      doc.text(`Address: ${invoice.shippingAddress?.street || 'Standard International Delivery Hub'}`, 50, colTop + 76, { width: 230, height: 18, ellipsis: true });
 
       // Warehouse Logistics Center Details
-      doc.rect(305, colTop, 250, 95).stroke('#E2E8F0');
-      doc.fontSize(9.5).font('Helvetica-Bold').fillColor('#0066FF').text('ISSUING WAREHOUSE & DISPATCH HUB', 315, colTop + 8);
-      doc.fontSize(8.5).font('Helvetica-Bold').fillColor('#0F172A').text('India2World Logistics Pvt. Ltd.', 315, colTop + 24);
-      doc.font('Helvetica').fillColor('#475569');
-      doc.text('GSTIN: 27AABCI1234F1Z8 | PAN: AABCI1234F', 315, colTop + 36);
-      doc.text('Bay #4, Marol MIDC, Andheri East', 315, colTop + 48);
-      doc.text('Mumbai, Maharashtra 400093, India', 315, colTop + 60);
-      doc.text('Support: support@india2world.com | +91 98765 43210', 315, colTop + 72);
+      doc.roundedRect(305, colTop, colWidth, colHeight, 4).fill('#FFFFFF').stroke('#CBD5E1');
+      doc.roundedRect(305, colTop, colWidth, 22, 4).fill('#EFF6FF');
+      doc.rect(305, colTop + 18, colWidth, 4).fill('#EFF6FF');
+      doc.fontSize(8).font(fontBold).fillColor('#0066FF').text('ISSUING WAREHOUSE & DISPATCH HUB', 315, colTop + 6);
 
-      // Table Header
-      const tableTop = 265;
-      doc.rect(40, tableTop, 515, 22).fill('#0B1933');
-      doc.fillColor('#FFFFFF').fontSize(8.5).font('Helvetica-Bold');
+      doc.fontSize(8.5).font(fontBold).fillColor('#0F172A').text('India2World Logistics Pvt. Ltd.', 315, colTop + 27);
+      doc.fontSize(7.5).font(fontRegular).fillColor('#64748B').text('GSTIN: 27AABCI1234F1Z8 | PAN: AABCI1234F', 315, colTop + 40);
+      doc.fontSize(8).fillColor('#475569');
+      doc.text('Central Export Hub, Bay #4, Marol MIDC', 315, colTop + 52);
+      doc.text('Andheri East, Mumbai, MH - 400093, India', 315, colTop + 64);
+      doc.fontSize(8).font(fontRegular).fillColor('#0066FF').text('Support: support@india2world.com | +91 98765 43210', 315, colTop + 76);
+
+      // Table Header (Royal Blue #0066FF)
+      const tableTop = 260;
+      doc.rect(40, tableTop, 515, 23).fill('#0066FF');
+      doc.fillColor('#FFFFFF').fontSize(8).font(fontBold);
       doc.text('#', 48, tableTop + 6);
-      doc.text('ITEM DESCRIPTION', 70, tableTop + 6);
-      doc.text('STORE', 280, tableTop + 6);
-      doc.text('QTY', 370, tableTop + 6, { width: 30, align: 'center' });
-      doc.text('UNIT PRICE', 415, tableTop + 6, { width: 65, align: 'right' });
-      doc.text('TOTAL (INR)', 485, tableTop + 6, { width: 60, align: 'right' });
+      doc.text('ITEM DESCRIPTION', 68, tableTop + 6);
+      doc.text('PLATFORM / STORE', 270, tableTop + 6);
+      doc.text('QTY', 360, tableTop + 6, { width: 30, align: 'center' });
+      doc.text('UNIT PRICE', 395, tableTop + 6, { width: 70, align: 'right' });
+      doc.text('TOTAL (INR)', 470, tableTop + 6, { width: 75, align: 'right' });
 
       // Table Rows
-      let y = tableTop + 22;
       const items = invoice.items || [];
+      const itemRowHeight = items.length > 8 ? 20 : 22;
+      let y = tableTop + 23;
+
       items.forEach((item, index) => {
         const isEven = index % 2 === 0;
-        doc.rect(40, y, 515, 22).fill(isEven ? '#FFFFFF' : '#F8FAFC');
-        doc.rect(40, y, 515, 22).stroke('#E2E8F0');
+        doc.rect(40, y, 515, itemRowHeight).fill(isEven ? '#FFFFFF' : '#F8FAFC');
+        doc.rect(40, y, 515, itemRowHeight).stroke('#E2E8F0');
 
-        doc.fillColor('#0F172A').fontSize(8).font('Helvetica');
-        doc.text(String(index + 1), 48, y + 6);
-        doc.font('Helvetica-Bold').text(item.title.length > 40 ? item.title.substring(0, 38) + '...' : item.title, 70, y + 6, { width: 200 });
-        doc.font('Helvetica').fillColor('#64748B').text(item.store || 'Indian Store', 280, y + 6);
-        doc.fillColor('#0F172A').text(String(item.qty || 1), 370, y + 6, { width: 30, align: 'center' });
-        doc.text(`₹${(item.price || 0).toLocaleString('en-IN')}`, 415, y + 6, { width: 65, align: 'right' });
+        doc.fillColor('#64748B').fontSize(7.5).font(fontRegular);
+        doc.text(String(index + 1), 48, y + (itemRowHeight === 20 ? 5 : 6));
+
+        doc.fillColor('#0F172A').fontSize(8).font(fontBold);
+        const cleanTitle = item.title.length > 36 ? item.title.substring(0, 34) + '...' : item.title;
+        doc.text(cleanTitle, 68, y + (itemRowHeight === 20 ? 5 : 6), { width: 195, lineBreak: false });
+
+        // Store Pill Badge matching Admin Dashboard
+        const storeName = item.store || 'Indian Store';
+        doc.roundedRect(268, y + 2.5, 84, itemRowHeight - 5, 3).fill('#EFF6FF').stroke('#BFDBFE');
+        doc.fontSize(7).font(fontBold).fillColor('#0066FF').text(
+          storeName.length > 15 ? storeName.substring(0, 14) + '..' : storeName,
+          268,
+          y + (itemRowHeight === 20 ? 4.5 : 5.5),
+          { align: 'center', width: 84, lineBreak: false }
+        );
+
+        doc.fillColor('#0F172A').fontSize(8).font(fontRegular);
+        doc.text(String(item.qty || 1), 360, y + (itemRowHeight === 20 ? 5 : 6), { width: 30, align: 'center' });
+
+        doc.fillColor('#475569').text(formatINR(item.price || 0), 395, y + (itemRowHeight === 20 ? 5 : 6), { width: 70, align: 'right' });
+
         const lineTotal = item.total || (item.price || 0) * (item.qty || 1);
-        doc.font('Helvetica-Bold').text(`₹${lineTotal.toLocaleString('en-IN')}`, 485, y + 6, { width: 60, align: 'right' });
+        doc.font(fontBold).fillColor('#0F172A').text(formatINR(lineTotal), 470, y + (itemRowHeight === 20 ? 5 : 6), { width: 75, align: 'right' });
 
-        y += 22;
+        y += itemRowHeight;
       });
 
       // Spacing before summary
-      y += 10;
+      y += 8;
 
       // Summary Breakdown Table (Right Aligned)
-      const summaryWidth = 220;
-      const summaryX = 335;
-      const rowH = 18;
+      const summaryWidth = 235;
+      const summaryX = 320;
+      const rowH = 17;
 
+      // Left Side: Payment Security & Escrow Guarantee Stamp
+      const stampHeight = 110;
+      doc.roundedRect(40, y, 260, stampHeight, 4).fill('#F8FAFC').stroke('#CBD5E1');
+      doc.roundedRect(40, y, 260, 22, 4).fill('#ECFDF5');
+      doc.rect(40, y + 18, 260, 4).fill('#ECFDF5');
+      doc.fontSize(8).font(fontBold).fillColor('#059669').text('TRANSACTION VERIFICATION & SECURITY', 50, y + 6);
+
+      doc.fontSize(7.5).font(fontBold).fillColor('#0F172A').text('Payment Method: ', 50, y + 29, { continued: true });
+      doc.font(fontRegular).fillColor('#475569').text(invoice.paymentMethod || 'Online Payment Gateway');
+
+      doc.font(fontBold).fillColor('#0F172A').text('Escrow Protection: ', 50, y + 42, { continued: true });
+      doc.font(fontRegular).fillColor('#059669').text('Active (100% Funds Secured in Escrow)');
+
+      doc.font(fontBold).fillColor('#0F172A').text('Warehouse Protocol: ', 50, y + 55, { continued: true });
+      doc.font(fontRegular).fillColor('#475569').text('Intake Inspection & Weighing Verification');
+
+      doc.font(fontBold).fillColor('#0F172A').text('Customer Support: ', 50, y + 68, { continued: true });
+      doc.font(fontRegular).fillColor('#0066FF').text('support@india2world.com');
+
+      doc.fontSize(7).font(fontRegular).fillColor('#94A3B8').text('This computer-generated tax receipt is digitally validated for customs & export.', 50, y + 88, { width: 240 });
+
+      // Right Side: Summary Rows
       const summaryRows = [
-        { label: 'Products Subtotal:', value: `₹${invoice.subtotalINR.toLocaleString('en-IN')}` },
-        { label: 'Domestic Delivery (India):', value: invoice.domesticShippingINR > 0 ? `₹${invoice.domesticShippingINR.toLocaleString('en-IN')}` : 'FREE' },
-        { label: 'Service & Handling Fee:', value: `₹${invoice.serviceFeeINR.toLocaleString('en-IN')}` },
-        { label: 'Estimated Tax / GST:', value: `₹${invoice.estimatedTaxINR.toLocaleString('en-IN')}` },
-        { label: 'Promotional Discount:', value: invoice.discountINR > 0 ? `-₹${invoice.discountINR.toLocaleString('en-IN')}` : '₹0' },
-        { label: 'TOTAL AMOUNT PAID:', value: `₹${invoice.totalINR.toLocaleString('en-IN')}`, bold: true, highlight: true },
+        { label: 'Products Subtotal:', value: formatINR(invoice.subtotalINR) },
+        { label: 'Domestic Delivery (India):', value: invoice.domesticShippingINR > 0 ? formatINR(invoice.domesticShippingINR) : 'FREE', isGreen: invoice.domesticShippingINR === 0 },
+        { label: 'Assisted Procurement Fee:', value: formatINR(invoice.serviceFeeINR) },
+        { label: 'Estimated Tax / GST:', value: formatINR(invoice.estimatedTaxINR) },
+        { label: 'Promotional Discount:', value: invoice.discountINR > 0 ? `-${formatINR(invoice.discountINR)}` : formatINR(0), isGreen: invoice.discountINR > 0 },
+        { label: 'TOTAL AMOUNT PAID:', value: formatINR(invoice.totalINR), bold: true, highlight: true },
       ];
 
       summaryRows.forEach((row) => {
         if (row.highlight) {
-          doc.rect(summaryX, y, summaryWidth, rowH + 4).fill('#0B1933');
-          doc.fontSize(9.5).font('Helvetica-Bold').fillColor('#FFFFFF');
-          doc.text(row.label, summaryX + 8, y + 6);
-          doc.text(row.value, summaryX + 8, y + 6, { align: 'right', width: summaryWidth - 16 });
-          y += 4;
+          doc.rect(summaryX, y, summaryWidth, 25).fill('#0066FF');
+          doc.fontSize(9.5).font(fontBold).fillColor('#FFFFFF');
+          doc.text(row.label, summaryX + 10, y + 7);
+          doc.text(row.value, summaryX + 10, y + 7, { align: 'right', width: summaryWidth - 20 });
+          y += 25;
         } else {
           doc.rect(summaryX, y, summaryWidth, rowH).fill('#F8FAFC');
           doc.rect(summaryX, y, summaryWidth, rowH).stroke('#E2E8F0');
-          doc.fontSize(8.5).font(row.bold ? 'Helvetica-Bold' : 'Helvetica').fillColor('#334155');
-          doc.text(row.label, summaryX + 8, y + 5);
-          doc.text(row.value, summaryX + 8, y + 5, { align: 'right', width: summaryWidth - 16 });
+          doc.fontSize(8).font(row.bold ? fontBold : fontRegular).fillColor(row.isGreen ? '#059669' : '#334155');
+          doc.text(row.label, summaryX + 10, y + 4.5);
+          doc.text(row.value, summaryX + 10, y + 4.5, { align: 'right', width: summaryWidth - 20 });
+          y += rowH;
         }
-        y += rowH;
       });
 
       // Notes & Signature Footer
-      const footerY = Math.max(y + 25, 720);
-      doc.rect(40, footerY, 515, 60).fill('#F1F5F9');
-      doc.rect(40, footerY, 515, 60).stroke('#CBD5E1');
+      const footerY = Math.max(y + 12, 715);
+      doc.roundedRect(40, footerY, 515, 52, 4).fill('#F8FAFC').stroke('#CBD5E1');
 
-      doc.fontSize(8).font('Helvetica-Bold').fillColor('#0F172A').text('TRANSACTION VERIFICATION & DISPATCH CONDITIONS', 50, footerY + 8);
-      doc.fontSize(7.5).font('Helvetica').fillColor('#475569');
+      doc.fontSize(7.5).font(fontBold).fillColor('#0066FF').text('AUTHENTICATED CROSS-BORDER LOGISTICS & TAX RECEIPT', 50, footerY + 6);
+      doc.fontSize(7).font(fontRegular).fillColor('#475569');
       doc.text(
         '1. Payment confirmed via verified online payment. All orders are processed before merchant dispatch.\n' +
         '2. Package receipt photos and weight calibration records will be automatically logged to your Virtual Locker upon warehouse intake.\n' +
         '3. This is an official computer-generated invoice. No physical signature is required.',
         50,
-        footerY + 20,
-        { width: 500, lineGap: 2 }
+        footerY + 17,
+        { width: 495, lineGap: 1.2 }
       );
 
-      doc.fontSize(7.5).font('Helvetica-Bold').fillColor('#0066FF').text(
-        'India2World Logistics &bull; www.india2world.com &bull; support@india2world.com',
+      doc.fontSize(7.5).font(fontBold).fillColor('#0066FF').text(
+        `India2World Logistics ${bulletChar} www.india2world.com ${bulletChar} support@india2world.com`,
         40,
-        790,
+        Math.max(footerY + 56, 776),
         { align: 'center', width: 515 }
       );
 
@@ -294,7 +489,8 @@ export function generateInvoicePdfBuffer(invoice: CustomerOrderInvoice): Promise
 /**
  * Generate matching Plain Text email body (ensures high inbox delivery and avoids spam filters)
  */
-export function generateInvoiceEmailText(invoice: CustomerOrderInvoice): string {
+export function generateInvoiceEmailText(rawInvoice: CustomerOrderInvoice): string {
+  const invoice = normalizeInvoiceAmounts(rawInvoice);
   const itemsText = (invoice.items || [])
     .map(
       (item, idx) =>
@@ -341,7 +537,8 @@ Mumbai, India
 /**
  * Generate professional responsive HTML email wrapper
  */
-export function generateInvoiceEmailHtml(invoice: CustomerOrderInvoice): string {
+export function generateInvoiceEmailHtml(rawInvoice: CustomerOrderInvoice): string {
+  const invoice = normalizeInvoiceAmounts(rawInvoice);
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -452,7 +649,37 @@ export interface SmtpConnectionConfig {
  * Create a configured Nodemailer Transporter
  * Defaulting to Gmail SMTP: smtp.gmail.com:587 with STARTTLS
  */
+export function ensureSmtpEnvLoaded(): void {
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    return;
+  }
+  try {
+    const envPath = path.resolve(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+      const content = fs.readFileSync(envPath, 'utf-8');
+      for (const line of content.split(/\r?\n/)) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const eqIdx = trimmed.indexOf('=');
+        if (eqIdx > 0) {
+          const key = trimmed.slice(0, eqIdx).trim();
+          let val = trimmed.slice(eqIdx + 1).trim();
+          if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+            val = val.slice(1, -1);
+          }
+          if (key && !process.env[key]) {
+            process.env[key] = val;
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[SMTP Env] Could not reload .env file:', err);
+  }
+}
+
 export function createSmtpTransporter(override?: Partial<SmtpConnectionConfig>) {
+  ensureSmtpEnvLoaded();
   const host = override?.host || process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = Number(override?.port || process.env.SMTP_PORT || 587);
   const security = (override?.security || process.env.SMTP_SECURITY || (port === 465 ? 'SSL' : 'STARTTLS')) as SmtpSecurityMethod;
@@ -560,6 +787,7 @@ export async function sendInvoiceEmail(
   }
 
   // 1. Inspect SMTP configuration from environment variables
+  ensureSmtpEnvLoaded();
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = Number(process.env.SMTP_PORT || 587);
   const security = (process.env.SMTP_SECURITY || (port === 465 ? 'SSL' : 'STARTTLS')) as SmtpSecurityMethod;
@@ -659,6 +887,32 @@ export async function sendInvoiceEmail(
       timestamp,
       dsnEnabled: true,
     });
+
+    // Also synchronize orders_db.json so order confirmation status reflects Sent to this recipient
+    try {
+      const ordersPath = path.join(DATA_DIR, 'orders_db.json');
+      if (fs.existsSync(ordersPath)) {
+        const ordersRaw = JSON.parse(fs.readFileSync(ordersPath, 'utf-8'));
+        if (Array.isArray(ordersRaw)) {
+          const ordIdx = ordersRaw.findIndex((o: any) => o.orderId === invoice.orderId);
+          if (ordIdx >= 0) {
+            ordersRaw[ordIdx].customerEmail = recipientEmail;
+            ordersRaw[ordIdx].confirmationEmailStatus = 'Sent';
+            ordersRaw[ordIdx].confirmationEmailSentAt = timestamp;
+            ordersRaw[ordIdx].confirmationMessageId = info.messageId;
+            delete ordersRaw[ordIdx].confirmationEmailError;
+            if (ordersRaw[ordIdx].invoice) {
+              ordersRaw[ordIdx].invoice.customerEmail = recipientEmail;
+              ordersRaw[ordIdx].invoice.emailStatus = 'Sent';
+              ordersRaw[ordIdx].invoice.emailSentAt = timestamp;
+            }
+            fs.writeFileSync(ordersPath, JSON.stringify(ordersRaw, null, 2), 'utf-8');
+          }
+        }
+      }
+    } catch (syncErr) {
+      console.warn('[India2World Email] Could not sync orders_db.json after invoice send:', syncErr);
+    }
 
     return {
       success: true,

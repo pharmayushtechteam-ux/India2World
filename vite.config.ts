@@ -461,6 +461,7 @@ function productMetaPlugin(): Plugin {
 
 import {
   sendInvoiceEmail,
+  ensureSmtpEnvLoaded,
   generateInvoicePdfBuffer,
   verifySmtpConfig,
   sendDiagnosticTestEmail,
@@ -473,6 +474,20 @@ import {
   getAllServerOrders,
   registerOrUpdateCustomerOnServer,
 } from './server/orderConfirmationBackend.ts';
+import {
+  getAllManualPurchaseRequests,
+  saveManualPurchaseRequestToDb,
+  dispatchManualPurchaseRequestEmail,
+} from './server/manualPurchaseRequestBackend.ts';
+import {
+  loadExternalPurchaseRequestsFromDisk,
+  computeExternalPurchaseStats,
+  createCustomerExternalPurchaseRequest,
+  sendAdminQuotationForExternalRequest,
+  processCustomerQuotationDecision,
+  updateAdminExternalPurchaseRequest,
+  resendExternalPurchaseRequestEmail,
+} from './server/externalPurchaseRequestsBackend.ts';
 import { loadEnv } from 'vite';
 
 function invoiceEmailPlugin(): Plugin {
@@ -480,6 +495,345 @@ function invoiceEmailPlugin(): Plugin {
     name: 'invoice-email-plugin',
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
+        if (req.url && req.url.startsWith('/api/external-purchase-requests')) {
+          const urlObj = new URL(req.url, 'http://localhost:5173');
+          const urlPath = urlObj.pathname;
+
+          const sendJson = (status: number, payload: any) => {
+            res.statusCode = status;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify(payload));
+          };
+
+          const readJsonBody = (): Promise<any> =>
+            new Promise((resolve) => {
+              let raw = '';
+              req.on('data', (chunk) => {
+                raw += chunk;
+              });
+              req.on('end', () => {
+                try {
+                  resolve(JSON.parse(raw || '{}'));
+                } catch {
+                  resolve({});
+                }
+              });
+            });
+
+          // 1. GET /api/external-purchase-requests (Admin list + real DB stats)
+          if (urlPath === '/api/external-purchase-requests' && req.method === 'GET') {
+            const adminHeader = req.headers['x-admin-auth'];
+            if (adminHeader === 'false') {
+              return sendJson(403, {
+                success: false,
+                error: 'Unauthorized: Administrator access required.',
+              });
+            }
+            const requests = loadExternalPurchaseRequestsFromDisk();
+            const stats = computeExternalPurchaseStats(requests);
+            return sendJson(200, { success: true, requests, stats });
+          }
+
+          // 2. GET /api/external-purchase-requests/customer (Customer's own requests only)
+          if (urlPath === '/api/external-purchase-requests/customer' && req.method === 'GET') {
+            const email = (urlObj.searchParams.get('email') || '').trim().toLowerCase();
+            const customerId = (urlObj.searchParams.get('customerId') || '').trim();
+            const all = loadExternalPurchaseRequestsFromDisk();
+            const filtered = all
+              .filter(
+                (r) =>
+                  (email && r.customerEmail.toLowerCase() === email) ||
+                  (customerId && r.customerId === customerId)
+              )
+              .map((r) => ({
+                ...r,
+                // Never expose internalAdminNotes to customer
+                quotation: {
+                  ...r.quotation,
+                  internalAdminNotes: undefined,
+                },
+              }));
+            return sendJson(200, { success: true, requests: filtered });
+          }
+
+          // 3. GET /api/external-purchase-requests/verify-token (Customer quotation review by token)
+          if (urlPath === '/api/external-purchase-requests/verify-token' && req.method === 'GET') {
+            const requestId = (urlObj.searchParams.get('requestId') || '').trim();
+            const token = (urlObj.searchParams.get('token') || '').trim();
+            const all = loadExternalPurchaseRequestsFromDisk();
+            const found = all.find((r) => r.requestId === requestId);
+            if (!found || !token || found.quotation?.approvalToken !== token) {
+              return sendJson(404, {
+                success: false,
+                error: 'Invalid or expired quotation link.',
+              });
+            }
+            return sendJson(200, {
+              success: true,
+              request: {
+                ...found,
+                quotation: {
+                  ...found.quotation,
+                  internalAdminNotes: undefined,
+                },
+              },
+            });
+          }
+
+          // 4. POST /api/external-purchase-requests/submit (Customer submits new request)
+          if (urlPath === '/api/external-purchase-requests/submit' && req.method === 'POST') {
+            try {
+              const body = await readJsonBody();
+              const origin =
+                (req.headers.origin as string) || 'http://localhost:5173';
+              const result = await createCustomerExternalPurchaseRequest(body, origin);
+              return sendJson(result.success ? 200 : 400, result);
+            } catch (err: any) {
+              return sendJson(500, { success: false, error: err.message });
+            }
+          }
+
+          // 5. POST /api/external-purchase-requests/send-quotation (Admin prepares & sends quotation)
+          if (urlPath === '/api/external-purchase-requests/send-quotation' && req.method === 'POST') {
+            const adminHeader = req.headers['x-admin-auth'];
+            if (adminHeader === 'false') {
+              return sendJson(403, {
+                success: false,
+                error: 'Unauthorized: Only administrators can send quotations.',
+              });
+            }
+            try {
+              const body = await readJsonBody();
+              const { requestId, ...rest } = body;
+              if (!requestId) {
+                return sendJson(400, { success: false, error: 'requestId is required.' });
+              }
+              const origin =
+                (req.headers.origin as string) || 'http://localhost:5173';
+              const result = await sendAdminQuotationForExternalRequest(
+                requestId,
+                rest,
+                origin
+              );
+              const stats = computeExternalPurchaseStats();
+              return sendJson(result.success ? 200 : 400, { ...result, stats });
+            } catch (err: any) {
+              return sendJson(500, { success: false, error: err.message });
+            }
+          }
+
+          // 6. POST /api/external-purchase-requests/customer-decision (Customer approves or rejects quotation via token)
+          if (urlPath === '/api/external-purchase-requests/customer-decision' && req.method === 'POST') {
+            try {
+              const body = await readJsonBody();
+              const origin =
+                (req.headers.origin as string) || 'http://localhost:5173';
+              const result = await processCustomerQuotationDecision(body, origin);
+              const stats = computeExternalPurchaseStats();
+              return sendJson(result.success ? 200 : 400, { ...result, stats });
+            } catch (err: any) {
+              return sendJson(500, { success: false, error: err.message });
+            }
+          }
+
+          // 7. PUT/POST /api/external-purchase-requests/admin-update (Admin updates request, records purchase, tracking, status, cancel)
+          if (
+            urlPath === '/api/external-purchase-requests/admin-update' &&
+            (req.method === 'PUT' || req.method === 'POST')
+          ) {
+            const adminHeader = req.headers['x-admin-auth'];
+            if (adminHeader === 'false') {
+              return sendJson(403, {
+                success: false,
+                error: 'Unauthorized: Administrator access required.',
+              });
+            }
+            try {
+              const body = await readJsonBody();
+              const { requestId, updates } = body;
+              if (!requestId || !updates) {
+                return sendJson(400, {
+                  success: false,
+                  error: 'requestId and updates object are required.',
+                });
+              }
+              const origin =
+                (req.headers.origin as string) || 'http://localhost:5173';
+              const result = await updateAdminExternalPurchaseRequest(
+                requestId,
+                updates,
+                origin
+              );
+              const stats = computeExternalPurchaseStats();
+              return sendJson(result.success ? 200 : 400, { ...result, stats });
+            } catch (err: any) {
+              return sendJson(500, { success: false, error: err.message });
+            }
+          }
+
+          // 8. POST /api/external-purchase-requests/resend-email (Admin resends stage email)
+          if (urlPath === '/api/external-purchase-requests/resend-email' && req.method === 'POST') {
+            const adminHeader = req.headers['x-admin-auth'];
+            if (adminHeader === 'false') {
+              return sendJson(403, {
+                success: false,
+                error: 'Unauthorized: Administrator access required.',
+              });
+            }
+            try {
+              const body = await readJsonBody();
+              const { requestId, stage } = body;
+              if (!requestId) {
+                return sendJson(400, { success: false, error: 'requestId is required.' });
+              }
+              const origin =
+                (req.headers.origin as string) || 'http://localhost:5173';
+              const result = await resendExternalPurchaseRequestEmail(
+                requestId,
+                stage,
+                origin
+              );
+              const stats = computeExternalPurchaseStats();
+              return sendJson(200, { ...result, stats });
+            } catch (err: any) {
+              return sendJson(500, { success: false, error: err.message });
+            }
+          }
+        }
+
+        if (req.url && req.url.startsWith('/api/manual-purchase-requests')) {
+          const urlPath = req.url.split('?')[0];
+
+          if (urlPath === '/api/manual-purchase-requests' && req.method === 'GET') {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ success: true, requests: getAllManualPurchaseRequests() }));
+            return;
+          }
+
+          if (urlPath === '/api/manual-purchase-requests/create' && req.method === 'POST') {
+            let body = '';
+            req.on('data', (chunk) => {
+              body += chunk;
+            });
+            req.on('end', async () => {
+              try {
+                const payload = JSON.parse(body || '{}');
+                const adminHeader = req.headers['x-admin-auth'];
+                if (adminHeader === 'false') {
+                  res.statusCode = 403;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({ success: false, error: 'Unauthorized: Administrator access required.' }));
+                  return;
+                }
+                const { request, sendEmail = true } = payload;
+                if (!request) {
+                  res.statusCode = 400;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({ success: false, error: 'Missing manual purchase request payload.' }));
+                  return;
+                }
+                if (sendEmail) {
+                  const result = await dispatchManualPurchaseRequestEmail(request);
+                  res.statusCode = 200;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify(result));
+                } else {
+                  const saved = saveManualPurchaseRequestToDb(request);
+                  res.statusCode = 200;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(
+                    JSON.stringify({
+                      success: true,
+                      status: saved.emailStatus,
+                      message: `Manual Purchase Request ${saved.requestId} saved to database.`,
+                      record: saved,
+                    })
+                  );
+                }
+              } catch (err: any) {
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ success: false, status: 'Failed', error: err.message }));
+              }
+            });
+            return;
+          }
+
+          if (urlPath === '/api/manual-purchase-requests/update' && (req.method === 'PUT' || req.method === 'POST')) {
+            let body = '';
+            req.on('data', (chunk) => {
+              body += chunk;
+            });
+            req.on('end', async () => {
+              try {
+                const payload = JSON.parse(body || '{}');
+                const { request, sendEmail = false } = payload;
+                if (!request || !request.requestId) {
+                  res.statusCode = 400;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({ success: false, error: 'Missing request or requestId.' }));
+                  return;
+                }
+                if (sendEmail) {
+                  const result = await dispatchManualPurchaseRequestEmail(request);
+                  res.statusCode = 200;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify(result));
+                } else {
+                  const saved = saveManualPurchaseRequestToDb(request);
+                  res.statusCode = 200;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(
+                    JSON.stringify({
+                      success: true,
+                      status: saved.emailStatus,
+                      message: `Request ${saved.requestId} updated in database.`,
+                      record: saved,
+                    })
+                  );
+                }
+              } catch (err: any) {
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ success: false, status: 'Failed', error: err.message }));
+              }
+            });
+            return;
+          }
+
+          if (urlPath === '/api/manual-purchase-requests/resend-email' && req.method === 'POST') {
+            let body = '';
+            req.on('data', (chunk) => {
+              body += chunk;
+            });
+            req.on('end', async () => {
+              try {
+                const payload = JSON.parse(body || '{}');
+                const { requestId, request } = payload;
+                let targetRecord = request;
+                if (!targetRecord && requestId) {
+                  targetRecord = getAllManualPurchaseRequests().find((r) => r.requestId === requestId);
+                }
+                if (!targetRecord) {
+                  res.statusCode = 404;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({ success: false, error: 'Manual purchase request not found.' }));
+                  return;
+                }
+                const result = await dispatchManualPurchaseRequestEmail(targetRecord);
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify(result));
+              } catch (err: any) {
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ success: false, status: 'Failed', error: err.message }));
+              }
+            });
+            return;
+          }
+        }
         if (req.url && req.url.startsWith('/api/send-order-confirmation-email')) {
           if (req.method !== 'POST') {
             res.statusCode = 405;
@@ -681,6 +1035,7 @@ function invoiceEmailPlugin(): Plugin {
         }
 
         if (req.url && req.url.startsWith('/api/smtp-status')) {
+          ensureSmtpEnvLoaded();
           const user = process.env.SMTP_USER || '';
           const pass = process.env.SMTP_PASS || '';
           res.statusCode = 200;

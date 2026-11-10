@@ -6,6 +6,7 @@ export type AdminTab =
   | 'quotations'
   | 'purchase-queue'
   | 'orders'
+  | 'external-purchase-requests'
   | 'incoming-packages'
   | 'receive-package'
   | 'warehouse'

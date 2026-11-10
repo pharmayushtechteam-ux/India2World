@@ -72,6 +72,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right Actions: Login, Sign Up, Currency, Menu */}
         <div className="flex items-center gap-1 min-[360px]:gap-1.5 sm:gap-2 md:gap-1.5 min-[820px]:gap-2 lg:gap-2.5 xl:gap-3.5 shrink-0">
+          <button
+            type="button"
+            onClick={() => onNavigate('request-external-purchase')}
+            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200 font-extrabold text-xs cursor-pointer transition-colors whitespace-nowrap"
+          >
+            Request a Product from Another Platform
+          </button>
           {/* Login */}
           <button
             type="button"
@@ -147,6 +154,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                onNavigate('request-external-purchase');
+                setMobileMenuOpen(false);
+              }}
+              className="w-full text-center py-2.5 px-3 bg-blue-50 text-[#0066FF] border border-blue-200 font-extrabold rounded-xl cursor-pointer text-sm"
+            >
+              Request a Product from Another Platform
+            </button>
             <button
               type="button"
               onClick={() => {

@@ -7,6 +7,10 @@ import {
   DATA_SYNC_EVENT,
 } from '../../services/integratedDataService';
 import {
+  fetchAllExternalPurchaseRequests,
+  clearAllExternalPurchaseAlerts,
+} from '../../services/externalPurchaseRequestService';
+import {
   LayoutDashboard,
   Users,
   FileText,
@@ -30,6 +34,7 @@ import {
   ChevronDown,
   LogOut,
   ExternalLink,
+  ShoppingCart,
   Shield,
   User,
 } from 'lucide-react';
@@ -105,6 +110,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     if (tabId === 'notifications') {
       markAllNotificationsAsRead();
     }
+    if (tabId === 'external-purchase-requests') {
+      clearAllExternalPurchaseAlerts();
+    }
   };
 
   // Automatically remove the badge when a tab is currently opened / active
@@ -115,6 +123,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   }, [activeMenuId]);
 
   useEffect(() => {
+    fetchAllExternalPurchaseRequests().catch(() => {});
     const handleUpdate = () => {
       setBadges(getDynamicSidebarBadges());
     };
@@ -127,7 +136,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   }, []);
 
   const getBadgeForTab = (tabId: string): number | undefined => {
-    // Once clicked or currently open, the number is automatically removed
+    // Once clicked or currently open, the badge is immediately removed
     if (activeMenuId === tabId || clearedTabs.has(tabId)) {
       return undefined;
     }
@@ -142,6 +151,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'quotations', label: 'Quotations', icon: FileSpreadsheet, badge: getBadgeForTab('quotations') },
     { id: 'purchase-queue', label: 'Purchase Queue', icon: ListOrdered, badge: getBadgeForTab('purchase-queue') },
     { id: 'orders', label: 'Orders', icon: Package, badge: getBadgeForTab('orders') },
+    { id: 'external-purchase-requests', label: 'External Purchase Requests', icon: ShoppingCart, badge: getBadgeForTab('external-purchase-requests') },
     { id: 'incoming-packages', label: 'Incoming Packages', icon: PackageCheck, badge: getBadgeForTab('incoming-packages') },
     { id: 'warehouse', label: 'Warehouse', icon: Warehouse, badge: getBadgeForTab('warehouse') },
     { id: 'consolidation', label: 'Consolidation', icon: Boxes, badge: getBadgeForTab('consolidation') },
@@ -224,7 +234,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeMenuId === item.id;
-            const showBadge = item.badge != null && item.badge > 0 && !isActive && !clearedTabs.has(item.id);
+            const showBadge =
+              item.badge != null &&
+              item.badge > 0 &&
+              (!isActive && !clearedTabs.has(item.id));
             return (
               <button
                 key={item.id}
