@@ -409,9 +409,6 @@ export const AdminQuotationsModule: React.FC<{
           triggerToast(
             `⚠️ Order confirmed (${res.invoice.invoiceNumber}), but email delivery failed: ${sendRes.error || sendRes.message}.`
           );
-          if ((sendRes as any).configMissing) {
-            setIsSmtpModalOpen(true);
-          }
         }
 
         const updated = buildQuotationsList();
@@ -449,9 +446,6 @@ export const AdminQuotationsModule: React.FC<{
         setIsSmtpConfigured(true);
       } else {
         triggerToast(`❌ Delivery failed: ${res.error || res.message}`);
-        if ((res as any).configMissing) {
-          setIsSmtpModalOpen(true);
-        }
       }
 
       const freshList = buildQuotationsList();
@@ -736,7 +730,7 @@ export const AdminQuotationsModule: React.FC<{
                 <th className="py-3 px-4 min-w-[170px]">Items Summary</th>
                 <th className="py-3 px-4 min-w-[100px] whitespace-nowrap">Total Amount</th>
                 <th className="py-3 px-4 min-w-[160px] whitespace-nowrap">Status</th>
-                <th className="py-3 px-4 text-right min-w-[160px] sticky right-0 bg-slate-50 shadow-[-6px_0_10px_rgba(0,0,0,0.05)] z-20">
+                <th className="py-3 px-4 text-center min-w-[130px] sticky right-0 bg-slate-50 shadow-[-6px_0_10px_rgba(0,0,0,0.05)] z-20">
                   Actions
                 </th>
               </tr>
@@ -830,62 +824,51 @@ export const AdminQuotationsModule: React.FC<{
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4 text-right whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50/90 shadow-[-6px_0_10px_rgba(0,0,0,0.06)] z-10">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {/* Primary Confirm Button if not yet accepted */}
-                        {q.status !== 'Accepted' ? (
+                    <td className="py-3 px-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50/90 shadow-[-6px_0_10px_rgba(0,0,0,0.06)] z-10 align-middle">
+                      <div className="flex flex-col items-center justify-center gap-1.5 py-0.5">
+                        {/* Top Tier: Invoice Actions */}
+                        <div className="flex items-center justify-center gap-1.5">
                           <button
-                            onClick={() => handleConfirmOrder(q)}
-                            disabled={confirmingId === q.id}
-                            title="Confirm Customer Order & Automatically Email Invoice"
-                            className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-xs inline-flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap active:scale-95"
+                            type="button"
+                            onClick={() => handleResendInvoiceEmail(q)}
+                            title={`Send/Resend Invoice Email to ${q.customerEmail}`}
+                            aria-label="Send/Resend Invoice Email"
+                            className="w-7.5 h-7.5 rounded-lg bg-blue-50 hover:bg-[#0066FF] text-[#0066FF] hover:text-white border border-blue-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
                           >
-                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                            <span>Confirm & Invoice</span>
+                            <Mail className="w-3.5 h-3.5" />
                           </button>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => handleResendInvoiceEmail(q)}
-                              title={`Resend Invoice Email to ${q.customerEmail}`}
-                              className="p-1.5 bg-blue-50 hover:bg-blue-100 text-[#0066FF] rounded-lg border border-blue-200 cursor-pointer"
-                            >
-                              <Mail className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleDownloadInvoice(q)}
-                              title="Download Official Invoice PDF"
-                              className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg cursor-pointer"
-                            >
-                              <Download className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handlePrintInvoice(q)}
-                              title="Print Invoice Document"
-                              className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg cursor-pointer"
-                            >
-                              <Printer className="w-3.5 h-3.5" />
-                            </button>
-                          </>
-                        )}
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadInvoice(q)}
+                            title="Download Official Invoice PDF"
+                            aria-label="Download Official Invoice PDF"
+                            className="w-7.5 h-7.5 rounded-lg bg-slate-50 hover:bg-slate-800 text-slate-600 hover:text-white border border-slate-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
 
-                        {/* View Details Button */}
-                        <button
-                          onClick={() => handleOpenQuoteModal(q)}
-                          title="View Full Quote & Product Breakdown"
-                          className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg cursor-pointer"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </button>
-
-                        {/* Remove duplicate quotation button */}
-                        <button
-                          onClick={() => handleDeleteQuote(q)}
-                          title="Remove Quotation"
-                          className="p-1.5 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-lg cursor-pointer transition-colors"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        {/* Bottom Tier: Quote Breakdown & Remove Action */}
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenQuoteModal(q)}
+                            title="View Full Quote & Product Breakdown"
+                            aria-label="View Full Quote & Product Breakdown"
+                            className="w-7.5 h-7.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteQuote(q)}
+                            title="Remove Quotation"
+                            aria-label="Remove Quotation"
+                            className="w-7.5 h-7.5 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-500 hover:text-white border border-rose-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -1004,33 +987,26 @@ export const AdminQuotationsModule: React.FC<{
                 </div>
               </div>
             ) : selectedQuote.emailStatus === 'Sent' ? (
-              <div className="p-3.5 bg-blue-50/80 rounded-2xl border border-blue-200 flex items-start gap-2.5">
-                <ShieldCheck className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                <div className="text-xs text-blue-950 space-y-1 w-full">
-                  <div className="flex items-center justify-between flex-wrap gap-2">
-                    <strong className="font-extrabold text-blue-900 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
-                      SMTP Relay Accepted (Queued for Inbox Delivery)
-                    </strong>
-                    {selectedQuote.emailSentAt && (
-                      <span className="text-[11px] text-blue-700 font-medium">Relayed: {selectedQuote.emailSentAt}</span>
-                    )}
+              <div className="p-3 bg-emerald-50/80 rounded-2xl border border-emerald-200 flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-200 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   </div>
-                  <p className="text-slate-700 leading-relaxed">
-                    Official invoice <span className="font-mono font-bold text-slate-900">{selectedQuote.invoiceId || 'INV-GENERATED'}</span> with attached PDF was accepted by the Google SMTP mail relay and dispatched to <u className="font-semibold text-blue-900">{selectedQuote.customerEmail}</u>.
-                  </p>
-                  <div className="p-2.5 bg-white/90 rounded-xl border border-blue-100 text-[11px] text-slate-600 flex items-start gap-2 mt-1">
-                    <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-                    <div>
-                      <strong className="text-slate-800">Inbox Deliverability Advisory:</strong> The mail provider accepted transmission (250 2.0.0 OK). If the email is not visible in the Primary inbox within 1–2 minutes, please verify the recipient's <strong>Spam / Junk</strong> folder or <strong>Promotions / Updates</strong> category tabs, or click <strong>Resend to Email</strong> below.
+                  <div className="min-w-0">
+                    <div className="font-bold text-emerald-950 flex items-center gap-1.5">
+                      <span>Invoice Emailed</span>
+                      <span className="font-mono text-emerald-800 font-semibold text-[11px]">({selectedQuote.invoiceId || 'INV-GENERATED'})</span>
+                    </div>
+                    <div className="text-[11px] text-slate-600 truncate">
+                      Dispatched with PDF to <span className="font-medium text-slate-900">{selectedQuote.customerEmail}</span>
                     </div>
                   </div>
-                  {selectedQuote.emailDeliveryLog && (
-                    <div className="text-[10px] text-slate-500 font-mono bg-blue-100/50 p-1.5 rounded-lg break-all">
-                      {selectedQuote.emailDeliveryLog}
-                    </div>
-                  )}
                 </div>
+                {selectedQuote.emailSentAt && (
+                  <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-100/70 border border-emerald-200/60 px-2 py-0.5 rounded-lg shrink-0">
+                    {selectedQuote.emailSentAt}
+                  </span>
+                )}
               </div>
             ) : selectedQuote.status === 'Accepted' ? (
               <div className="p-3.5 bg-red-50 rounded-2xl border border-red-200 flex items-start gap-2.5">

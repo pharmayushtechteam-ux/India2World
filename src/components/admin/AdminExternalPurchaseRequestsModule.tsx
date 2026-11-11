@@ -1025,19 +1025,18 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    <th className="py-3.5 px-4">Request ID</th>
-                    <th className="py-3.5 px-4">Customer Name</th>
-                    <th className="py-3.5 px-4">Email &amp; Phone</th>
-                    <th className="py-3.5 px-4">Requested Products</th>
-                    <th className="py-3.5 px-4">Shopping Platform</th>
-                    <th className="py-3.5 px-4">Quotation / Total</th>
-                    <th className="py-3.5 px-4">Request Date</th>
-                    <th className="py-3.5 px-4">Request Status</th>
-                    <th className="py-3.5 px-4 text-right">Actions</th>
+                  <tr className="border-b border-slate-200/80 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="py-3.5 px-4 whitespace-nowrap">Request ID</th>
+                    <th className="py-3.5 px-4 whitespace-nowrap">Customer</th>
+                    <th className="py-3.5 px-4 whitespace-nowrap">Requested Products</th>
+                    <th className="py-3.5 px-4 whitespace-nowrap">Platform</th>
+                    <th className="py-3.5 px-4 whitespace-nowrap">Quotation / Total</th>
+                    <th className="py-3.5 px-4 whitespace-nowrap">Request Date</th>
+                    <th className="py-3.5 px-4 text-center whitespace-nowrap">Status</th>
+                    <th className="py-3.5 px-4 text-center w-28 whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200/70 text-xs">
+                <tbody className="divide-y divide-slate-100 text-xs">
                   {paginatedRequests.map((req) => {
                     const platforms = Array.from(
                       new Set(
@@ -1047,92 +1046,72 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
                         ).map((p) => p.platform)
                       )
                     );
-                    const latestEmail =
-                      req.emailHistory && req.emailHistory.length > 0
-                        ? req.emailHistory[0]
-                        : null;
 
                     return (
                       <tr
                         key={req.requestId}
-                        className={`hover:bg-slate-50/80 transition ${
+                        className={`hover:bg-slate-50/70 transition-colors ${
                           req.unreadAdminAlert ? 'bg-blue-50/30' : ''
                         }`}
                       >
                         {/* Request ID */}
-                        <td className="py-4 px-4 align-top">
+                        <td className="py-3.5 px-4 align-middle whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-black text-blue-600 text-xs">
+                            <span className="font-extrabold text-[#0066FF] text-xs sm:text-sm">
                               {req.requestId}
                             </span>
                             {req.unreadAdminAlert && (
                               <span
                                 title="New / Unread Customer Activity"
-                                className="px-1.5 py-0.5 text-[10px] font-extrabold bg-rose-500 text-white rounded-full"
+                                className="px-1.5 py-0.5 text-[9px] font-extrabold bg-rose-500 text-white rounded-full"
                               >
                                 NEW
                               </span>
                             )}
                           </div>
                           {req.purchaseRecord?.externalOrderId && (
-                            <div className="mt-1 text-[11px] font-semibold text-teal-700 bg-teal-50 border border-teal-200 rounded px-1.5 py-0.5 inline-block">
+                            <div className="mt-1 text-[10px] font-mono font-bold text-teal-700 bg-teal-50 border border-teal-200/70 rounded px-1.5 py-0.5 inline-block">
                               Ext ID: {req.purchaseRecord.externalOrderId}
                             </div>
                           )}
                         </td>
 
-                        {/* Customer Name */}
-                        <td className="py-4 px-4 align-top">
-                          <div className="font-bold text-slate-900">
+                        {/* Customer */}
+                        <td className="py-3.5 px-4 align-middle">
+                          <div className="font-bold text-slate-900 text-xs sm:text-sm">
                             {req.customerName}
                           </div>
-                          <div className="text-[11px] text-slate-500 mt-0.5">
-                            {req.destinationFlag} {req.city}
-                            {req.city && req.country ? ', ' : ''}
-                            {req.country}
-                          </div>
-                        </td>
-
-                        {/* Customer Email & Phone */}
-                        <td className="py-4 px-4 align-top">
-                          <div className="font-medium text-slate-800">
+                          <div className="text-[11px] text-slate-400 mt-0.5">
                             {req.customerEmail}
                           </div>
-                          <div className="text-[11px] text-slate-500 mt-0.5">
-                            {req.customerPhone}
+                          <div className="text-[11px] text-slate-600 font-semibold flex items-center gap-1 mt-0.5">
+                            <span>{req.destinationFlag}</span>
+                            <span className="truncate">
+                              {req.city}
+                              {req.city && req.country ? ', ' : ''}
+                              {req.country}
+                            </span>
                           </div>
-                          {latestEmail && (
-                            <div
-                              className={`mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
-                                latestEmail.status === 'Sent'
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                  : 'bg-rose-50 text-rose-700 border-rose-200'
-                              }`}
-                            >
-                              <Mail className="w-2.5 h-2.5" />
-                              {latestEmail.stage}: {latestEmail.status}
-                            </div>
-                          )}
                         </td>
 
                         {/* Requested Products */}
-                        <td className="py-4 px-4 align-top max-w-[240px]">
+                        <td className="py-3.5 px-4 align-middle max-w-[220px]">
                           <div className="space-y-1">
                             {req.requestedProducts.slice(0, 2).map((prod) => (
                               <div
                                 key={prod.id}
-                                className="flex items-start justify-between gap-2 text-xs"
+                                className="flex items-center justify-between gap-2 text-xs"
                               >
-                                <span className="font-semibold text-slate-800 line-clamp-1">
+                                <span className="font-semibold text-slate-800 truncate" title={prod.productName}>
                                   {prod.productName}
                                 </span>
-                                <span className="text-[11px] font-bold text-slate-500 shrink-0">
+                                <span className="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200/60 px-1 py-0.2 rounded-md shrink-0">
                                   x{prod.quantity}
                                 </span>
                               </div>
                             ))}
                             {req.requestedProducts.length > 2 && (
-                              <div className="text-[11px] font-bold text-blue-600">
+                              <div className="text-[10px] font-bold text-[#0066FF]">
                                 +{req.requestedProducts.length - 2} more item(s)
                               </div>
                             )}
@@ -1140,44 +1119,55 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
                         </td>
 
                         {/* Shopping Platform */}
-                        <td className="py-4 px-4 align-top">
-                          <div className="flex flex-wrap gap-1">
-                            {platforms.map((pf) => (
+                        <td className="py-3.5 px-4 align-middle whitespace-nowrap">
+                          <div className="flex items-center gap-1 flex-wrap max-w-[140px]">
+                            {platforms.slice(0, 2).map((pf) => (
                               <span
                                 key={pf}
-                                className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 font-semibold text-[11px]"
+                                className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 font-semibold text-[10px]"
                               >
                                 {pf}
                               </span>
                             ))}
+                            {platforms.length > 2 && (
+                              <span
+                                className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1 py-0.5 rounded-md"
+                                title={platforms.join(', ')}
+                              >
+                                +{platforms.length - 2}
+                              </span>
+                            )}
                           </div>
                         </td>
 
                         {/* Quotation / Total */}
-                        <td className="py-4 px-4 align-top">
-                          <div className="font-black text-slate-900 text-sm">
+                        <td className="py-3.5 px-4 align-middle whitespace-nowrap">
+                          <div className="font-extrabold text-[#0B1933] text-sm">
                             ₹
                             {Number(
                               req.quotation?.grandTotalINR || 0
                             ).toLocaleString('en-IN')}
                           </div>
-                          <div className="text-[11px] text-slate-500">
+                          <div className="text-[10px] text-slate-400 font-mono mt-0.5">
                             Ref: {req.quotation?.quotationReference || 'N/A'}
                           </div>
                           {req.purchaseRecord?.trackingNumber && (
-                            <div className="text-[10px] font-semibold text-sky-700 mt-0.5">
-                              Track: {req.purchaseRecord.trackingNumber}
+                            <div className="text-[10px] font-bold text-sky-700 mt-0.5">
+                              AWB: {req.purchaseRecord.trackingNumber}
                             </div>
                           )}
                         </td>
 
                         {/* Request Date */}
-                        <td className="py-4 px-4 align-top text-slate-600 whitespace-nowrap">
-                          {req.createdAt}
+                        <td className="py-3.5 px-4 align-middle text-slate-600 whitespace-nowrap text-xs">
+                          <div>{req.createdAt.split(',')[0]}</div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">
+                            {req.createdAt.split(',')[1] || ''}
+                          </div>
                         </td>
 
                         {/* Request Status */}
-                        <td className="py-4 px-4 align-top">
+                        <td className="py-3.5 px-4 align-middle text-center whitespace-nowrap">
                           <span
                             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border ${getStatusBadgeStyle(
                               req.status
@@ -1187,80 +1177,58 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
                           </span>
                         </td>
 
-                        {/* Actions */}
-                        <td className="py-4 px-4 align-top text-right">
-                          <div className="flex flex-wrap items-center justify-end gap-1.5">
-                            <button
-                              onClick={() =>
-                                handleOpenViewDetails(req, 'overview')
-                              }
-                              title="View Details"
-                              className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                              Details
-                            </button>
-
-                            <button
-                              onClick={() => handleOpenProcessRequest(req)}
-                              title="Process Purchase Request & Send Quotation"
-                              className="px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer shadow-2xs"
-                            >
-                              <Send className="w-3.5 h-3.5" />
-                              Process / Quote
-                            </button>
-
-                            <button
-                              onClick={() =>
-                                handleOpenPurchaseAndTrackingModal(req)
-                              }
-                              title="Update Purchase Status, Record External Order ID & Tracking"
-                              className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] inline-flex items-center gap-1 cursor-pointer shadow-2xs"
-                            >
-                              <Truck className="w-3.5 h-3.5" />
-                              Status / Track
-                            </button>
-
-                            <button
-                              onClick={() => handleOpenEditRequest(req)}
-                              title="Edit Request"
-                              className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 cursor-pointer"
-                            >
-                              <Edit3 className="w-3.5 h-3.5" />
-                            </button>
-
-                            <button
-                              onClick={() => handleResendEmail(req)}
-                              disabled={resendingRequestId === req.requestId}
-                              title="Resend Latest Email to Customer"
-                              className="p-1.5 rounded-lg border border-slate-200 hover:bg-blue-50 text-blue-600 cursor-pointer disabled:opacity-50"
-                            >
-                              <RefreshCw
-                                className={`w-3.5 h-3.5 ${
-                                  resendingRequestId === req.requestId
-                                    ? 'animate-spin'
-                                    : ''
-                                }`}
-                              />
-                            </button>
-
-                            <button
-                              onClick={() => setEmailHistoryModalRecord(req)}
-                              title="View Email History"
-                              className="p-1.5 rounded-lg border border-slate-200 hover:bg-purple-50 text-purple-600 cursor-pointer"
-                            >
-                              <Mail className="w-3.5 h-3.5" />
-                            </button>
-
-                            {req.status !== 'Cancelled' && (
+                        {/* Actions (Neat 2x2 Square Grid) */}
+                        <td className="py-3.5 px-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50/90 shadow-[-6px_0_10px_rgba(0,0,0,0.06)] z-10 align-middle">
+                          <div className="flex flex-col items-center justify-center gap-1.5 py-0.5">
+                            {/* Top Tier: View Details & Process Quote */}
+                            <div className="flex items-center justify-center gap-1.5">
                               <button
-                                onClick={() => handleCancelRequest(req)}
-                                title="Cancel Request"
-                                className="p-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 cursor-pointer"
+                                type="button"
+                                onClick={() =>
+                                  handleOpenViewDetails(req, 'overview')
+                                }
+                                title="View Request Details, Items & Logs"
+                                aria-label="View Request Details"
+                                className="w-7.5 h-7.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
                               >
-                                <XCircle className="w-3.5 h-3.5" />
+                                <Eye className="w-3.5 h-3.5" />
                               </button>
-                            )}
+
+                              <button
+                                type="button"
+                                onClick={() => handleOpenProcessRequest(req)}
+                                title="Process Request & Send Quotation"
+                                aria-label="Process Request"
+                                className="w-7.5 h-7.5 rounded-lg bg-blue-50 hover:bg-[#0066FF] text-[#0066FF] hover:text-white border border-blue-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                              >
+                                <Send className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+
+                            {/* Bottom Tier: Status / Track & Edit Request */}
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleOpenPurchaseAndTrackingModal(req)
+                                }
+                                title="Purchase Status, External Order ID & Tracking"
+                                aria-label="Status & Tracking"
+                                className="w-7.5 h-7.5 rounded-lg bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white border border-emerald-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                              >
+                                <Truck className="w-3.5 h-3.5" />
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditRequest(req)}
+                                title="Edit Request"
+                                aria-label="Edit Request"
+                                className="w-7.5 h-7.5 rounded-lg bg-slate-50 hover:bg-slate-800 text-slate-600 hover:text-white border border-slate-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </div>
                         </td>
                       </tr>

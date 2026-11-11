@@ -1217,15 +1217,15 @@ export const AdminOrdersModule: React.FC<{
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm">
-            <thead className="bg-slate-50 text-slate-400 text-[11px] font-bold uppercase tracking-wider border-b border-slate-100">
+            <thead className="bg-slate-50/80 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-200/80">
               <tr>
-                <th className="py-3.5 px-4">Order ID &amp; Source</th>
-                <th className="py-3.5 px-4">Customer</th>
-                <th className="py-3.5 px-4">Order Type &amp; Retailers</th>
-                <th className="py-3.5 px-4">Amount</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4">Invoice &amp; Automated Email</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Order ID &amp; Source</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Customer</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Order Type &amp; Retailers</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Amount</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Status</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Invoice &amp; Email</th>
+                <th className="py-3.5 px-4 text-center w-28 whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
@@ -1236,17 +1236,17 @@ export const AdminOrdersModule: React.FC<{
 
                 return (
                   <tr key={ord.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-4 px-4">
-                      <div className="font-bold text-[#0066FF]">{ord.id}</div>
-                      <div className="text-[11px] text-slate-400">{ord.createdAt}</div>
+                    <td className="py-3.5 px-4 align-middle whitespace-nowrap">
+                      <div className="font-bold text-[#0066FF] text-xs sm:text-sm">{ord.id}</div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">{ord.createdAt}</div>
                       <div className="mt-1">
                         {isManual ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80">
                             <ShoppingBag className="w-2.5 h-2.5" />
-                            <span>Manual Purchase Request</span>
+                            <span>Manual Request</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
                             <Globe className="w-2.5 h-2.5" />
                             <span>Website Order</span>
                           </span>
@@ -1254,45 +1254,53 @@ export const AdminOrdersModule: React.FC<{
                       </div>
                     </td>
 
-                    <td className="py-4 px-4">
+                    <td className="py-3.5 px-4 align-middle">
                       <div className="flex items-center gap-2.5">
-                        <img src={ord.customerAvatar} alt="" className="w-7 h-7 rounded-full object-cover border border-slate-200" />
-                        <div>
-                          <div className="font-bold text-slate-800">{ord.customerName}</div>
+                        <img src={ord.customerAvatar} alt="" className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0" />
+                        <div className="min-w-0">
+                          <div className="font-bold text-slate-900 text-xs sm:text-sm truncate">{ord.customerName}</div>
                           {ord.customerEmail && (
-                            <div className="text-[10.5px] text-slate-500">{ord.customerEmail}</div>
+                            <div className="text-[11px] text-slate-400 truncate">{ord.customerEmail}</div>
                           )}
-                          <div className="text-[11px] text-slate-500 font-semibold">{ord.destinationFlag} {ord.destination}</div>
+                          <div className="text-[11px] text-slate-600 font-semibold flex items-center gap-1 mt-0.5">
+                            <span>{ord.destinationFlag}</span>
+                            <span className="truncate">{ord.destination}</span>
+                          </div>
                         </div>
                       </div>
                     </td>
 
-                    <td className="py-4 px-4">
-                      <div className="text-xs font-bold text-slate-800">{ord.orderType}</div>
-                      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                        {ord.stores.map((s, idx) => (
-                          <span key={idx} className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">
+                    <td className="py-3.5 px-4 align-middle">
+                      <div className="text-xs font-bold text-slate-800 truncate max-w-[200px]">{ord.orderType}</div>
+                      <div className="flex items-center gap-1 mt-1 flex-wrap max-w-[240px]">
+                        {ord.stores.slice(0, 2).map((s, idx) => (
+                          <span key={idx} className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded-md">
                             {s}
                           </span>
                         ))}
-                        <span className="text-[11px] text-slate-400">&bull; {ord.itemCount} items</span>
+                        {ord.stores.length > 2 && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-500 rounded-md" title={ord.stores.join(', ')}>
+                            +{ord.stores.length - 2} more
+                          </span>
+                        )}
+                        <span className="text-[11px] text-slate-400 font-medium">({ord.itemCount} items)</span>
                       </div>
                     </td>
 
-                    <td className="py-4 px-4">
-                      <div className="font-extrabold text-[#0B1933]">₹{ord.totalINR.toLocaleString('en-IN')}</div>
+                    <td className="py-3.5 px-4 align-middle whitespace-nowrap">
+                      <div className="font-extrabold text-[#0B1933] text-sm">₹{ord.totalINR.toLocaleString('en-IN')}</div>
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 ${
                           ord.paymentStatus === 'Paid'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : 'bg-amber-100 text-amber-800'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80'
+                            : 'bg-amber-100 text-amber-800 border border-amber-200/80'
                         }`}
                       >
                         {ord.paymentStatus}
                       </span>
                     </td>
 
-                    <td className="py-4 px-4">
+                    <td className="py-3.5 px-4 align-middle whitespace-nowrap">
                       {isManual && mpr ? (
                         <div className="space-y-1">
                           <select
@@ -1357,271 +1365,191 @@ export const AdminOrdersModule: React.FC<{
                     </td>
 
                     {/* Invoice & Automated Email Delivery Tracking */}
-                    <td className="py-4 px-4">
+                    <td className="py-3.5 px-4 align-middle whitespace-nowrap">
                       {isManual && mpr ? (
                         <div className="space-y-1">
                           <div className="font-mono text-xs font-bold text-indigo-600">{mpr.requestId}</div>
-                          {resendingManualId === mpr.requestId ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-[#0066FF] border border-blue-200">
-                              <RefreshCw className="w-3 h-3 animate-spin" />
-                              <span>Sending to {mpr.customerEmail}...</span>
-                            </span>
-                          ) : mpr.emailStatus === 'Sent' ? (
-                            <div className="space-y-0.5">
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                <span>Sent to {mpr.customerEmail}</span>
-                              </span>
-                              {mpr.emailSentAt && (
-                                <div className="text-[10px] text-slate-400">Sent: {mpr.emailSentAt}</div>
-                              )}
-                            </div>
-                          ) : mpr.emailStatus === 'Failed' ? (
-                            <div className="space-y-0.5">
-                              <span
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-red-50 text-red-700 border border-red-200"
-                                title={mpr.emailError}
-                              >
-                                <AlertCircle className="w-3 h-3 text-red-600" />
-                                <span>Email Failed</span>
-                              </span>
-                              {mpr.emailError && (
-                                <div className="text-[10px] text-red-600 truncate max-w-[200px]" title={mpr.emailError}>
-                                  {mpr.emailError}
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                              <Mail className="w-3 h-3" />
-                              <span>Not Sent Yet</span>
-                            </span>
-                          )}
-                        </div>
-                      ) : resendingInvoiceNum === (linkedInv?.invoiceNumber || ord.id) ? (
-                        <div className="space-y-1">
-                          <div className="font-mono text-xs font-bold text-[#0066FF]">
-                            {linkedInv?.invoiceNumber || `INV-2026-${ord.id.replace('ORD-', '')}`}
-                          </div>
-                          <div>
-                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-[#0066FF] border border-blue-200">
-                              <RefreshCw className="w-3 h-3 animate-spin text-[#0066FF]" />
-                              <span>Sending to {linkedInv?.customerEmail || (ord as any).customerEmail || ord.customerName}...</span>
-                            </span>
-                          </div>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                            mpr.emailStatus === 'Sent'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : mpr.emailStatus === 'Failed'
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                              : 'bg-slate-100 text-slate-600'
+                          }`}>
+                            <Mail className="w-3 h-3" />
+                            <span>{mpr.emailStatus}</span>
+                          </span>
                         </div>
                       ) : linkedInv ? (
                         <div className="space-y-1">
                           <div className="font-mono text-xs font-bold text-[#0066FF]">
                             {linkedInv.invoiceNumber}
                           </div>
-                          <div>
+                          <div className="flex items-center gap-1.5">
                             <span
                               className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${
                                 linkedInv.emailStatus === 'Sent'
                                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                   : linkedInv.emailStatus === 'Pending'
                                   ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                                  : 'bg-red-50 text-red-700 border border-red-200'
+                                  : 'bg-rose-50 text-rose-700 border border-rose-200'
                               }`}
                               title={linkedInv.emailDeliveryLog || `Status: ${linkedInv.emailStatus}`}
                             >
                               <Mail className="w-3 h-3" />
-                              <span>{linkedInv.emailStatus} to {linkedInv.customerEmail}</span>
+                              <span>{linkedInv.emailStatus}</span>
                             </span>
-                          </div>
-                          {linkedInv.emailStatus === 'Sent' && linkedInv.emailSentAt && (
-                            <div className="text-[10px] text-slate-400">
-                              Dispatched: {linkedInv.emailSentAt}
-                            </div>
-                          )}
-                          {linkedInv.emailStatus === 'Failed' && linkedInv.emailDeliveryLog && (
-                            <div className="text-[10px] text-red-600 font-medium truncate max-w-[220px]" title={linkedInv.emailDeliveryLog}>
-                              {linkedInv.emailDeliveryLog}
-                            </div>
-                          )}
-
-                          {/* Order Confirmation Email Tracking */}
-                          <div className="pt-1">
-                            {resendingConfirmationOrderId === ord.id ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-[#0066FF] border border-blue-200">
-                                <RefreshCw className="w-3 h-3 animate-spin text-[#0066FF]" />
-                                <span>Sending Confirmation...</span>
-                              </span>
-                            ) : ord.confirmationEmailStatus === 'Sent' ? (
-                              <span
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200"
-                                title={`Confirmation email delivered at ${ord.confirmationEmailSentAt || 'order placement'}`}
-                              >
-                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                <span>Order Confirmed Emailed</span>
-                              </span>
-                            ) : ord.confirmationEmailStatus === 'Failed' ? (
-                              <span
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-red-50 text-red-700 border border-red-200"
-                                title={ord.confirmationEmailError || 'Delivery failed'}
-                              >
-                                <AlertCircle className="w-3 h-3 text-red-600" />
-                                <span>Confirmation Failed</span>
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-50 text-slate-600 border border-slate-200">
-                                <Mail className="w-3 h-3 text-slate-400" />
-                                <span>Confirmation Queued</span>
+                            {ord.confirmationEmailStatus === 'Sent' && (
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200" title="Order confirmation email delivered">
+                                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                                <span>Confirmed</span>
                               </span>
                             )}
                           </div>
                         </div>
                       ) : (
-                        <div className="space-y-1">
-                          <div className="text-slate-400 text-xs italic">Invoice Pending</div>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-50 text-slate-600 border border-slate-200">
-                            <Mail className="w-3 h-3 text-slate-400" />
-                            <span>Ready to Dispatch</span>
-                          </span>
-
-                          <div className="pt-1">
-                            {ord.confirmationEmailStatus === 'Sent' ? (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                <span>Order Confirmed Emailed</span>
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-50 text-slate-600 border border-slate-200">
-                                <Mail className="w-3 h-3 text-slate-400" />
-                                <span>Confirmation Queued</span>
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                        <div className="text-slate-400 text-xs italic">Invoice Pending</div>
                       )}
                     </td>
 
-                    <td className="py-4 px-4 text-right">
-                      {isManual && mpr ? (
-                        <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenManualDetailsModal(mpr)}
-                            className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl cursor-pointer transition-colors"
-                            title="View Manual Purchase Request Details"
-                          >
-                            View Details
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEditManualModal(mpr)}
-                            className="p-1.5 bg-blue-50 hover:bg-blue-100 text-[#0066FF] rounded-xl cursor-pointer transition-colors"
-                            title="Edit Manual Purchase Request"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-
-                          <button
-                            type="button"
-                            disabled={resendingManualId === mpr.requestId}
-                            onClick={() => handleResendManualEmail(mpr)}
-                            className={`p-1.5 rounded-xl border cursor-pointer disabled:opacity-50 transition-colors ${
-                              mpr.emailStatus === 'Failed'
-                                ? 'bg-red-50 hover:bg-red-100 text-red-700 border-red-200'
-                                : mpr.emailStatus === 'Sent'
-                                ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
-                                : 'bg-blue-50 hover:bg-blue-100 text-[#0066FF] border-blue-200'
-                            }`}
-                            title={`Resend Purchase Request Email to ${mpr.customerEmail}`}
-                          >
-                            {resendingManualId === mpr.requestId ? (
-                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <Send className="w-3.5 h-3.5" />
-                            )}
-                          </button>
-
-                          {mpr.purchaseStatus !== 'Cancelled' && (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleQuickUpdateManualField(
-                                  mpr,
-                                  { purchaseStatus: 'Cancelled' },
-                                  `Request ${mpr.requestId} has been cancelled.`
-                                )
-                              }
-                              className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl cursor-pointer transition-colors"
-                              title="Cancel Manual Purchase Request"
-                            >
-                              <Ban className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-end gap-1.5">
-                          <button
-                            onClick={() => setSelectedOrder(ord)}
-                            className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl cursor-pointer transition-colors"
-                            title="View Order Items"
-                          >
-                            Items
-                          </button>
-
-                          {linkedInv && (
-                            <>
+                    <td className="py-3 px-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50/90 shadow-[-6px_0_10px_rgba(0,0,0,0.06)] z-10 align-middle">
+                      <div className="flex flex-col items-center justify-center gap-1.5 py-0.5">
+                        {isManual && mpr ? (
+                          <>
+                            {/* Top Tier */}
+                            <div className="flex items-center justify-center gap-1.5">
                               <button
-                                onClick={() => handleOpenInvoiceModal(linkedInv)}
-                                className="p-1.5 bg-blue-50 hover:bg-blue-100 text-[#0066FF] rounded-xl cursor-pointer transition-colors"
-                                title="View Tax Invoice"
+                                type="button"
+                                onClick={() => handleOpenManualDetailsModal(mpr)}
+                                className="w-7.5 h-7.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                                title="View Request Details"
+                                aria-label="View Request Details"
                               >
                                 <Eye className="w-3.5 h-3.5" />
                               </button>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenEditManualModal(mpr)}
+                                className="w-7.5 h-7.5 rounded-lg bg-blue-50 hover:bg-[#0066FF] text-[#0066FF] hover:text-white border border-blue-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                                title="Edit Manual Request"
+                                aria-label="Edit Manual Request"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            {/* Bottom Tier */}
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                type="button"
+                                disabled={resendingManualId === mpr.requestId}
+                                onClick={() => handleResendManualEmail(mpr)}
+                                className="w-7.5 h-7.5 rounded-lg bg-slate-50 hover:bg-slate-800 text-slate-600 hover:text-white border border-slate-200/80 flex items-center justify-center cursor-pointer disabled:opacity-50 shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                                title={`Send Email to ${mpr.customerEmail}`}
+                                aria-label="Send Email"
+                              >
+                                {resendingManualId === mpr.requestId ? (
+                                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Send className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                              {mpr.purchaseStatus !== 'Cancelled' ? (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleQuickUpdateManualField(
+                                      mpr,
+                                      { purchaseStatus: 'Cancelled' },
+                                      `Request ${mpr.requestId} has been cancelled.`
+                                    )
+                                  }
+                                  className="w-7.5 h-7.5 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-500 hover:text-white border border-rose-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                                  title="Cancel Request"
+                                  aria-label="Cancel Request"
+                                >
+                                  <Ban className="w-3.5 h-3.5" />
+                                </button>
+                              ) : (
+                                <div className="w-7.5 h-7.5" />
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            {/* Top Tier: View Order Items & View Tax Invoice */}
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedOrder(ord)}
+                                className="w-7.5 h-7.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                                title="View Order Items & Summary"
+                                aria-label="View Order Items"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                              </button>
+                              {linkedInv ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenInvoiceModal(linkedInv)}
+                                  className="w-7.5 h-7.5 rounded-lg bg-blue-50 hover:bg-[#0066FF] text-[#0066FF] hover:text-white border border-blue-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                                  title="View Tax Invoice"
+                                  aria-label="View Tax Invoice"
+                                >
+                                  <FileText className="w-3.5 h-3.5" />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled
+                                  className="w-7.5 h-7.5 rounded-lg bg-slate-50 text-slate-300 border border-slate-100 flex items-center justify-center opacity-40 cursor-not-allowed"
+                                  title="Invoice Not Generated"
+                                >
+                                  <FileText className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Bottom Tier: Download Invoice PDF & Email Invoice */}
+                            <div className="flex items-center justify-center gap-1.5">
+                              {linkedInv ? (
+                                <button
+                                  type="button"
+                                  onClick={() => downloadInvoiceDocument(linkedInv)}
+                                  className="w-7.5 h-7.5 rounded-lg bg-slate-50 hover:bg-slate-800 text-slate-600 hover:text-white border border-slate-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                                  title={`Download Invoice PDF (${linkedInv.invoiceNumber})`}
+                                  aria-label="Download Invoice PDF"
+                                >
+                                  <Download className="w-3.5 h-3.5" />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled
+                                  className="w-7.5 h-7.5 rounded-lg bg-slate-50 text-slate-300 border border-slate-100 flex items-center justify-center opacity-40 cursor-not-allowed"
+                                  title="Invoice Not Generated"
+                                >
+                                  <Download className="w-3.5 h-3.5" />
+                                </button>
+                              )}
 
                               <button
-                                onClick={() => downloadInvoiceDocument(linkedInv)}
-                                className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl cursor-pointer transition-colors"
-                                title={`Download Official Tax Invoice PDF (${linkedInv.invoiceNumber})`}
+                                type="button"
+                                disabled={resendingInvoiceNum === (linkedInv?.invoiceNumber || ord.id)}
+                                onClick={() => handleSendInvoice(ord, linkedInv)}
+                                className="w-7.5 h-7.5 rounded-lg bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white border border-emerald-200/80 flex items-center justify-center cursor-pointer disabled:opacity-50 shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                                title={`Email Invoice to ${linkedInv?.customerEmail || (ord as any).customerEmail || ord.customerName}`}
+                                aria-label="Email Invoice"
                               >
-                                <Download className="w-3.5 h-3.5" />
+                                {resendingInvoiceNum === (linkedInv?.invoiceNumber || ord.id) ? (
+                                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Mail className="w-3.5 h-3.5" />
+                                )}
                               </button>
-                            </>
-                          )}
-
-                          <button
-                            disabled={resendingConfirmationOrderId === ord.id}
-                            onClick={() => handleResendConfirmation(ord)}
-                            className="p-1.5 rounded-xl border bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200 cursor-pointer disabled:opacity-50 transition-colors"
-                            title="Send/Resend Order Confirmation Email via Gmail SMTP"
-                          >
-                            {resendingConfirmationOrderId === ord.id ? (
-                              <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#0066FF]" />
-                            ) : (
-                              <Mail className="w-3.5 h-3.5 text-[#0066FF]" />
-                            )}
-                          </button>
-
-                          <button
-                            disabled={resendingInvoiceNum === (linkedInv?.invoiceNumber || ord.id)}
-                            onClick={() => handleSendInvoice(ord, linkedInv)}
-                            className={`p-1.5 rounded-xl border cursor-pointer disabled:opacity-50 transition-colors ${
-                              linkedInv?.emailStatus === 'Failed'
-                                ? 'bg-red-50 hover:bg-red-100 text-red-700 border-red-200'
-                                : linkedInv?.emailStatus === 'Sent'
-                                ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
-                                : 'bg-blue-50 hover:bg-blue-100 text-[#0066FF] border-blue-200'
-                            }`}
-                            title={
-                              linkedInv?.emailStatus === 'Failed'
-                                ? `Retry sending invoice email to ${linkedInv.customerEmail}`
-                                : `Send invoice email to ${linkedInv?.customerEmail || ord.customerName}`
-                            }
-                          >
-                            {resendingInvoiceNum === (linkedInv?.invoiceNumber || ord.id) ? (
-                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <Send className="w-3.5 h-3.5" />
-                            )}
-                          </button>
-                        </div>
-                      )}
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -1888,25 +1816,23 @@ export const AdminOrdersModule: React.FC<{
                   </span>
                 </div>
               ) : selectedInvoiceModal.emailStatus === 'Sent' ? (
-                <div className="p-3.5 bg-blue-50/80 border border-blue-200 rounded-2xl flex flex-col gap-2 text-blue-900">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
-                      <span className="font-extrabold text-blue-900 text-xs">
-                        SMTP Relay Accepted (Queued for Inbox Delivery)
-                      </span>
+                <div className="p-3 bg-emerald-50/80 border border-emerald-200 rounded-2xl flex items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-200 flex items-center justify-center shrink-0">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     </div>
-                    {selectedInvoiceModal.emailSentAt && (
-                      <span className="text-[11px] text-blue-700">Relayed: {selectedInvoiceModal.emailSentAt}</span>
-                    )}
+                    <div className="min-w-0">
+                      <div className="font-bold text-emerald-950">Invoice Emailed Successfully</div>
+                      <div className="text-[11px] text-slate-600 truncate">
+                        Dispatched with PDF to <span className="font-medium text-slate-900">{selectedInvoiceModal.customerEmail}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-[11px] text-slate-700">
-                    Official invoice was relayed via Google SMTP to <strong>{selectedInvoiceModal.customerEmail}</strong>.
-                  </div>
-                  <div className="p-2 bg-white/80 rounded-xl border border-blue-100 text-[10.5px] text-slate-600 flex items-start gap-1.5">
-                    <Info className="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5" />
-                    <span>Google SMTP relay accepted the message (250 OK). If not found in Primary inbox, check Spam / Junk or Promotions / Updates tabs.</span>
-                  </div>
+                  {selectedInvoiceModal.emailSentAt && (
+                    <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-100/70 border border-emerald-200/60 px-2 py-0.5 rounded-lg shrink-0">
+                      {selectedInvoiceModal.emailSentAt}
+                    </span>
+                  )}
                 </div>
               ) : selectedInvoiceModal.emailStatus === 'Failed' ? (
                 <div className="p-3.5 bg-red-50 border border-red-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between text-red-900 gap-2">

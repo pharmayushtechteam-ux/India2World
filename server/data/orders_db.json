@@ -780,10 +780,10 @@
       "emailStatus": "Sent",
       "emailDeliveryLog": "Accepted by Google SMTP relay (250 2.0.0 OK  1791887856 a92af1059eb24-1699718c547sm37213970c88.3 - gsmtp). The message has departed our server. If not received in the Primary inbox within 1–2 minutes, verify the recipient's Spam / Junk folder or Promotions / Updates category tabs. | Response: 250 2.0.0 OK  1791887856 a92af1059eb24-1699718c547sm37213970c88.3 - gsmtp | MsgId: <5e72266d-c473-9a99-651c-d8546a540dcf@gmail.com>",
       "emailAttemptCount": 4,
-      "emailSentAt": "13 Oct 2026, 04:07 pm"
+      "emailSentAt": "11 Nov 2026, 11:31 am"
     },
-    "confirmationEmailSentAt": "10 Nov 2026, 12:24 pm",
-    "confirmationMessageId": "<5c24cc27-607e-1316-787b-1fc9e29c93dd@gmail.com>"
+    "confirmationEmailSentAt": "11 Nov 2026, 11:31 am",
+    "confirmationMessageId": "<c157761a-e9bf-649c-01ad-dc7e68d1b854@gmail.com>"
   },
   {
     "orderId": "ORD-77755",

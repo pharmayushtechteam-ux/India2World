@@ -348,15 +348,15 @@ export const AdminCustomersModule: React.FC<{
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs sm:text-sm">
-            <thead className="bg-slate-50 text-slate-400 text-[11px] font-bold uppercase tracking-wider border-b border-slate-100">
+            <thead className="bg-slate-50/80 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-200/80">
               <tr>
-                <th className="py-3.5 px-4">Customer & Locker</th>
-                <th className="py-3.5 px-4">Contact</th>
-                <th className="py-3.5 px-4">Destination</th>
-                <th className="py-3.5 px-4 text-center">Total Orders</th>
-                <th className="py-3.5 px-4">Total Amount Spent</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Customer & Locker</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Contact</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Destination</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap">Total Orders</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Total Amount Spent</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap">Status</th>
+                <th className="py-3.5 px-4 text-center w-28 whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
@@ -364,73 +364,78 @@ export const AdminCustomersModule: React.FC<{
                 const stats = getCustomerProfileData(c);
                 return (
                   <tr key={c.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-4 px-4">
+                    <td className="py-3.5 px-4 align-middle">
                       <div className="flex items-center gap-3">
                         <img
                           src={c.avatar}
                           alt={c.name}
                           referrerPolicy="no-referrer"
-                          className="w-9 h-9 rounded-full object-cover border border-slate-200 bg-slate-100"
+                          className="w-10 h-10 rounded-full object-cover border border-slate-200 bg-slate-100 shrink-0"
                         />
                         <div>
-                          <div className="font-bold text-slate-800 text-sm">{c.name}</div>
+                          <div className="font-bold text-slate-900 text-sm">{c.name}</div>
                           <div className="text-xs font-mono text-[#0066FF] font-bold">Locker #{c.id}</div>
                         </div>
                       </div>
                     </td>
 
-                    <td className="py-4 px-4">
-                      <div className="text-slate-700 font-medium">{c.email}</div>
-                      <div className="text-[11px] text-slate-400">{c.phone}</div>
+                    <td className="py-3.5 px-4 align-middle">
+                      <div className="text-slate-800 font-medium text-xs sm:text-sm">{c.email}</div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">{c.phone}</div>
                     </td>
 
-                    <td className="py-4 px-4 font-bold text-slate-700">
-                      {c.country} ({c.city})
+                    <td className="py-3.5 px-4 align-middle font-semibold text-slate-700 whitespace-nowrap">
+                      <div>{c.country}</div>
+                      <div className="text-[11px] text-slate-400 font-normal">{c.city}</div>
                     </td>
 
-                    <td className="py-4 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center align-middle whitespace-nowrap">
                       <div className="font-extrabold text-sm text-[#0B1933]">{stats.totalOrdersCount}</div>
                       {stats.totalProductsCount > 0 ? (
-                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200/60 px-1.5 py-0.5 rounded-md inline-block mt-0.5">
                           {stats.totalProductsCount} item{stats.totalProductsCount > 1 ? 's' : ''}
                         </span>
                       ) : (
-                        <span className="text-[10px] text-slate-400">0 items</span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5">0 items</span>
                       )}
                     </td>
 
-                    <td className="py-4 px-4">
+                    <td className="py-3.5 px-4 align-middle whitespace-nowrap">
                       <div className="font-extrabold text-sm text-[#0066FF]">
                         ₹{stats.totalSpentINR.toLocaleString('en-IN')}
                       </div>
                       <span className="text-[10px] text-slate-400 font-medium">INR Verified</span>
                     </td>
 
-                    <td className="py-4 px-4">
-                      <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    <td className="py-3.5 px-4 text-center align-middle whitespace-nowrap">
+                      <span className="inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5" />
                         {c.status}
                       </span>
                     </td>
 
-                    <td className="py-4 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="py-3.5 px-4 text-center align-middle whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-1.5">
                         <button
+                          type="button"
                           onClick={() => {
                             setSelectedCustomer(c);
                             setModalTab('products');
                           }}
-                          className="px-3 py-1.5 bg-[#0066FF] hover:bg-[#0052cc] text-white text-xs font-bold rounded-xl cursor-pointer shadow-2xs transition-all flex items-center gap-1"
-                          title="View complete customer profile, order history, and products taken"
+                          className="w-8.5 h-8.5 rounded-xl bg-blue-50 hover:bg-[#0066FF] text-[#0066FF] hover:text-white border border-blue-200/70 hover:border-transparent flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                          title="View Profile & Products"
+                          aria-label="View Profile & Products"
                         >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>View Profile & Products</span>
+                          <Eye className="w-4 h-4" />
                         </button>
                         <button
+                          type="button"
                           onClick={() => handleDeleteCustomer(c.id, c.name)}
-                          className="p-1.5 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-xl cursor-pointer transition-colors"
-                          title="Remove Duplicate Registration"
+                          className="w-8.5 h-8.5 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-500 hover:text-white border border-rose-200/70 hover:border-transparent flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                          title="Delete Customer Registration"
+                          aria-label="Delete Customer"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>

@@ -309,13 +309,13 @@ export const AdminWarehouseModule: React.FC<{
                 <th className="py-3.5 px-4">Shelf / Bin Location</th>
                 <th className="py-3.5 px-4">Weight & Dims</th>
                 <th className="py-3.5 px-4">Storage Duration</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4 text-center w-36 whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
               {filtered.map((item) => (
                 <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-4 align-middle">
                     <div className="flex items-center gap-3">
                       <img
                         src={item.imageUrl}
@@ -330,24 +330,24 @@ export const AdminWarehouseModule: React.FC<{
                     </div>
                   </td>
 
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-4 align-middle">
                     <div className="font-bold text-slate-800">{item.customerName}</div>
                     <div className="text-xs text-slate-500 font-mono">Locker #{item.customerId}</div>
                   </td>
 
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-4 align-middle">
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-[#0B1933] font-mono font-bold rounded-lg border border-slate-200 text-xs">
                       <MapPin className="w-3.5 h-3.5 text-[#0066FF]" />
                       <span>{item.shelfLocation}</span>
                     </div>
                   </td>
 
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-4 align-middle">
                     <div className="font-bold text-slate-800">{item.weightKg} kg</div>
                     <div className="text-[11px] text-slate-400">{item.dimensionsCm}</div>
                   </td>
 
-                  <td className="py-3 px-4">
+                  <td className="py-3 px-4 align-middle">
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-slate-400" />
                       <span className="font-bold text-slate-800">{item.daysInStorage} / {item.maxFreeDays} days</span>
@@ -366,20 +366,22 @@ export const AdminWarehouseModule: React.FC<{
                     </div>
                   </td>
 
-                  <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
+                  <td className="py-3 px-4 text-center align-middle whitespace-nowrap">
+                    <div className="flex flex-col items-center justify-center gap-1.5 py-0.5">
                       <button
+                        type="button"
                         onClick={() => setSelectedRelocate(item)}
-                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg cursor-pointer"
+                        className="w-full max-w-[115px] px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg cursor-pointer transition-colors shadow-2xs flex items-center justify-center gap-1.5 active:scale-95"
                       >
-                        Relocate Bin
+                        <span>Relocate Bin</span>
                       </button>
                       {item.status === 'Ready for Consolidation' && (
                         <button
+                          type="button"
                           onClick={() => onNavigateTab('consolidation')}
-                          className="px-2.5 py-1.5 bg-[#0066FF] hover:bg-[#0052cc] text-white text-xs font-bold rounded-lg cursor-pointer"
+                          className="w-full max-w-[115px] px-2.5 py-1.5 bg-[#0066FF] hover:bg-[#0052cc] text-white text-xs font-bold rounded-lg cursor-pointer transition-colors shadow-2xs flex items-center justify-center gap-1.5 active:scale-95"
                         >
-                          Consolidate
+                          <span>Consolidate</span>
                         </button>
                       )}
                     </div>

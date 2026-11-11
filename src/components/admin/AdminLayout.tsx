@@ -144,26 +144,116 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     return count && count > 0 ? count : undefined;
   };
 
-  const menuItems: { id: AdminTab; label: string; icon: any; badge?: number }[] = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'customers', label: 'Customers', icon: Users },
-    { id: 'purchase-requests', label: 'Purchase Requests', icon: FileText, badge: getBadgeForTab('purchase-requests') },
-    { id: 'quotations', label: 'Quotations', icon: FileSpreadsheet, badge: getBadgeForTab('quotations') },
-    { id: 'purchase-queue', label: 'Purchase Queue', icon: ListOrdered, badge: getBadgeForTab('purchase-queue') },
-    { id: 'orders', label: 'Orders', icon: Package, badge: getBadgeForTab('orders') },
-    { id: 'external-purchase-requests', label: 'External Purchase Requests', icon: ShoppingCart, badge: getBadgeForTab('external-purchase-requests') },
-    { id: 'incoming-packages', label: 'Incoming Packages', icon: PackageCheck, badge: getBadgeForTab('incoming-packages') },
-    { id: 'warehouse', label: 'Warehouse', icon: Warehouse, badge: getBadgeForTab('warehouse') },
-    { id: 'consolidation', label: 'Consolidation', icon: Boxes, badge: getBadgeForTab('consolidation') },
-    { id: 'shipping', label: 'Shipping', icon: Truck, badge: getBadgeForTab('shipping') },
-    { id: 'tracking', label: 'Tracking', icon: MapPin },
-    { id: 'payments', label: 'Payments', icon: CreditCard, badge: getBadgeForTab('payments') },
-    { id: 'refunds', label: 'Refunds', icon: RotateCcw, badge: getBadgeForTab('refunds') },
-    { id: 'support', label: 'Support', icon: Headphones, badge: getBadgeForTab('support') },
-    { id: 'notifications', label: 'Notifications', icon: Bell, badge: getBadgeForTab('notifications') },
-    { id: 'reports', label: 'Reports', icon: BarChart3 },
-    { id: 'settings', label: 'Settings', icon: Settings },
+  // Group definitions for the collapsible sidebar
+  interface NavGroup {
+    id: string;
+    title: string;
+    items: { id: AdminTab; label: string; icon: any; badge?: number }[];
+  }
+
+  const navGroups: NavGroup[] = [
+    {
+      id: 'overview',
+      title: 'Overview',
+      items: [
+        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      ],
+    },
+    {
+      id: 'customer-management',
+      title: 'Customer Management',
+      items: [
+        { id: 'customers', label: 'Customers', icon: Users },
+        { id: 'support', label: 'Support', icon: Headphones, badge: getBadgeForTab('support') },
+      ],
+    },
+    {
+      id: 'purchasing-orders',
+      title: 'Purchasing & Orders',
+      items: [
+        { id: 'purchase-requests', label: 'Purchase Requests', icon: FileText, badge: getBadgeForTab('purchase-requests') },
+        { id: 'quotations', label: 'Quotations', icon: FileSpreadsheet, badge: getBadgeForTab('quotations') },
+        { id: 'purchase-queue', label: 'Purchase Queue', icon: ListOrdered, badge: getBadgeForTab('purchase-queue') },
+        { id: 'orders', label: 'Orders', icon: Package, badge: getBadgeForTab('orders') },
+        { id: 'external-purchase-requests', label: 'External Requests', icon: ShoppingCart, badge: getBadgeForTab('external-purchase-requests') },
+      ],
+    },
+    {
+      id: 'warehouse-logistics',
+      title: 'Warehouse & Logistics',
+      items: [
+        { id: 'incoming-packages', label: 'Incoming Packages', icon: PackageCheck, badge: getBadgeForTab('incoming-packages') },
+        { id: 'warehouse', label: 'Warehouse', icon: Warehouse, badge: getBadgeForTab('warehouse') },
+        { id: 'consolidation', label: 'Consolidation', icon: Boxes, badge: getBadgeForTab('consolidation') },
+        { id: 'shipping', label: 'Shipping', icon: Truck, badge: getBadgeForTab('shipping') },
+        { id: 'tracking', label: 'Tracking', icon: MapPin },
+      ],
+    },
+    {
+      id: 'finance',
+      title: 'Finance',
+      items: [
+        { id: 'payments', label: 'Payments', icon: CreditCard, badge: getBadgeForTab('payments') },
+        { id: 'refunds', label: 'Refunds', icon: RotateCcw, badge: getBadgeForTab('refunds') },
+      ],
+    },
+    {
+      id: 'administration',
+      title: 'Administration',
+      items: [
+        { id: 'notifications', label: 'Notifications', icon: Bell, badge: getBadgeForTab('notifications') },
+        { id: 'reports', label: 'Reports', icon: BarChart3 },
+        { id: 'settings', label: 'Settings', icon: Settings },
+      ],
+    },
   ];
+
+  // Collapsible groups state (all groups open by default)
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(() => {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const stored = localStorage.getItem('i2w_admin_sidebar_collapsed_groups');
+        if (stored) return JSON.parse(stored);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return {};
+  });
+
+  const toggleGroup = (groupId: string) => {
+    setCollapsedGroups((prev) => {
+      const updated = { ...prev, [groupId]: !prev[groupId] };
+      try {
+        if (typeof localStorage !== 'undefined') {
+          localStorage.setItem('i2w_admin_sidebar_collapsed_groups', JSON.stringify(updated));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      return updated;
+    });
+  };
+
+  // Ensure active menu item's group is automatically expanded
+  useEffect(() => {
+    if (activeMenuId) {
+      const activeGroup = navGroups.find((g) => g.items.some((item) => item.id === activeMenuId));
+      if (activeGroup && collapsedGroups[activeGroup.id]) {
+        setCollapsedGroups((prev) => {
+          const updated = { ...prev, [activeGroup.id]: false };
+          try {
+            if (typeof localStorage !== 'undefined') {
+              localStorage.setItem('i2w_admin_sidebar_collapsed_groups', JSON.stringify(updated));
+            }
+          } catch (e) {
+            console.error(e);
+          }
+          return updated;
+        });
+      }
+    }
+  }, [activeMenuId]);
 
   const handleLogout = () => {
     logout();
@@ -229,41 +319,78 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           </button>
         </div>
 
-        {/* Navigation Items */}
-        <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5 scrollbar-thin scrollbar-thumb-white/10">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeMenuId === item.id;
-            const showBadge =
-              item.badge != null &&
-              item.badge > 0 &&
-              (!isActive && !clearedTabs.has(item.id));
+        {/* Navigation Items (Collapsible Groups, Scrollable) */}
+        <nav className="flex-1 overflow-y-auto overscroll-contain px-3 py-3 pb-12 space-y-2 [scrollbar-width:thin] scrollbar-thumb-white/10">
+          {navGroups.map((group, groupIdx) => {
+            const isCollapsed = !!collapsedGroups[group.id];
+            const groupBadgeCount = group.items.reduce((acc, curr) => acc + (curr.badge || 0), 0);
+
             return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  markTabBadgeAsCleared(item.id);
-                  onSelectTab(item.id);
-                  if (typeof window !== 'undefined' && window.innerWidth < 768) {
-                    setSidebarOpen(false);
-                  }
-                }}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg font-medium text-sm transition-all cursor-pointer ${
-                  isActive
-                    ? 'bg-[#0066FF] text-white font-semibold shadow-xs'
-                    : 'text-slate-300 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-300'}`} />
-                  <span className="truncate">{item.label}</span>
-                </div>
-                {showBadge && (
-                  <span className="px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors bg-white/15 text-slate-200">
-                    {item.badge}
-                  </span>
+              <div key={group.id} className={groupIdx === 0 ? '' : 'pt-1.5'}>
+                {/* Collapsible Group Header Button */}
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group.id)}
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-bold text-slate-400 hover:text-slate-200 uppercase tracking-wider transition-colors cursor-pointer select-none group"
+                  aria-expanded={!isCollapsed}
+                  title={`Toggle ${group.title} section`}
+                >
+                  <span className="truncate">{group.title}</span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {isCollapsed && groupBadgeCount > 0 && (
+                      <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#0066FF] text-white">
+                        {groupBadgeCount}
+                      </span>
+                    )}
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-transform duration-200 ${
+                        isCollapsed ? '-rotate-90' : 'rotate-0'
+                      }`}
+                    />
+                  </div>
+                </button>
+
+                {/* Group Navigation Items */}
+                {!isCollapsed && (
+                  <div className="space-y-0.5 mt-0.5">
+                    {group.items.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = activeMenuId === item.id;
+                      const showBadge =
+                        item.badge != null &&
+                        item.badge > 0 &&
+                        (!isActive && !clearedTabs.has(item.id));
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            markTabBadgeAsCleared(item.id);
+                            onSelectTab(item.id);
+                            if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                              setSidebarOpen(false);
+                            }
+                          }}
+                          className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg font-medium text-sm transition-all cursor-pointer ${
+                            isActive
+                              ? 'bg-[#0066FF] text-white font-semibold shadow-xs'
+                              : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-300'}`} />
+                            <span className="truncate">{item.label}</span>
+                          </div>
+                          {showBadge && (
+                            <span className="px-2 py-0.5 text-[11px] font-bold rounded-full transition-colors bg-white/15 text-slate-200">
+                              {item.badge}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
                 )}
-              </button>
+              </div>
             );
           })}
         </nav>

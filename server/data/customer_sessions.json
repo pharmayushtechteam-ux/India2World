@@ -54,5 +54,13 @@
     "name": "John Doe",
     "createdAt": "2026-11-10T07:06:07.230Z",
     "expiresAt": 1795503967230
+  },
+  {
+    "token": "i2w_tok_a320760fa3b6397b3a073a25b27100aae105872286033ed5",
+    "customerId": "CUS-10001",
+    "email": "john@example.com",
+    "name": "John Doe",
+    "createdAt": "2026-11-11T05:17:10.230Z",
+    "expiresAt": 1795583830230
   }
 ]

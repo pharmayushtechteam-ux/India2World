@@ -297,49 +297,49 @@ export const AdminPaymentsRefundsModule: React.FC<{
                   <th className="py-3.5 px-4">Gateway</th>
                   <th className="py-3.5 px-4">Amount</th>
                   <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4 text-right">Receipt</th>
+                  <th className="py-3.5 px-4 text-center w-28 whitespace-nowrap">Receipt</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
                 {paginatedPayments.map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-4 px-4">
+                    <td className="py-3 px-4 align-middle">
                       <div className="font-bold text-[#0066FF] font-mono">{p.id}</div>
                       <div className="text-[11px] text-slate-400">{p.paymentDate}</div>
                     </td>
 
-                    <td className="py-4 px-4">
+                    <td className="py-3 px-4 align-middle">
                       <div className="font-bold text-slate-800">{p.customerName}</div>
                       <div className="text-[11px] text-slate-500 font-mono">Ref: {p.referenceId}</div>
                     </td>
 
-                    <td className="py-4 px-4 font-bold text-slate-700">
+                    <td className="py-3 px-4 font-bold text-slate-700 align-middle">
                       {p.purpose}
                     </td>
 
-                    <td className="py-4 px-4">
+                    <td className="py-3 px-4 align-middle">
                       <span className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
                         {p.gateway}
                       </span>
                     </td>
 
-                    <td className="py-4 px-4">
+                    <td className="py-3 px-4 align-middle">
                       <div className="font-extrabold text-[#0B1933]">₹{p.amountINR.toLocaleString('en-IN')}</div>
                       <div className="text-[11px] text-slate-500 font-semibold">{p.amountForeign}</div>
                     </td>
 
-                    <td className="py-4 px-4">
-                      <span className="px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    <td className="py-3 px-4 align-middle whitespace-nowrap">
+                      <span className="inline-flex items-center whitespace-nowrap px-2.5 py-1 text-xs font-bold rounded-lg bg-emerald-100 text-emerald-800 border border-emerald-200">
                         {p.status}
                       </span>
                     </td>
 
-                    <td className="py-4 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="py-3 px-4 text-center align-middle whitespace-nowrap">
+                      <div className="flex flex-col items-center justify-center gap-1.5 py-0.5">
                         <button
                           type="button"
                           onClick={() => handleViewReceipt(p)}
-                          className="px-2 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200/80 rounded-lg cursor-pointer transition-colors flex items-center gap-1 font-bold text-xs shadow-2xs"
+                          className="w-full max-w-[96px] px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200/80 rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-1.5 font-bold text-xs shadow-2xs active:scale-95"
                           title="View Tax Receipt"
                         >
                           <Eye className="w-3.5 h-3.5" />
@@ -349,14 +349,15 @@ export const AdminPaymentsRefundsModule: React.FC<{
                           type="button"
                           onClick={() => handleDownloadReceipt(p)}
                           disabled={downloadingId === `REC-${p.id.replace('PAY-', '')}` || downloadingId === p.id}
-                          className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg cursor-pointer transition-colors flex items-center gap-1 font-bold text-xs disabled:opacity-50"
+                          className="w-full max-w-[96px] px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-1.5 font-bold text-xs disabled:opacity-50 active:scale-95 shadow-2xs"
                           title="Download Tax Receipt PDF"
                         >
                           {downloadingId === `REC-${p.id.replace('PAY-', '')}` || downloadingId === p.id ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0066FF]" />
                           ) : (
-                            <Download className="w-3.5 h-3.5" />
+                            <Download className="w-3.5 h-3.5 text-slate-600" />
                           )}
+                          <span>Download</span>
                         </button>
                       </div>
                     </td>
@@ -574,39 +575,39 @@ export const AdminPaymentsRefundsModule: React.FC<{
           <table className="w-full text-left text-xs sm:text-sm">
             <thead className="bg-slate-50 text-slate-400 text-[11px] font-bold uppercase tracking-wider border-b border-slate-100">
               <tr>
-                <th className="py-3.5 px-4">Refund ID</th>
-                <th className="py-3.5 px-4">Customer & Order</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Refund ID</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Customer & Order</th>
                 <th className="py-3.5 px-4">Item & Reason</th>
-                <th className="py-3.5 px-4">Refund Amount</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Refund Amount</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Status</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
               {paginatedRefunds.map((r) => (
                 <tr key={r.id} className="hover:bg-slate-50/70 transition-colors">
-                  <td className="py-4 px-4 font-mono font-bold text-[#0066FF]">{r.id}</td>
+                  <td className="py-3.5 px-4 font-mono font-bold text-[#0066FF] align-middle whitespace-nowrap">{r.id}</td>
 
-                  <td className="py-4 px-4">
+                  <td className="py-3.5 px-4 align-middle">
                     <div className="font-bold text-slate-800">{r.customerName}</div>
                     <div className="text-[11px] text-slate-500 font-mono">Ref: {r.orderId}</div>
                   </td>
 
-                  <td className="py-4 px-4 max-w-sm">
+                  <td className="py-3.5 px-4 max-w-sm align-middle">
                     <div className="font-bold text-slate-800">{r.itemTitle}</div>
                     <div className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded mt-0.5 inline-block">
                       {r.reason}
                     </div>
                   </td>
 
-                  <td className="py-4 px-4">
+                  <td className="py-3.5 px-4 align-middle whitespace-nowrap">
                     <div className="font-extrabold text-[#0B1933]">₹{r.amountINR.toLocaleString('en-IN')}</div>
-                    <div className="text-[10px] text-slate-400">{r.refundMethod}</div>
+                    <div className="text-[10px] text-slate-400 font-semibold">{r.refundMethod}</div>
                   </td>
 
-                  <td className="py-4 px-4">
+                  <td className="py-3.5 px-4 align-middle whitespace-nowrap">
                     <span
-                      className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${
+                      className={`inline-flex items-center whitespace-nowrap px-2.5 py-1 text-xs font-bold rounded-lg border ${
                         r.status === 'Approved & Credited'
                           ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
                           : 'bg-amber-100 text-amber-800 border-amber-200'
@@ -616,16 +617,19 @@ export const AdminPaymentsRefundsModule: React.FC<{
                     </span>
                   </td>
 
-                  <td className="py-4 px-4 text-right">
+                  <td className="py-3.5 px-4 text-right align-middle whitespace-nowrap">
                     {r.status === 'Under Review' ? (
                       <button
+                        type="button"
                         onClick={() => handleApproveRefund(r.id)}
-                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl cursor-pointer"
+                        className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl cursor-pointer shadow-2xs transition-colors active:scale-95"
                       >
                         Approve Refund
                       </button>
                     ) : (
-                      <span className="text-xs text-slate-400 font-semibold">Processed</span>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs text-slate-500 font-semibold bg-slate-100 border border-slate-200">
+                        Processed
+                      </span>
                     )}
                   </td>
                 </tr>

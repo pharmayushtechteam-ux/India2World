@@ -183,7 +183,8 @@ export const HomePage: React.FC<HomePageProps> = ({
   const consolidationSavingsUSD = Math.max(0, (calcBoxesCount - 1) * Math.round(baseRateUSD * 0.75));
 
   const navLinks = [
-    { label: 'Home', page: 'home' as Page },
+    { label: 'Request from Another Platform', page: 'request-external-purchase' as Page },
+                { label: 'Home', page: 'home' as Page },
     { label: 'How It Works', page: 'how-it-works' as Page },
     { label: 'Pricing', page: 'pricing' as Page },
     { label: 'Countries', page: 'countries' as Page },
@@ -195,82 +196,88 @@ export const HomePage: React.FC<HomePageProps> = ({
     <div className="w-full min-h-screen bg-white text-slate-800 antialiased flex flex-col m-0 p-0 max-w-none overflow-x-hidden">
       {/* BEGIN: Header */}
       <header className="sticky top-0 z-40 w-full bg-white/98 backdrop-blur-md border-b border-slate-200/80 shadow-2xs">
-        <div className="w-full px-2.5 min-[360px]:px-3.5 sm:px-6 md:px-5 min-[820px]:px-6 lg:px-8 xl:px-12 h-15 sm:h-18 lg:h-20 flex items-center justify-between gap-1.5 min-[360px]:gap-2 sm:gap-3">
+        <div className="w-full px-3 sm:px-6 lg:px-8 xl:px-12 h-16 sm:h-18 lg:h-20 flex items-center justify-between gap-2 sm:gap-4">
           {/* Left Side: Brand Logo */}
-          <div className="shrink-0 flex items-center min-w-0">
+          <div className="shrink-0 flex items-center">
             <Logo
               size="md"
-              className="max-w-[94px] min-[360px]:max-w-[112px] min-[390px]:max-w-[126px] sm:max-w-[155px] md:max-w-[128px] min-[820px]:max-w-[144px] lg:max-w-[178px] xl:max-w-[220px]"
+              className="max-w-[130px] sm:max-w-[160px] lg:max-w-[185px] xl:max-w-[210px]"
               onClick={() => onNavigate('home')}
             />
           </div>
 
           {/* Centre Navigation: Home → How It Works → Pricing → Countries → Help → Track */}
-          <nav className="hidden md:flex flex-1 min-w-0 items-center justify-center md:gap-2 min-[820px]:gap-3.5 lg:gap-5 xl:gap-8 text-[12px] min-[820px]:text-[13px] lg:text-[14px] xl:text-[15px] font-bold whitespace-nowrap px-1 lg:px-2 xl:px-4">
+          <nav className="hidden lg:flex items-center justify-center lg:gap-4 xl:gap-7 text-[13.5px] xl:text-[14.5px] font-bold whitespace-nowrap px-2">
             <button
               type="button"
               onClick={() => onNavigate('home')}
-              className="text-[#0066FF] font-extrabold hover:text-[#0052cc] transition-colors cursor-pointer py-1.5 px-0.5 select-none"
+              className="text-[#0066FF] font-extrabold hover:text-[#0052cc] transition-colors cursor-pointer py-1.5 px-1 select-none"
             >
               Home
             </button>
             <button
               type="button"
               onClick={() => onNavigate('how-it-works')}
-              className="text-[#0B1940] font-bold hover:text-[#0066FF] transition-colors cursor-pointer py-1.5 px-0.5 select-none"
+              className="text-[#0B1940] font-bold hover:text-[#0066FF] transition-colors cursor-pointer py-1.5 px-1 select-none"
             >
               How It Works
             </button>
             <button
               type="button"
               onClick={() => onNavigate('pricing')}
-              className="text-[#0B1940] font-bold hover:text-[#0066FF] transition-colors cursor-pointer py-1.5 px-0.5 select-none"
+              className="text-[#0B1940] font-bold hover:text-[#0066FF] transition-colors cursor-pointer py-1.5 px-1 select-none"
             >
               Pricing
             </button>
             <button
               type="button"
               onClick={() => onNavigate('countries')}
-              className="text-[#0B1940] font-bold hover:text-[#0066FF] transition-colors cursor-pointer py-1.5 px-0.5 select-none"
+              className="text-[#0B1940] font-bold hover:text-[#0066FF] transition-colors cursor-pointer py-1.5 px-1 select-none"
             >
               Countries
             </button>
             <button
               type="button"
               onClick={() => onNavigate('help')}
-              className="text-[#0B1940] font-bold hover:text-[#0066FF] transition-colors cursor-pointer py-1.5 px-0.5 select-none"
+              className="text-[#0B1940] font-bold hover:text-[#0066FF] transition-colors cursor-pointer py-1.5 px-1 select-none"
             >
               Help
             </button>
             <button
               type="button"
               onClick={() => (onOpenTrackModal ? onOpenTrackModal() : onNavigate('track'))}
-              className="text-[#0B1940] font-bold hover:text-[#0066FF] transition-colors cursor-pointer py-1.5 px-0.5 select-none"
+              className="text-[#0B1940] font-bold hover:text-[#0066FF] transition-colors cursor-pointer py-1.5 px-1 select-none"
             >
               Track
             </button>
+          </nav>
+
+          {/* Right Actions: Request CTA, Login, Sign Up, Currency, Menu */}
+          <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5 xl:gap-3 shrink-0">
+            {/* Quick Request Button on larger screens */}
             <button
               type="button"
               onClick={() => onNavigate('request-external-purchase')}
-              className="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200 font-extrabold text-xs cursor-pointer transition-colors"
+              className="hidden min-[1200px]:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200/90 font-bold text-xs cursor-pointer transition-colors whitespace-nowrap shrink-0 shadow-2xs"
             >
-              Request a Product from Another Platform
+              <span className="hidden 2xl:inline">Request a Product from Another Platform</span>
+              <span className="inline 2xl:hidden">Request Product</span>
             </button>
-          </nav>
 
-          {/* Right Actions: Login, Sign Up, Currency, Menu */}
-          <div className="flex items-center gap-1 min-[360px]:gap-1.5 sm:gap-2 md:gap-1.5 min-[820px]:gap-2 lg:gap-2.5 xl:gap-3.5 shrink-0">
+            {/* Login */}
             <button
               type="button"
               onClick={() => onNavigate('auth')}
-              className="text-[11.5px] min-[360px]:text-xs sm:text-sm md:text-[12.5px] min-[820px]:text-[13px] lg:text-[14px] xl:text-[15px] font-bold text-[#0B1940] hover:text-[#0066FF] transition-colors cursor-pointer px-1.5 min-[360px]:px-2 py-1.5 select-none whitespace-nowrap"
+              className="text-xs sm:text-sm font-bold text-[#0B1940] hover:text-[#0066FF] transition-colors cursor-pointer px-2 py-1.5 select-none whitespace-nowrap"
             >
               Login
             </button>
+
+            {/* Sign Up Button */}
             <button
               type="button"
               onClick={() => onNavigate('auth')}
-              className="px-2.5 min-[360px]:px-3 py-1.5 sm:px-4 sm:py-2 md:px-3.5 md:py-1.5 min-[820px]:px-4 min-[820px]:py-2 lg:px-4 lg:py-2 xl:px-6 xl:py-2.5 rounded-lg sm:rounded-xl bg-[#0066FF] hover:bg-[#0052cc] text-white font-bold text-[11.5px] min-[360px]:text-xs sm:text-sm md:text-[12.5px] min-[820px]:text-[13px] lg:text-[14px] xl:text-[15px] shadow-xs hover:shadow-md transition-all active:scale-[0.98] text-center inline-flex items-center justify-center cursor-pointer select-none whitespace-nowrap"
+              className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl bg-[#0066FF] hover:bg-[#0052cc] text-white font-bold text-xs sm:text-sm shadow-xs hover:shadow-md transition-all active:scale-[0.98] text-center inline-flex items-center justify-center cursor-pointer select-none whitespace-nowrap"
             >
               Sign Up
             </button>
@@ -279,7 +286,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <button
               onClick={onOpenCurrencyModal}
               aria-label={`Select Currency (${selectedCurrency})`}
-              className="h-8 sm:h-9 xl:h-10 px-2 min-[360px]:px-2.5 xl:px-3 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 bg-white hover:bg-slate-50 text-[#0B1940] transition-colors border border-slate-200/90 hover:border-slate-300 shadow-2xs cursor-pointer shrink-0 active:scale-95 text-[11px] min-[360px]:text-xs font-bold"
+              className="h-8 sm:h-9 px-2 sm:px-2.5 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 bg-white hover:bg-slate-50 text-[#0B1940] transition-colors border border-slate-200/90 hover:border-slate-300 shadow-2xs cursor-pointer shrink-0 active:scale-95 text-xs font-bold whitespace-nowrap"
               type="button"
               title={`Display Currency: ${selectedCurrency}`}
             >
@@ -297,7 +304,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
               </svg>
               <span>{currencyInfo.code}</span>
-              <span className="hidden sm:inline md:hidden lg:inline text-slate-500">
+              <span className="hidden sm:inline text-slate-500 font-semibold">
                 ({currencyInfo.symbol.trim()})
               </span>
             </button>
@@ -306,7 +313,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="w-8 h-8 sm:w-9 sm:h-9 xl:w-10 xl:h-10 flex items-center justify-center bg-white hover:bg-slate-50 text-[#0B1940] hover:text-[#0066FF] rounded-full transition-colors cursor-pointer shrink-0 border border-slate-200/90 hover:border-slate-300 shadow-2xs active:scale-95"
+              className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-white hover:bg-slate-50 text-[#0B1940] hover:text-[#0066FF] rounded-full transition-colors cursor-pointer shrink-0 border border-slate-200/90 hover:border-slate-300 shadow-2xs active:scale-95"
               aria-label="Toggle navigation"
               title="Menu"
             >

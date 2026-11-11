@@ -230,6 +230,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal }) 
               <li>
                 <button
                   type="button"
+                  onClick={() => onNavigate('admin')}
+                  className="hover:text-white transition-colors cursor-pointer text-left text-amber-400 font-semibold"
+                >
+                  Admin Portal (Dashboard)
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
                   onClick={() =>
                     openWhatsApp(
                       'Hello BoxMyIndia support team! I need assistance with shipping/shopping from India.',
