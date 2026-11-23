@@ -376,7 +376,11 @@ function AppContent() {
         <TrackingModal
           isOpen={trackingModalOpen}
           onClose={() => setTrackingModalOpen(false)}
-          initialTrackingNumber="SHP-50012"
+          initialTrackingNumber=""
+          onRequireAuth={() => {
+            setTrackingModalOpen(false);
+            setCurrentPage('auth');
+          }}
         />
         <CurrencyModal
           isOpen={currencyModalOpen}

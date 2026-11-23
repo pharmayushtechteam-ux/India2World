@@ -1353,6 +1353,10 @@ import {
   revokeCustomerSession,
   verifyCustomerSession,
   registerOrGetCustomer,
+  verifyCustomerLoginPassword,
+  sanitizeCustomerAccount,
+  createAndSendPasswordReset,
+  verifyAndResetCustomerPassword,
   findCustomerById,
   getCustomerDraftProducts,
   saveCustomerDraftProducts,
@@ -1409,17 +1413,18 @@ function customerAuthPlugin(): Plugin {
         if (pathname === '/api/customer/auth/signup' && req.method === 'POST') {
           try {
             const body = await parseBody();
-            const { email, fullName, phone, country, city } = body;
+            const { email, fullName, phone, country, city, password } = body;
             if (!email) {
               return jsonResponse(400, { success: false, error: 'Email is required' });
             }
-            const customer = registerOrGetCustomer({ email, fullName, phone, country, city });
+            const customer = registerOrGetCustomer({ email, fullName, phone, country, city, password });
+            const safeCustomer = sanitizeCustomerAccount(customer);
             const session = createCustomerSession(customer);
             return jsonResponse(200, {
               success: true,
               token: session.token,
-              user: customer,
-              customer,
+              user: safeCustomer,
+              customer: safeCustomer,
               session: {
                 token: session.token,
                 expiresAt: session.expiresAt,
@@ -1434,17 +1439,24 @@ function customerAuthPlugin(): Plugin {
         if (pathname === '/api/customer/auth/login' && req.method === 'POST') {
           try {
             const body = await parseBody();
-            const { email, fullName } = body;
+            const { email, fullName, password, isSocialLogin } = body;
             if (!email) {
               return jsonResponse(400, { success: false, error: 'Email is required' });
             }
-            const customer = registerOrGetCustomer({ email, fullName });
+            if (!isSocialLogin) {
+              const pwdCheck = verifyCustomerLoginPassword(email, password);
+              if (!pwdCheck.ok) {
+                return jsonResponse(401, { success: false, error: pwdCheck.error || 'Incorrect password' });
+              }
+            }
+            const customer = registerOrGetCustomer({ email, fullName, password: isSocialLogin ? undefined : password });
+            const safeCustomer = sanitizeCustomerAccount(customer);
             const session = createCustomerSession(customer);
             return jsonResponse(200, {
               success: true,
               token: session.token,
-              user: customer,
-              customer,
+              user: safeCustomer,
+              customer: safeCustomer,
               session: {
                 token: session.token,
                 expiresAt: session.expiresAt,
@@ -1452,6 +1464,40 @@ function customerAuthPlugin(): Plugin {
             });
           } catch (e: any) {
             return jsonResponse(500, { success: false, error: e.message });
+          }
+        }
+
+        // 2b. POST /api/customer/auth/forgot-password (Send real SMTP reset code + link)
+        if (pathname === '/api/customer/auth/forgot-password' && req.method === 'POST') {
+          try {
+            const body = await parseBody();
+            const { email } = body;
+            const origin =
+              (req.headers['origin'] as string | undefined) ||
+              `http://${req.headers['host'] || 'localhost:5174'}`;
+            const result = await createAndSendPasswordReset(email, origin);
+            return jsonResponse(result.success ? 200 : 400, result);
+          } catch (e: any) {
+            return jsonResponse(500, {
+              success: false,
+              emailSent: false,
+              error: e.message || 'Failed to send password reset email',
+            });
+          }
+        }
+
+        // 2c. POST /api/customer/auth/reset-password (Verify 6-digit code or token & update password)
+        if (pathname === '/api/customer/auth/reset-password' && req.method === 'POST') {
+          try {
+            const body = await parseBody();
+            const { email, code, token, newPassword } = body;
+            const result = verifyAndResetCustomerPassword(email, code || token, newPassword);
+            return jsonResponse(result.success ? 200 : 400, result);
+          } catch (e: any) {
+            return jsonResponse(500, {
+              success: false,
+              error: e.message || 'Failed to reset password',
+            });
           }
         }
 
@@ -1648,6 +1694,124 @@ function customerAuthPlugin(): Plugin {
   };
 }
 
+import {
+  lookupRealTrackingRecord,
+  listRecentTrackingRecords,
+} from './server/trackingBackend.ts';
+
+function trackingPlugin(): Plugin {
+  return {
+    name: 'real-tracking-plugin',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (!req.url || !req.url.startsWith('/api/tracking')) {
+          return next();
+        }
+
+        const urlObj = new URL(req.url, 'http://localhost');
+        const pathname = urlObj.pathname;
+
+        const jsonResponse = (status: number, data: any) => {
+          res.statusCode = status;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(data));
+        };
+
+        // 1. GET /api/tracking/records - List ONLY the authenticated customer's own orders/requests
+        if (pathname === '/api/tracking/records' && req.method === 'GET') {
+          try {
+            const authHeader = req.headers['authorization'];
+            const customHeader = req.headers['x-session-token'] as string | undefined;
+            const session = verifyCustomerSession(authHeader || customHeader);
+
+            if (!session) {
+              return jsonResponse(401, {
+                success: false,
+                requiresAuth: true,
+                error: 'Please log in to view and track your orders.',
+                records: [],
+              });
+            }
+
+            const records = listRecentTrackingRecords(session.customerId, session.email);
+
+            return jsonResponse(200, {
+              success: true,
+              isCustomerScoped: true,
+              customer: {
+                customerId: session.customerId,
+                name: session.name,
+                email: session.email,
+              },
+              records,
+            });
+          } catch (e: any) {
+            return jsonResponse(500, { success: false, error: e.message || 'Failed to load tracking records' });
+          }
+        }
+
+        // 2. GET /api/tracking/lookup?code=ORD-84106 - Strictly look up ONLY the logged-in customer's own order/request
+        if (pathname === '/api/tracking/lookup' && req.method === 'GET') {
+          try {
+            const authHeader = req.headers['authorization'];
+            const customHeader = req.headers['x-session-token'] as string | undefined;
+            const session = verifyCustomerSession(authHeader || customHeader);
+
+            if (!session) {
+              return jsonResponse(401, {
+                success: false,
+                found: false,
+                requiresAuth: true,
+                error: 'Please log in to track your orders and shipments.',
+              });
+            }
+
+            const code = (urlObj.searchParams.get('code') || '').trim();
+            if (!code) {
+              return jsonResponse(400, {
+                success: false,
+                found: false,
+                error: 'Please enter an Order ID, Request ID, Invoice Number, or AWB tracking number.',
+              });
+            }
+
+            const result = lookupRealTrackingRecord(code, session.customerId, session.email);
+            if (result.status === 'forbidden') {
+              return jsonResponse(403, {
+                success: false,
+                found: false,
+                error: 'Access denied: This tracking ID belongs to a different customer account.',
+              });
+            }
+
+            if (result.status === 'not_found') {
+              const isUrl = /^https?:\/\//i.test(code);
+              const displayCode = code.length > 36 ? `${code.slice(0, 36)}…` : code.toUpperCase();
+              return jsonResponse(404, {
+                success: false,
+                found: false,
+                error: isUrl
+                  ? 'That looks like a product store link, and none of your orders match it. Please enter your Order ID (e.g. ORD-...), Request ID (REQ-... / EPR-...), or select one of your active orders above.'
+                  : `No order or request found under your account matching "${displayCode}".`,
+              });
+            }
+
+            return jsonResponse(200, {
+              success: true,
+              found: true,
+              record: result.record,
+            });
+          } catch (e: any) {
+            return jsonResponse(500, { success: false, found: false, error: e.message || 'Tracking lookup failed' });
+          }
+        }
+
+        next();
+      });
+    },
+  };
+}
+
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -1665,6 +1829,7 @@ export default defineConfig(({ mode }) => {
       invoiceEmailPlugin(),
       customerAuthPlugin(),
       adminSettingsPlugin(),
+      trackingPlugin(),
     ],
   };
 });

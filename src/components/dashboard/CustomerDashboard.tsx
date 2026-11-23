@@ -915,16 +915,33 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
         </div>
       </div>
 
+      {/* Mobile Sidebar Backdrop */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="md:hidden fixed inset-0 z-30 bg-slate-900/45 backdrop-blur-xs"
+          aria-hidden="true"
+        />
+      )}
+
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed md:sticky top-0 h-screen z-40 w-64 bg-white border-r border-slate-200/80 p-5 flex flex-col justify-between transition-transform duration-300 ease-in-out shrink-0 ${
+        className={`fixed md:sticky top-0 h-screen z-40 w-64 bg-white border-r border-slate-200/80 p-4 flex flex-col justify-between transition-transform duration-300 ease-in-out shrink-0 shadow-xl md:shadow-none ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
-        <div className="space-y-6 overflow-y-auto">
+        <div className="space-y-4 overflow-y-auto no-scrollbar">
           {/* Logo */}
-          <div className="pb-2 border-b border-slate-100">
+          <div className="px-2 pt-1 pb-3.5 border-b border-slate-100 flex items-center justify-between">
             <Logo size="md" onClick={() => onNavigatePage('home')} />
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(false)}
+              className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+              aria-label="Close sidebar"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Navigation Links */}
@@ -941,98 +958,115 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                     setActiveTab(item.id);
                     setSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-sm transition-all cursor-pointer ${
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-semibold text-[13.5px] transition-all cursor-pointer ${
                     isActive
-                      ? 'bg-[#0066FF] text-white shadow-xs'
-                      : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-gradient-to-r from-[#0066FF] to-[#1D4ED8] text-white font-bold shadow-sm shadow-blue-500/25'
+                      : 'text-slate-600 hover:bg-blue-50/60 hover:text-[#0066FF]'
                   }`}
                 >
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-slate-500'}`} />
-                  <span>{item.label}</span>
+                  <Icon className={`w-[18px] h-[18px] shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                  <span className="truncate">{item.label}</span>
                 </button>
               );
             })}
           </nav>
         </div>
 
-        {/* User Mini Bar at bottom of sidebar */}
-        <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <img
-              src={currentUser.avatar}
-              alt={currentUser.name}
-              className="w-9 h-9 rounded-full object-cover border border-slate-200 shrink-0"
-            />
-            <div className="text-left text-xs min-w-0">
-              <span className="font-bold text-slate-800 block truncate max-w-[110px]">{currentUser.name}</span>
-              <span className="text-slate-400 font-mono text-[10px] block">{currentUser.customerId}</span>
+        {/* User Mini Card at bottom of sidebar */}
+        <div className="mt-3 pt-3 border-t border-slate-100">
+          <div className="bg-slate-50/90 border border-slate-200/70 rounded-2xl p-2.5 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.name}
+                className="w-9 h-9 rounded-full object-cover border border-white shadow-2xs shrink-0"
+              />
+              <div className="text-left text-xs min-w-0">
+                <span className="font-bold text-slate-800 block truncate max-w-[105px]">{currentUser.name}</span>
+                <span className="text-slate-400 font-mono text-[10px] block">{currentUser.customerId}</span>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={() => onNavigatePage('auth')}
+              className="px-2.5 py-1 rounded-lg bg-white hover:bg-blue-50 text-[11px] font-bold text-[#0066FF] border border-slate-200 hover:border-blue-200 transition-colors cursor-pointer shrink-0"
+              title="Switch User or Log In"
+            >
+              Switch
+            </button>
           </div>
-          <button
-            onClick={() => onNavigatePage('auth')}
-            className="text-[11px] font-bold text-[#0066FF] hover:underline cursor-pointer shrink-0 ml-1"
-            title="Switch User or Log In"
-          >
-            Switch
-          </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full space-y-6 overflow-x-hidden">
-        {/* Top Header / Welcome section */}
-        <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-xs border border-slate-100 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="relative">
+      <main className="flex-1 p-3 sm:p-4 lg:p-5 w-full space-y-3.5 overflow-x-hidden">
+        {/* Compact Top Header Bar */}
+        <div className="bg-white rounded-xl px-3.5 sm:px-4 py-2.5 shadow-2xs border border-slate-200/80 flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="relative shrink-0">
               <img
                 src={currentUser.avatar}
                 alt={currentUser.name}
-                className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover ring-4 ring-blue-50 shadow-sm"
+                className="w-9 h-9 rounded-full object-cover ring-2 ring-blue-100"
               />
-              <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full ring-2 ring-white" />
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white" />
             </div>
 
-            <div>
-              <span className="text-xs sm:text-sm text-slate-400 font-medium block">
-                Welcome back,
-              </span>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-tight">
-                {currentUser.name}
-              </h2>
+            <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-mono font-bold text-slate-500">
+                <h2 className="text-sm sm:text-[15px] font-extrabold text-slate-900 leading-tight truncate">
+                  {currentUser.name}
+                </h2>
+                <span className="text-[10px] font-mono font-bold text-[#0066FF] bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
                   {currentUser.customerId}
                 </span>
-                <span className="text-slate-300 text-xs">•</span>
-                <span className="text-xs text-slate-500 font-medium">
-                  {currentUser.email}
-                </span>
               </div>
+              <p className="text-[11px] text-slate-500 font-medium truncate">
+                {currentUser.email}
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
             {/* Indian Locker Pill */}
             <button
+              type="button"
               onClick={() => setAddressModalOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl text-xs font-bold text-[#0066FF] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 bg-blue-50 hover:bg-blue-100 border border-blue-200/90 rounded-lg text-[11px] font-bold text-[#0066FF] transition-colors cursor-pointer"
+              title="View your Mumbai Warehouse Locker Address"
             >
-              <Warehouse className="w-4 h-4" />
-              <span>Mumbai Locker: {currentUser.lockerId || 'I2W-10028'}</span>
+              <Warehouse className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden sm:inline">Locker:</span>
+              <span className="font-mono">{currentUser.lockerId || 'I2W-10028'}</span>
+            </button>
+
+            {/* Quick Track Shipment Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setTrackingNumberToView('');
+                setTrackingModalOpen(true);
+              }}
+              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors cursor-pointer"
+              title="Track your orders & shipments"
+            >
+              <Truck className="w-3.5 h-3.5 text-[#0066FF]" />
+              <span>Track Order</span>
             </button>
 
             {/* Notification Bell */}
             <button
+              type="button"
               onClick={() => {
                 setActiveTab('notifications');
                 setNotificationsRead(true);
               }}
-              className="relative p-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors border border-slate-200"
+              className="relative p-1.5 sm:p-2 text-slate-600 hover:text-[#0066FF] hover:bg-blue-50 rounded-lg transition-colors border border-slate-200 hover:border-blue-200 bg-white cursor-pointer"
               title="Notifications"
             >
-              <Bell className="w-5 h-5" />
+              <Bell className="w-4 h-4" />
               {!notificationsRead && (customerOrders.length > 0 || customerRequests.length > 0 || customerPackages.length > 0) && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-600 text-white text-[10px] font-extrabold flex items-center justify-center ring-2 ring-white">
+                <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-600 text-white text-[9px] font-extrabold flex items-center justify-center ring-2 ring-white">
                   {Math.min(9, customerOrders.length + customerRequests.length + customerPackages.length)}
                 </span>
               )}
@@ -2121,16 +2155,17 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Indian Locker */}
-              <div className="p-5 rounded-2xl border-2 border-blue-200 bg-blue-50/40 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#0066FF] text-white">
+              <div className="p-5 rounded-2xl border border-slate-200 hover:border-slate-300 bg-white shadow-2xs transition-colors space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200/80">
                     Indian Receiving Warehouse
                   </span>
                   <button
+                    type="button"
                     onClick={() => setAddressModalOpen(true)}
-                    className="text-xs font-bold text-[#0066FF] hover:underline"
+                    className="text-xs font-bold text-[#0066FF] hover:underline cursor-pointer"
                   >
                     View Details
                   </button>
@@ -2139,7 +2174,7 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                   <h4 className="font-extrabold text-slate-900 text-base">
                     {currentUser.name} / {currentUser.customerId}
                   </h4>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                  <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
                     {indianLockerAddress.addressLine1} <br />
                     {indianLockerAddress.addressLine2} <br />
                     {indianLockerAddress.city}, {indianLockerAddress.state} -{' '}
@@ -2150,13 +2185,15 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
               </div>
 
               {/* International Delivery Address */}
-              <div className="p-5 rounded-2xl border border-slate-200 bg-white space-y-3">
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">
-                  Primary International Destination
-                </span>
+              <div className="p-5 rounded-2xl border border-slate-200 hover:border-slate-300 bg-white shadow-2xs transition-colors space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200/80">
+                    Primary International Destination
+                  </span>
+                </div>
                 <div>
                   <h4 className="font-extrabold text-slate-900 text-base">{currentUser.name}</h4>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                  <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
                     Apartment 1402, Marina Crown Tower <br />
                     Dubai Marina, Near Tram Station <br />
                     {currentUser.country} <br />

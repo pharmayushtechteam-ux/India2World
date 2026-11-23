@@ -27,6 +27,7 @@ dist-ssr
 .env
 *.env
 !.env.example
+server/data/password_reset_tokens.json
 
 # Temporary / Scratch
 scratch/

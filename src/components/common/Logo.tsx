@@ -16,7 +16,7 @@ export const Logo: React.FC<LogoProps> = ({
 }) => {
   const heightClasses = {
     sm: 'h-5 min-[375px]:h-6 sm:h-7',
-    md: 'h-6 sm:h-7 md:h-8 lg:h-9',
+    md: 'h-5 min-[360px]:h-[22px] min-[400px]:h-6 sm:h-7 md:h-8 lg:h-9',
     lg: 'h-8 sm:h-10 lg:h-11',
     xl: 'h-10 sm:h-12',
   };

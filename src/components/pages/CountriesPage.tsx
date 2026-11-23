@@ -3,6 +3,7 @@ import { Search, ArrowRight } from 'lucide-react';
 import { countriesList } from '../../data/mockData';
 import { Page } from '../../types';
 import { formatUSD, getCurrencyInfo } from '../../utils/currency';
+import { CountryFlag } from '../common/CountryFlag';
 
 interface CountriesPageProps {
   onNavigate: (page: Page) => void;
@@ -62,7 +63,7 @@ export const CountriesPage: React.FC<CountriesPageProps> = ({
           >
             <div>
               <div className="flex items-center gap-3 mb-3">
-                <span className="text-2xl sm:text-3xl shrink-0">{c.flag}</span>
+                <CountryFlag code={c.code} alt={`${c.name} flag`} size="lg" />
                 <div className="min-w-0">
                   <h4 className="font-extrabold text-slate-900 text-sm sm:text-base truncate">{c.name}</h4>
                   <span className="text-xs text-slate-400 font-mono">

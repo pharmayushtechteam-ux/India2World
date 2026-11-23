@@ -1,297 +1,249 @@
-import React, { useState, useEffect } from 'react';
-import { X, Search, Truck, CheckCircle2, Clock, MapPin, AlertCircle, Package } from 'lucide-react';
-import { sampleShipments, sampleWarehousePackages, samplePurchaseRequests } from '../../data/mockData';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  getAllShipments,
-  getAllOrders,
-  getAllPackages,
-  getAllPurchaseRequests,
-} from '../../services/integratedDataService';
-import { ShipmentItem } from '../../types';
+  X,
+  Search,
+  Truck,
+  CheckCircle2,
+  Clock,
+  MapPin,
+  AlertCircle,
+  Package,
+  Loader2,
+  ShoppingBag,
+  FileText,
+  RefreshCw,
+  Lock,
+  UserCheck,
+} from 'lucide-react';
+import { getSessionToken, isUserAuthenticated, USER_CHANGED_EVENT } from '../../utils/userAuth';
+import { formatINR } from '../../utils/currency';
 
 interface TrackingModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTrackingNumber?: string;
+  onRequireAuth?: () => void;
 }
 
-const normalizeShipment = (s: any): ShipmentItem => {
-  if (!s) {
-    return sampleShipments[0];
+interface TrackingMilestone {
+  stepNumber: number;
+  title: string;
+  description: string;
+  location: string;
+  timestamp: string;
+  completed: boolean;
+  current: boolean;
+}
+
+interface TrackingProductItem {
+  name: string;
+  store: string;
+  qty: number;
+  priceINR: number;
+  imageUrl?: string;
+}
+
+interface RealTrackingRecord {
+  trackingId: string;
+  recordType: 'Order' | 'Buy For Me Request' | 'External Request' | 'Manual Request';
+  status: string;
+  paymentStatus?: string;
+  orderDate: string;
+  updatedAt?: string;
+  customerName: string;
+  destinationCity: string;
+  destinationCountry: string;
+  itemsCount: number;
+  totalAmountINR: number;
+  carrier: string;
+  trackingAwb?: string;
+  invoiceNumber?: string;
+  stores: string[];
+  estimatedDelivery: string;
+  products: TrackingProductItem[];
+  timeline: TrackingMilestone[];
+}
+
+interface TrackingSummaryItem {
+  id: string;
+  recordType: RealTrackingRecord['recordType'];
+  status: string;
+  date: string;
+  itemsCount: number;
+}
+
+const getStatusBadgeClasses = (status: string): string => {
+  const s = (status || '').toLowerCase();
+  if (s.includes('deliver') || s.includes('complet')) {
+    return 'bg-emerald-100 text-emerald-700 border-emerald-200';
   }
-  const destParts = (s.destination || '').split(',').map((x: string) => x.trim());
-  return {
-    id: s.id || `shp-${Date.now()}`,
-    trackingNumber: s.trackingNumber || s.id || 'SHP-50012',
-    carrier: s.carrier || 'DHL Express',
-    destinationCity: s.destinationCity || destParts[0] || 'Dubai',
-    destinationCountry: s.destinationCountry || destParts[1] || s.destination || 'United Arab Emirates',
-    weightKg: typeof s.weightKg === 'number' ? s.weightKg : 2.5,
-    packagesCount: typeof s.packagesCount === 'number' ? s.packagesCount : 1,
-    status: (s.status as any) || 'In Transit',
-    estimatedDelivery: s.estimatedDelivery || '3 - 5 business days',
-    timeline:
-      Array.isArray(s.timeline) && s.timeline.length > 0
-        ? s.timeline
-        : [
-            {
-              title: 'Shipment Label Generated & Handed to Carrier',
-              location: 'Mumbai Hub, India',
-              timestamp: s.date || 'Completed',
-              completed: true,
-            },
-            {
-              title: 'In International Air Transit',
-              location: `En Route to ${s.destinationCountry || s.destination || 'Destination'}`,
-              timestamp: s.status === 'Delivered' ? 'Completed' : 'In Progress',
-              completed: s.status === 'In Transit' || s.status === 'Departed' || s.status === 'Delivered',
-            },
-            {
-              title: 'Delivered to Recipient',
-              location: s.destinationCity || s.destination || 'Destination Address',
-              timestamp: s.status === 'Delivered' ? s.date || 'Delivered' : 'Pending',
-              completed: s.status === 'Delivered',
-            },
-          ],
-  };
+  if (s.includes('transit') || s.includes('dispatch') || s.includes('shipped')) {
+    return 'bg-blue-100 text-[#0066FF] border-blue-200';
+  }
+  if (s.includes('quote') || s.includes('review') || s.includes('new')) {
+    return 'bg-amber-100 text-amber-800 border-amber-200';
+  }
+  return 'bg-indigo-100 text-indigo-700 border-indigo-200';
 };
 
 export const TrackingModal: React.FC<TrackingModalProps> = ({
   isOpen,
   onClose,
-  initialTrackingNumber = 'SHP-50012',
+  initialTrackingNumber = '',
+  onRequireAuth,
 }) => {
   const [searchCode, setSearchCode] = useState(initialTrackingNumber);
-  const [serverOrders, setServerOrders] = useState<any[]>([]);
-  const [searchedShipment, setSearchedShipment] = useState<ShipmentItem | null>(() => {
-    const all = [...getAllShipments(), ...sampleShipments];
-    const found = all.find(
-      (s) =>
-        (s.trackingNumber || '').toUpperCase() === initialTrackingNumber.toUpperCase() ||
-        (s.id || '').toUpperCase() === initialTrackingNumber.toUpperCase()
-    );
-    return normalizeShipment(found || sampleShipments[0]);
-  });
+  const [recentRecords, setRecentRecords] = useState<TrackingSummaryItem[]>([]);
+  const [activeCustomer, setActiveCustomer] = useState<{
+    customerId: string;
+    name: string;
+    email: string;
+  } | null>(null);
+  const [requiresAuth, setRequiresAuth] = useState<boolean>(() => !isUserAuthenticated());
+  const [loadingRecords, setLoadingRecords] = useState(false);
+  const [loadingLookup, setLoadingLookup] = useState(false);
+  const [trackedRecord, setTrackedRecord] = useState<RealTrackingRecord | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Load real orders from backend database (/api/server-orders)
-  useEffect(() => {
-    if (!isOpen) return;
-    fetch('/api/server-orders')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data && Array.isArray(data.orders)) {
-          setServerOrders(data.orders);
-        }
-      })
-      .catch(() => {
-        // Fallback to local integrated store if offline
-      });
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  const lookupTrackingRecord = (rawQuery: string): ShipmentItem | null => {
-    const code = rawQuery.trim().toUpperCase();
-    if (!code) return null;
-
-    // 1. Check Shipments (Integrated + Sample)
-    const allShipments = [...getAllShipments(), ...sampleShipments];
-    const matchedShipment = allShipments.find(
-      (s) =>
-        (s.trackingNumber || '').toUpperCase() === code ||
-        (s.id || '').toUpperCase() === code
-    );
-    if (matchedShipment) {
-      return normalizeShipment(matchedShipment);
-    }
-
-    // 2. Check Real Server Orders (/api/server-orders) & Integrated Orders
-    const allOrders = [...serverOrders, ...getAllOrders()];
-    const matchedOrder = allOrders.find(
-      (o) =>
-        (o.orderId || o.id || '').toUpperCase() === code ||
-        (o.trackingAwb || '').toUpperCase() === code ||
-        (o.invoice?.invoiceNumber || '').toUpperCase() === code
-    );
-    if (matchedOrder) {
-      const orderId = matchedOrder.orderId || matchedOrder.id;
-      const itemsCount =
-        matchedOrder.itemCount ||
-        (Array.isArray(matchedOrder.products) ? matchedOrder.products.length : 0) ||
-        (Array.isArray(matchedOrder.items) ? matchedOrder.items.length : 1);
-      const city =
-        matchedOrder.deliveryAddress?.city ||
-        matchedOrder.invoice?.destinationCity ||
-        'Dubai';
-      const country =
-        matchedOrder.deliveryAddress?.country ||
-        matchedOrder.invoice?.destinationCountry ||
-        matchedOrder.destination ||
-        'United Arab Emirates';
-      const status = matchedOrder.orderStatus || 'Procuring';
-
-      return {
-        id: orderId,
-        trackingNumber: orderId,
-        carrier: 'DHL Express',
-        destinationCity: city,
-        destinationCountry: country,
-        weightKg: Number((itemsCount * 0.65).toFixed(2)),
-        packagesCount: itemsCount,
-        status: status === 'Delivered' ? 'Delivered' : 'In Transit',
-        estimatedDelivery: status === 'Delivered' ? 'Delivered' : '3 - 5 business days after dispatch',
-        timeline: [
-          {
-            title: `Order Confirmed & Payment Verified (${matchedOrder.paymentStatus || 'Paid'})`,
-            location: 'Mumbai Operations Hub, India',
-            timestamp: matchedOrder.orderDate || matchedOrder.createdAt || 'Confirmed',
-            completed: true,
-          },
-          {
-            title: `Procurement & Quality Inspection (${itemsCount} items)`,
-            location: 'Mumbai Warehouse Facility',
-            timestamp: status === 'Procuring' ? 'In Progress' : 'Completed',
-            completed: true,
-          },
-          {
-            title: 'Consolidation & Export Customs Manifest',
-            location: 'Mumbai International Hub (BOM)',
-            timestamp:
-              status === 'Dispatched' || status === 'Delivered' ? 'Completed' : 'Scheduled',
-            completed: status === 'Dispatched' || status === 'Delivered',
-          },
-          {
-            title: `International Delivery to ${city}, ${country}`,
-            location: `${city}, ${country}`,
-            timestamp: status === 'Delivered' ? 'Delivered' : 'Pending Dispatch',
-            completed: status === 'Delivered',
-          },
-        ],
-      };
-    }
-
-    // 3. Check Warehouse Packages
-    const allPackages = [...getAllPackages(), ...sampleWarehousePackages];
-    const matchedPkg: any = allPackages.find(
-      (p: any) =>
-        (p.packageNumber || p.id || '').toUpperCase() === code ||
-        (p.trackingNumber || '').toUpperCase() === code
-    );
-    if (matchedPkg) {
-      const pkgCode = matchedPkg.packageNumber || matchedPkg.id;
-      return {
-        id: pkgCode,
-        trackingNumber: pkgCode,
-        carrier: matchedPkg.courier || matchedPkg.senderStore || 'Mumbai Warehouse Locker',
-        destinationCity: 'Mumbai Hub',
-        destinationCountry: 'India (Ready for International Consolidation)',
-        weightKg: matchedPkg.weightKg || matchedPkg.actualWeightKg || 0.95,
-        packagesCount: matchedPkg.itemsCount || 1,
-        status: 'Customs Clearance' as any,
-        estimatedDelivery: `${matchedPkg.freeStorageDaysLeft || 29} days free locker storage remaining`,
-        timeline: [
-          {
-            title: `Dispatched by ${matchedPkg.senderStore || matchedPkg.seller || 'Indian Store'}`,
-            location: 'Domestic Courier Transit, India',
-            timestamp: matchedPkg.receivedDate || matchedPkg.arrivalDate || 'Completed',
-            completed: true,
-          },
-          {
-            title: 'Received & Inspected at Mumbai Warehouse',
-            location: 'Sakinaka Hub, Andheri East, Mumbai',
-            timestamp: matchedPkg.receivedDate || matchedPkg.arrivalDate || 'Completed',
-            completed: true,
-          },
-          {
-            title: `Status: ${matchedPkg.status || 'Ready for Consolidation'}`,
-            location: 'Personal Indian Locker',
-            timestamp: 'Ready for International Dispatch',
-            completed: true,
-          },
-        ],
-      };
-    }
-
-    // 4. Check Purchase Requests
-    const allRequests = [...getAllPurchaseRequests(), ...samplePurchaseRequests];
-    const matchedReq: any = allRequests.find(
-      (r: any) =>
-        (r.requestNumber || r.id || '').toUpperCase() === code
-    );
-    if (matchedReq) {
-      const reqCode = matchedReq.requestNumber || matchedReq.id;
-      return {
-        id: reqCode,
-        trackingNumber: reqCode,
-        carrier: 'DHL Express',
-        destinationCity: matchedReq.destinationCity || 'Dubai',
-        destinationCountry: matchedReq.destinationCountry || 'United Arab Emirates',
-        weightKg: Number(((matchedReq.totalItems || matchedReq.itemsCount || 2) * 0.6).toFixed(2)),
-        packagesCount: matchedReq.totalItems || matchedReq.itemsCount || 2,
-        status: 'In Transit',
-        estimatedDelivery: `Status: ${matchedReq.status}`,
-        timeline: [
-          {
-            title: 'Buy For Me Request Submitted',
-            location: 'Online Portal',
-            timestamp: matchedReq.date || matchedReq.submittedAt || 'Submitted',
-            completed: true,
-          },
-          {
-            title: `Procurement Status: ${matchedReq.status}`,
-            location: 'Mumbai Buying Desk, India',
-            timestamp: 'Active',
-            completed: true,
-          },
-        ],
-      };
-    }
-
-    return null;
+  const buildAuthHeaders = (): HeadersInit => {
+    const token = getSessionToken();
+    return token ? { Authorization: `Bearer ${token}`, 'x-session-token': token } : {};
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchCode.trim()) {
-      setErrorMsg('Please enter a tracking, shipment, or order number.');
+  const fetchTrackingLookup = useCallback(async (rawCode: string) => {
+    const code = rawCode.trim();
+    if (!code) {
+      setErrorMsg('Please enter an Order ID, Request ID, Invoice Number, or AWB tracking number.');
       return;
     }
 
-    const found = lookupTrackingRecord(searchCode);
-    if (found) {
-      setSearchedShipment(found);
-      setErrorMsg('');
-    } else {
-      setSearchedShipment(null);
-      setErrorMsg(
-        `No shipment, order, or package found matching "${searchCode.trim().toUpperCase()}". Please verify your ID or select one of the active records below.`
-      );
+    setLoadingLookup(true);
+    setErrorMsg('');
+
+    try {
+      const res = await fetch(`/api/tracking/lookup?code=${encodeURIComponent(code)}`, {
+        headers: buildAuthHeaders(),
+      });
+      const data = await res.json();
+
+      if (res.status === 401 || data.requiresAuth) {
+        setRequiresAuth(true);
+        setTrackedRecord(null);
+        setRecentRecords([]);
+        setActiveCustomer(null);
+        setErrorMsg('');
+        return;
+      }
+
+      if (res.ok && data.found && data.record) {
+        setTrackedRecord(data.record);
+        setErrorMsg('');
+      } else {
+        setTrackedRecord(null);
+        setErrorMsg(
+          data.error ||
+            `No order or request found under your account matching "${code.toUpperCase()}".`
+        );
+      }
+    } catch {
+      setTrackedRecord(null);
+      setErrorMsg('Unable to reach the tracking backend right now. Please try again.');
+    } finally {
+      setLoadingLookup(false);
     }
+  }, []);
+
+  const loadRecentRecords = useCallback(async () => {
+    if (!isUserAuthenticated() || !getSessionToken()) {
+      setRequiresAuth(true);
+      setRecentRecords([]);
+      setActiveCustomer(null);
+      setTrackedRecord(null);
+      return;
+    }
+
+    setLoadingRecords(true);
+    try {
+      const res = await fetch('/api/tracking/records', {
+        headers: buildAuthHeaders(),
+      });
+      const data = await res.json();
+
+      if (res.status === 401 || data?.requiresAuth) {
+        setRequiresAuth(true);
+        setRecentRecords([]);
+        setActiveCustomer(null);
+        setTrackedRecord(null);
+        return;
+      }
+
+      if (res.ok && data && Array.isArray(data.records)) {
+        setRequiresAuth(false);
+        setRecentRecords(data.records);
+        setActiveCustomer(data.customer || null);
+      }
+    } catch {
+      setRecentRecords([]);
+    } finally {
+      setLoadingRecords(false);
+    }
+  }, []);
+
+  // Reset tracking state immediately if customer logs out or switches accounts
+  useEffect(() => {
+    const handleUserChanged = () => {
+      setTrackedRecord(null);
+      setRecentRecords([]);
+      setActiveCustomer(null);
+      setErrorMsg('');
+      setRequiresAuth(!isUserAuthenticated() || !getSessionToken());
+    };
+    window.addEventListener(USER_CHANGED_EVENT, handleUserChanged);
+    return () => window.removeEventListener(USER_CHANGED_EVENT, handleUserChanged);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    loadRecentRecords();
+
+    const cleanInitial = (initialTrackingNumber || '').trim();
+    setSearchCode(cleanInitial);
+    setErrorMsg('');
+
+    if (cleanInitial && isUserAuthenticated() && getSessionToken()) {
+      fetchTrackingLookup(cleanInitial);
+    } else {
+      setTrackedRecord(null);
+    }
+  }, [isOpen, initialTrackingNumber, loadRecentRecords, fetchTrackingLookup]);
+
+  if (!isOpen) return null;
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchTrackingLookup(searchCode);
   };
 
-  const quickSelectCode = (code: string) => {
-    setSearchCode(code);
-    const found = lookupTrackingRecord(code);
-    if (found) {
-      setSearchedShipment(found);
-      setErrorMsg('');
-    }
+  const handleQuickSelect = (id: string) => {
+    setSearchCode(id);
+    fetchTrackingLookup(id);
   };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4">
       <div className="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-blue-100 text-[#0066FF] flex items-center justify-center shrink-0">
               <Truck className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div className="min-w-0">
-              <h3 className="font-bold text-slate-900 text-base sm:text-lg truncate">Track Your Shipment</h3>
+              <h3 className="font-bold text-slate-900 text-base sm:text-lg truncate">
+                Track Your Order &amp; Shipment
+              </h3>
               <p className="text-[11px] sm:text-xs text-slate-500 truncate">
-                Live tracking from Mumbai hub to your destination
+                Live backend status from order confirmation to worldwide delivery
               </p>
             </div>
           </div>
@@ -306,146 +258,321 @@ export const TrackingModal: React.FC<TrackingModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-4 sm:p-6 space-y-5 max-h-[78vh] overflow-y-auto">
-          {/* Search Box */}
-          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
-            <div className="relative flex-1 min-w-0">
-              <Package className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchCode}
-                onChange={(e) => setSearchCode(e.target.value)}
-                placeholder="Enter ID (e.g. SHP-50012, ORD-22033, PKG-30421)"
-                className="w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium focus:outline-hidden focus:border-[#0066FF] focus:ring-2 focus:ring-blue-100 transition-all"
-              />
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 max-h-[78vh] overflow-y-auto overflow-x-hidden">
+          {requiresAuth ? (
+            <div className="border border-slate-200 rounded-2xl p-6 sm:p-8 text-center bg-slate-50/70 space-y-3.5">
+              <div className="w-12 h-12 rounded-full bg-blue-100 text-[#0066FF] flex items-center justify-center mx-auto">
+                <Lock className="w-5 h-5" />
+              </div>
+              <h4 className="font-extrabold text-slate-900 text-base sm:text-lg">
+                Login Required to Track Your Orders
+              </h4>
+              <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+                For your privacy and security, tracking details are only shown for the customer account currently signed in. Please log in to view and track your orders and shipments.
+              </p>
+              <div className="pt-1 flex items-center justify-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onRequireAuth) {
+                      onRequireAuth();
+                    } else {
+                      onClose();
+                    }
+                  }}
+                  className="px-5 py-2.5 rounded-xl bg-[#0066FF] hover:bg-[#0052CC] text-white font-bold text-xs sm:text-sm shadow-sm transition-colors cursor-pointer"
+                >
+                  Login / Sign Up
+                </button>
+              </div>
             </div>
-            <button
-              type="submit"
-              className="bg-[#0066FF] hover:bg-[#0052CC] text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
-            >
-              <Search className="w-4 h-4" />
-              <span>Track</span>
-            </button>
-          </form>
+          ) : (
+            <>
+              {/* Logged-in Customer Identity Pill */}
+              {activeCustomer && (
+                <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-xl bg-blue-50/70 border border-blue-200/80 text-xs">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <UserCheck className="w-4 h-4 text-[#0066FF] shrink-0" />
+                    <span className="text-slate-700 truncate">
+                      Signed in as <strong className="text-slate-900">{activeCustomer.name}</strong>{' '}
+                      <span className="text-slate-500">({activeCustomer.email})</span>
+                    </span>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-md bg-white border border-blue-200 text-[11px] font-mono font-bold text-[#0066FF] shrink-0">
+                    {activeCustomer.customerId}
+                  </span>
+                </div>
+              )}
 
+              {/* Search Box */}
+              <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1 min-w-0">
+                  <Package className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={searchCode}
+                    onChange={(e) => setSearchCode(e.target.value)}
+                    placeholder="Enter your Order ID, Request ID, Invoice, or AWB"
+                    className="w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium focus:outline-hidden focus:border-[#0066FF] focus:ring-2 focus:ring-blue-100 transition-all"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={loadingLookup}
+                  className="bg-[#0066FF] hover:bg-[#0052CC] disabled:opacity-60 text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                >
+                  {loadingLookup ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Search className="w-4 h-4" />
+                  )}
+                  <span>{loadingLookup ? 'Searching...' : 'Track'}</span>
+                </button>
+              </form>
+
+              {/* Logged-in Customer's Own Backend Records Quick Selector */}
+              <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="text-[11px] sm:text-xs font-bold text-slate-600">
+                    Your Orders &amp; Requests:
+                  </span>
+                  <button
+                    type="button"
+                    onClick={loadRecentRecords}
+                    disabled={loadingRecords}
+                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0066FF] hover:text-blue-800 cursor-pointer"
+                    title="Refresh your orders"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${loadingRecords ? 'animate-spin' : ''}`} />
+                    <span>Refresh</span>
+                  </button>
+                </div>
+
+                {loadingRecords && recentRecords.length === 0 ? (
+                  <div className="flex items-center gap-2 text-xs text-slate-500 py-1">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0066FF]" />
+                    <span>Loading your orders from backend...</span>
+                  </div>
+                ) : recentRecords.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {recentRecords.map((rec) => {
+                      const isActive = trackedRecord?.trackingId === rec.id;
+                      return (
+                        <button
+                          key={rec.id}
+                          type="button"
+                          onClick={() => handleQuickSelect(rec.id)}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-semibold border transition-all cursor-pointer ${
+                            isActive
+                              ? 'bg-[#0066FF] text-white border-[#0066FF] shadow-xs'
+                              : 'bg-white text-slate-700 border-slate-200 hover:border-blue-300 hover:text-[#0066FF]'
+                          }`}
+                        >
+                          <span className="font-bold">{rec.id}</span>
+                          <span
+                            className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                              isActive
+                                ? 'bg-white/20 text-white'
+                                : 'bg-slate-100 text-slate-500'
+                            }`}
+                          >
+                            {rec.status}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500">
+                    No orders or requests found under your account yet. Place a Buy For Me or External Purchase order to track it live here.
+                  </p>
+                )}
+              </div>
+
+          {/* Error Banner */}
           {errorMsg && (
-            <div className="flex items-start gap-2 text-xs sm:text-sm text-red-700 bg-red-50 p-3.5 rounded-xl border border-red-200">
+            <div className="flex items-start gap-2.5 text-xs sm:text-sm text-red-700 bg-red-50 p-3.5 rounded-xl border border-red-200 max-w-full overflow-hidden">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
-              <span>{errorMsg}</span>
+              <span className="min-w-0 flex-1 break-words [overflow-wrap:anywhere] leading-relaxed">
+                {errorMsg}
+              </span>
             </div>
           )}
 
-          {/* Quick suggestions from real database records */}
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-slate-500">
-            <span className="font-medium">Active records:</span>
-            <button
-              type="button"
-              onClick={() => quickSelectCode('SHP-50012')}
-              className="text-[#0066FF] font-semibold underline decoration-dotted hover:text-blue-800 cursor-pointer"
-            >
-              SHP-50012 (In Transit)
-            </button>
-            <span>•</span>
-            <button
-              type="button"
-              onClick={() => quickSelectCode('SHP-49910')}
-              className="text-[#0066FF] font-semibold underline decoration-dotted hover:text-blue-800 cursor-pointer"
-            >
-              SHP-49910 (Delivered)
-            </button>
-            <span>•</span>
-            <button
-              type="button"
-              onClick={() => quickSelectCode('ORD-22033')}
-              className="text-[#0066FF] font-semibold underline decoration-dotted hover:text-blue-800 cursor-pointer"
-            >
-              ORD-22033 (Order)
-            </button>
-            <span>•</span>
-            <button
-              type="button"
-              onClick={() => quickSelectCode('PKG-30421')}
-              className="text-[#0066FF] font-semibold underline decoration-dotted hover:text-blue-800 cursor-pointer"
-            >
-              PKG-30421 (Warehouse)
-            </button>
-          </div>
-
-          {/* Shipment Overview Card */}
-          {searchedShipment && (
-            <div className="border border-slate-200 rounded-xl p-4 sm:p-5 bg-gradient-to-br from-blue-50/40 via-white to-slate-50">
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200">
-                <div>
+          {/* Real Backend Record Result */}
+          {trackedRecord ? (
+            <div className="border border-slate-200 rounded-xl p-4 sm:p-5 bg-gradient-to-br from-blue-50/35 via-white to-slate-50/70 space-y-4">
+              {/* Top Summary Header */}
+              <div className="flex flex-wrap items-start justify-between gap-3 pb-4 border-b border-slate-200">
+                <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-extrabold text-slate-900 text-base sm:text-lg">
-                      {searchedShipment.trackingNumber}
+                      {trackedRecord.trackingId}
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-[#0066FF]">
-                      {searchedShipment.carrier}
+                    <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-[#0066FF]">
+                      {trackedRecord.recordType}
                     </span>
+                    {trackedRecord.invoiceNumber && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600">
+                        <FileText className="w-3 h-3" />
+                        {trackedRecord.invoiceNumber}
+                      </span>
+                    )}
                   </div>
-                  <div className="text-xs text-slate-500 mt-1">
-                    Destination:{' '}
-                    <strong className="text-slate-700">
-                      {searchedShipment.destinationCity}, {searchedShipment.destinationCountry}
-                    </strong>
+                  <div className="text-xs text-slate-500 mt-1.5 space-y-0.5">
+                    <div>
+                      Destination:{' '}
+                      <strong className="text-slate-700">
+                        {trackedRecord.destinationCity === trackedRecord.destinationCountry
+                          ? trackedRecord.destinationCountry
+                          : `${trackedRecord.destinationCity}, ${trackedRecord.destinationCountry}`}
+                      </strong>
+                    </div>
+                    <div>
+                      Placed On: <strong className="text-slate-700">{trackedRecord.orderDate}</strong>
+                      {trackedRecord.stores.length > 0 && (
+                        <>
+                          {' '}• Store(s):{' '}
+                          <strong className="text-slate-700">{trackedRecord.stores.join(', ')}</strong>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                <div className="text-left sm:text-right">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    {searchedShipment.status}
+                <div className="text-left sm:text-right shrink-0">
+                  <div
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${getStatusBadgeClasses(
+                      trackedRecord.status
+                    )}`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-current animate-pulse" />
+                    {trackedRecord.status}
                   </div>
-                  <div className="text-xs text-slate-500 mt-1 font-medium">
-                    Est: {searchedShipment.estimatedDelivery}
+                  <div className="text-[11px] sm:text-xs text-slate-500 mt-1 font-medium max-w-[240px]">
+                    {trackedRecord.estimatedDelivery}
                   </div>
                 </div>
               </div>
 
-              {/* Package stats */}
-              <div className="grid grid-cols-3 gap-2 py-3 text-center text-xs border-b border-slate-100 text-slate-600">
+              {/* Order Stats */}
+              <div className="grid grid-cols-3 gap-2 py-2.5 px-2 rounded-xl bg-white border border-slate-100 text-center text-xs">
                 <div>
-                  <span className="text-slate-400 block text-[11px]">Total Weight</span>
-                  <strong className="text-slate-800 text-xs sm:text-sm">{searchedShipment.weightKg} kg</strong>
+                  <span className="text-slate-400 block text-[11px]">Items Ordered</span>
+                  <strong className="text-slate-800 text-xs sm:text-sm">
+                    {trackedRecord.itemsCount} {trackedRecord.itemsCount === 1 ? 'item' : 'items'}
+                  </strong>
+                </div>
+                <div className="border-x border-slate-100 px-1">
+                  <span className="text-slate-400 block text-[11px]">
+                    Order Total {trackedRecord.paymentStatus ? `(${trackedRecord.paymentStatus})` : ''}
+                  </span>
+                  <strong className="text-slate-800 text-xs sm:text-sm">
+                    {trackedRecord.totalAmountINR > 0
+                      ? formatINR(trackedRecord.totalAmountINR)
+                      : 'Pending Quote'}
+                  </strong>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[11px]">Packages / Items</span>
-                  <strong className="text-slate-800 text-xs sm:text-sm">{searchedShipment.packagesCount} items</strong>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[11px]">Service Level</span>
-                  <strong className="text-slate-800 text-xs sm:text-sm">International Express</strong>
+                  <span className="text-slate-400 block text-[11px]">Dispatch / Carrier</span>
+                  <strong className="text-slate-800 text-xs sm:text-sm truncate block">
+                    {trackedRecord.trackingAwb || trackedRecord.carrier}
+                  </strong>
                 </div>
               </div>
 
-              {/* Progress Milestones */}
-              <div className="mt-5">
-                <h4 className="font-bold text-xs uppercase tracking-wider text-slate-400 mb-4">
-                  Tracking History &amp; Milestones
-                </h4>
-                <div className="relative pl-6 space-y-5 before:content-[''] before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
-                  {searchedShipment.timeline.map((step, idx) => (
-                    <div key={idx} className="relative">
+              {/* Actual Ordered Products */}
+              {trackedRecord.products.length > 0 && (
+                <div>
+                  <h4 className="font-bold text-[11px] uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
+                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <span>Actual Order Items ({trackedRecord.products.length})</span>
+                  </h4>
+                  <div className="space-y-2">
+                    {trackedRecord.products.map((item, idx) => (
                       <div
-                        className={`absolute -left-6 top-0.5 w-5 h-5 rounded-full flex items-center justify-center ring-4 ring-white ${
+                        key={idx}
+                        className="flex items-center gap-3 p-2.5 rounded-xl bg-white border border-slate-100"
+                      >
+                        {item.imageUrl ? (
+                          <img
+                            src={item.imageUrl}
+                            alt={item.name}
+                            className="w-10 h-10 rounded-lg object-cover border border-slate-100 shrink-0 bg-slate-50"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-blue-50 text-[#0066FF] flex items-center justify-center shrink-0">
+                            <Package className="w-5 h-5" />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-[13px] font-bold text-slate-800 line-clamp-1">
+                            {item.name}
+                          </p>
+                          <p className="text-[11px] text-slate-500">
+                            {item.store} • Qty: <strong className="text-slate-700">{item.qty}</strong>
+                          </p>
+                        </div>
+                        {item.priceINR > 0 && (
+                          <div className="text-xs font-extrabold text-slate-900 shrink-0">
+                            {formatINR(item.priceINR * item.qty)}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Real Step-by-Step Order Process & Tracking History */}
+              <div className="pt-1">
+                <h4 className="font-bold text-[11px] uppercase tracking-wider text-slate-400 mb-3.5">
+                  Actual Order Process &amp; Tracking Milestones
+                </h4>
+                <div className="relative pl-7 space-y-4 before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+                  {trackedRecord.timeline.map((step) => (
+                    <div key={step.stepNumber} className="relative">
+                      <div
+                        className={`absolute -left-7 top-0.5 w-6 h-6 rounded-full flex items-center justify-center ring-4 ring-white text-[10px] font-extrabold ${
                           step.completed
                             ? 'bg-[#0066FF] text-white'
-                            : 'bg-slate-200 text-slate-400'
+                            : step.current
+                            ? 'bg-blue-100 text-[#0066FF] border-2 border-[#0066FF]'
+                            : 'bg-slate-100 text-slate-400 border border-slate-200'
                         }`}
                       >
                         {step.completed ? (
                           <CheckCircle2 className="w-3.5 h-3.5" />
                         ) : (
-                          <div className="w-2 h-2 rounded-full bg-slate-400" />
+                          <span>{step.stepNumber}</span>
                         )}
                       </div>
 
-                      <div>
-                        <p className={`text-xs sm:text-sm font-bold ${step.completed ? 'text-slate-900' : 'text-slate-500'}`}>
-                          {step.title}
+                      <div
+                        className={`rounded-xl p-2.5 transition-colors ${
+                          step.current
+                            ? 'bg-blue-50/70 border border-blue-200/80'
+                            : 'bg-transparent'
+                        }`}
+                      >
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p
+                            className={`text-xs sm:text-sm font-bold ${
+                              step.completed || step.current ? 'text-slate-900' : 'text-slate-500'
+                            }`}
+                          >
+                            {step.title}
+                          </p>
+                          {step.current && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#0066FF] text-white uppercase tracking-wide">
+                              Current Stage
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[11px] sm:text-xs text-slate-600 mt-0.5">
+                          {step.description}
                         </p>
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] sm:text-xs text-slate-500 mt-0.5">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-slate-500 mt-1">
                           <span className="flex items-center gap-1">
                             <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
                             <span>{step.location}</span>
@@ -462,6 +589,26 @@ export const TrackingModal: React.FC<TrackingModalProps> = ({
                 </div>
               </div>
             </div>
+          ) : (
+            !errorMsg &&
+            !loadingLookup && (
+              <div className="border border-dashed border-slate-200 rounded-xl p-5 sm:p-6 text-center bg-slate-50/60 space-y-2.5">
+                <div className="w-11 h-11 rounded-full bg-blue-50 text-[#0066FF] flex items-center justify-center mx-auto">
+                  <Search className="w-5 h-5" />
+                </div>
+                <h4 className="font-bold text-slate-800 text-sm sm:text-base">
+                  Enter Your Real Order or Request ID
+                </h4>
+                <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                  Search any confirmed Order ID (<code className="font-semibold text-slate-700">ORD-...</code>),
+                  Buy For Me Request (<code className="font-semibold text-slate-700">REQ-...</code>),
+                  External Request (<code className="font-semibold text-slate-700">EPR-...</code>),
+                  Invoice Number, or select one of your live backend records above to see the actual order items and step-by-step fulfillment progress.
+                </p>
+              </div>
+            )
+          )}
+            </>
           )}
         </div>
 

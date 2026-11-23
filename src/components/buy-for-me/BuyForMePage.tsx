@@ -28,6 +28,7 @@ import {
   Mail,
   Lock,
   LogIn,
+  ExternalLink,
 } from 'lucide-react';
 import { StoreBadge } from '../common/StoreBadge';
 import { CustomerExternalPlatformRequestPortal } from './CustomerExternalPlatformRequestPortal';
@@ -72,8 +73,32 @@ const countriesList = [
 
 const getCustomerDraftKey = (cid: string) => `i2w_draft_products_${cid || 'anonymous'}`;
 
+const formatDisplayProductName = (rawName: string): string => {
+  const trimmed = (rawName || '').trim();
+  if (!/^https?:\/\//i.test(trimmed)) return trimmed || 'Untitled Product';
+  try {
+    const parsed = new URL(trimmed);
+    const segments = parsed.pathname
+      .split('/')
+      .map((s) => s.trim())
+      .filter((s) => s && !['p', 'dp', 'pd', 'gp', 'product', 'buy'].includes(s.toLowerCase()) && !/^itm[a-z0-9]+$/i.test(s) && !/^B0[A-Z0-9]{8}$/i.test(s));
+    const bestSlug = segments.sort((a, b) => b.length - a.length)[0];
+    if (bestSlug && bestSlug.length >= 4) {
+      return decodeURIComponent(bestSlug)
+        .replace(/[-_+]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/\b\w/g, (ch) => ch.toUpperCase());
+    }
+    return parsed.hostname.replace(/^www\./i, '');
+  } catch {
+    return trimmed;
+  }
+};
+
 export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialUrl = '', isInDashboard = false }) => {
   const [currentStep, setCurrentStep] = useState<BuyForMeStep>(1);
+  const [activeSection, setActiveSection] = useState<'builder' | 'requests' | 'orders'>('builder');
 
   // Authenticated customer state
   const [currentUser, setCurrentUser] = useState<UserProfile>(() => getCurrentUser());
@@ -660,86 +685,55 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
   ];
 
   return (
-    <div className={isInDashboard ? "w-full space-y-6" : "max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8"}>
+    <div className={isInDashboard ? "w-full space-y-3.5" : "max-w-5xl mx-auto px-3.5 sm:px-6 lg:px-8 py-5 sm:py-6 space-y-4"}>
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-24 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-sm animate-in fade-in slide-in-from-top-4 duration-200">
+        <div className="fixed top-20 right-5 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs sm:text-sm animate-in fade-in slide-in-from-top-4 duration-200">
           <Sparkles className="w-4 h-4 text-amber-400" />
           <span>{toastMessage}</span>
         </div>
       )}
 
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-500 font-medium">
-        <button
-          onClick={() => onNavigate('dashboard')}
-          className="flex items-center gap-1.5 hover:text-[#0066FF] transition-colors"
-        >
-          <Home className="w-4 h-4" />
-          <span>Dashboard</span>
-        </button>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        <span className="text-slate-500">Buy For Me</span>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        <span className="text-slate-800 font-bold">New Request</span>
-      </div>
-
-      {/* Page Title & Cart Icon */}
-      <div className="flex items-start gap-4">
-        <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-[#0066FF] shrink-0 shadow-2xs">
-          <ShoppingCart className="w-7 h-7" />
-        </div>
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Buy For Me
-          </h1>
-          <p className="text-slate-600 text-sm sm:text-base mt-1 max-w-2xl leading-relaxed">
-            Add products from any Indian online store and we'll purchase, warehouse and ship them to your doorstep worldwide.
-          </p>
-        </div>
-      </div>
-
-      {/* Customer Account & Locker Identification Banner (Strict Customer Data Isolation) */}
-      <div className="bg-gradient-to-r from-blue-50/90 via-indigo-50/60 to-white rounded-2xl p-4 sm:p-5 border border-blue-200/80 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5 min-w-0">
-          <div className="relative shrink-0">
-            <img
-              src={currentUser.avatar}
-              alt={currentUser.name}
-              className="w-12 h-12 rounded-full object-cover ring-2 ring-blue-500/20 bg-white"
-            />
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full ring-2 ring-white" title="Verified Customer Session" />
+      {/* Compact Clean Header Row (No bulky box — crisp & scannable) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-0.5">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-[#0066FF] to-[#1D4ED8] flex items-center justify-center text-white shrink-0 shadow-xs">
+            <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-extrabold text-slate-900 text-base">{currentUser.name}</span>
-              <span className="text-[11px] font-mono font-bold text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded border border-blue-200/60">
-                {currentUser.customerId}
-              </span>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded border border-emerald-200/60 flex items-center gap-1">
-                <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                Data Isolated
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                Buy For Me
+              </h1>
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/80">
+                <ShieldCheck className="w-3 h-3 text-emerald-600 shrink-0" />
+                <span>Data Isolated</span>
               </span>
             </div>
-            <div className="flex items-center gap-3 text-xs text-slate-600 mt-1 flex-wrap font-medium">
-              <span>{currentUser.email}</span>
-              <span className="text-slate-300">•</span>
-              <span className="font-semibold text-slate-700">Locker: <strong className="text-blue-700 font-mono">{currentUser.lockerId}</strong></span>
-              <span className="text-slate-300">•</span>
-              <span>{currentUser.country}</span>
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium mt-0.5">
+              <button
+                type="button"
+                onClick={() => onNavigate('dashboard')}
+                className="inline-flex items-center gap-1 hover:text-[#0066FF] transition-colors cursor-pointer"
+              >
+                <Home className="w-3 h-3" />
+                <span>Dashboard</span>
+              </button>
+              <ChevronRight className="w-3 h-3 text-slate-400" />
+              <span className="text-slate-700 font-semibold">New Request</span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 self-end md:self-center shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={handleStartNewRequest}
-            className="px-3.5 py-2 bg-[#0066FF] hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-95"
+            className="px-3.5 py-2 bg-[#0066FF] hover:bg-[#0052CC] text-white rounded-xl text-xs font-bold transition-all shadow-xs inline-flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 whitespace-nowrap"
             title="Start a new purchase request with a fresh draft"
           >
-            <Plus className="w-3.5 h-3.5" />
-            <span>+ New Request</span>
+            <Plus className="w-3.5 h-3.5 shrink-0" />
+            <span>New Request</span>
           </button>
 
           <button
@@ -748,7 +742,7 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
               logoutUser();
               onNavigate('auth');
             }}
-            className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+            className="px-3 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap"
             title="Log out and switch customer account"
           >
             Switch Account
@@ -756,56 +750,130 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
         </div>
       </div>
 
-      {/* Request a Product from Another Platform (External Platform Purchase Request System) */}
-      <CustomerExternalPlatformRequestPortal />
+      {/* Clean Section Tabs: New Request | My Requests | Order History */}
+      <div className="flex items-center gap-1.5 bg-slate-100/90 p-1 rounded-xl border border-slate-200/70 w-full sm:w-fit overflow-x-auto no-scrollbar">
+        <button
+          type="button"
+          onClick={() => setActiveSection('builder')}
+          className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap inline-flex items-center justify-center gap-1.5 ${
+            activeSection === 'builder'
+              ? 'bg-white text-[#0066FF] shadow-xs'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <ShoppingCart className="w-3.5 h-3.5 shrink-0" />
+          <span>New Request</span>
+          {products.length > 0 && (
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-blue-50 text-[#0066FF]">
+              {products.length}
+            </span>
+          )}
+        </button>
 
-      {/* 5-Step Stepper Bar */}
-      <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-xs border border-slate-100">
-        <div className="flex items-center justify-between max-w-3xl mx-auto relative">
-          {/* Stepper Background Track Line */}
-          <div className="absolute top-4 left-6 right-6 h-0.5 bg-slate-200 -z-0" />
+        <button
+          type="button"
+          onClick={() => setActiveSection('requests')}
+          className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap inline-flex items-center justify-center gap-1.5 ${
+            activeSection === 'requests'
+              ? 'bg-white text-[#0066FF] shadow-xs'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <Package className="w-3.5 h-3.5 shrink-0" />
+          <span>My Requests</span>
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-slate-200/70 text-slate-700">
+            {customerPreviousRequests.length}
+          </span>
+        </button>
 
-          {stepsList.map((step) => {
-            const isActive = currentStep === step.num;
-            const isCompleted = currentStep > step.num;
-
-            return (
-              <button
-                key={step.num}
-                type="button"
-                onClick={() => setCurrentStep(step.num as BuyForMeStep)}
-                className="relative z-10 flex flex-col items-center group focus:outline-hidden"
-              >
-                <div
-                  className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-extrabold transition-all duration-300 ring-4 ring-white ${
-                    isActive
-                      ? 'bg-[#0066FF] text-white shadow-md scale-110'
-                      : isCompleted
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-slate-100 text-slate-500 group-hover:bg-slate-200'
-                  }`}
-                >
-                  {isCompleted ? <Check className="w-4 h-4" /> : step.num}
-                </div>
-                <span
-                  className={`text-xs mt-2 font-bold whitespace-nowrap transition-colors ${
-                    isActive
-                      ? 'text-[#0066FF]'
-                      : isCompleted
-                      ? 'text-emerald-700'
-                      : 'text-slate-500 group-hover:text-slate-800'
-                  }`}
-                >
-                  {step.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <button
+          type="button"
+          onClick={() => setActiveSection('orders')}
+          className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap inline-flex items-center justify-center gap-1.5 ${
+            activeSection === 'orders'
+              ? 'bg-white text-[#0066FF] shadow-xs'
+              : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+          <span>Order History</span>
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-700">
+            {customerPreviousOrders.length}
+          </span>
+        </button>
       </div>
 
+      {/* Request a Product from Another Platform (Sleek Compact Strip — shown on New Request tab) */}
+      {activeSection === 'builder' && <CustomerExternalPlatformRequestPortal />}
+
+      {/* 5-Step Stepper Bar (Slim, Crisp & Responsive for All Screen Types) */}
+      {activeSection === 'builder' && (
+      <div className="bg-white rounded-xl sm:rounded-2xl px-4 py-3 sm:px-6 sm:py-3.5 shadow-2xs border border-slate-200/80">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center justify-between relative">
+            {/* Stepper Background Track Line */}
+            <div className="absolute top-3.5 sm:top-4 left-4 sm:left-6 right-4 sm:right-6 h-0.5 bg-slate-200 rounded-full z-0" />
+            {/* Animated Active Progress Fill */}
+            <div
+              className="absolute top-3.5 sm:top-4 left-4 sm:left-6 h-0.5 bg-gradient-to-r from-[#0066FF] to-emerald-500 rounded-full transition-all duration-500 z-0"
+              style={{
+                width: `calc((100% - 2.5rem) * ${(currentStep - 1) / (stepsList.length - 1)})`,
+              }}
+            />
+
+            {stepsList.map((step) => {
+              const isActive = currentStep === step.num;
+              const isCompleted = currentStep > step.num;
+
+              return (
+                <button
+                  key={step.num}
+                  type="button"
+                  onClick={() => setCurrentStep(step.num as BuyForMeStep)}
+                  className="relative z-10 flex flex-col items-center group focus:outline-hidden cursor-pointer"
+                >
+                  <div
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs font-extrabold transition-all duration-300 ring-4 ring-white ${
+                      isActive
+                        ? 'bg-[#0066FF] text-white shadow-sm shadow-blue-500/30 scale-105'
+                        : isCompleted
+                        ? 'bg-emerald-600 text-white'
+                        : 'bg-slate-100 text-slate-500 group-hover:bg-slate-200'
+                    }`}
+                  >
+                    {isCompleted ? <Check className="w-3.5 h-3.5" /> : step.num}
+                  </div>
+                  <span
+                    className={`hidden sm:block text-[11px] mt-1.5 font-bold whitespace-nowrap transition-colors ${
+                      isActive
+                        ? 'text-[#0066FF]'
+                        : isCompleted
+                        ? 'text-emerald-700'
+                        : 'text-slate-500 group-hover:text-slate-800'
+                    }`}
+                  >
+                    {step.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Mobile Active Step Label Pill */}
+          <div className="sm:hidden mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <span className="font-semibold text-slate-500">
+              Step {currentStep} of {stepsList.length}
+            </span>
+            <span className="font-extrabold text-[#0066FF] bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+              {stepsList.find((s) => s.num === currentStep)?.label}
+            </span>
+          </div>
+        </div>
+      </div>
+      )}
+
       {/* STEP 1: ADD PRODUCTS */}
-      {currentStep === 1 && (
+      {activeSection === 'builder' && currentStep === 1 && (
         <div className="space-y-6 animate-in fade-in duration-300">
           {/* Add Products Input Card */}
           <div className="bg-white rounded-2xl p-6 sm:p-7 shadow-xs border border-slate-100 space-y-3">
@@ -883,7 +951,7 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
               products.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl p-4 sm:p-6 shadow-xs border border-slate-200/80 hover:border-slate-300 transition-all"
+                className="bg-white rounded-2xl p-4 sm:p-5 shadow-xs border border-slate-200/80 hover:border-slate-300 transition-all overflow-hidden"
               >
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
                   {/* Thumbnail with visible Upload / Change Image button */}
@@ -987,40 +1055,48 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
                             </button>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2 group/edit">
-                            <h4 className="font-extrabold text-slate-900 text-base sm:text-lg leading-snug">
-                              {item.name}
+                          <div className="flex items-start gap-1.5 group/edit min-w-0">
+                            <h4
+                              className="min-w-0 flex-1 font-extrabold text-slate-900 text-sm sm:text-base leading-snug break-words [overflow-wrap:anywhere] line-clamp-2"
+                              title={item.name}
+                            >
+                              {formatDisplayProductName(item.name)}
                             </h4>
                             <button
                               type="button"
                               onClick={() => {
                                 setEditingTitleId(item.id);
-                                setEditingTitleText(item.name);
+                                setEditingTitleText(formatDisplayProductName(item.name));
                               }}
-                              className="opacity-0 group-hover/edit:opacity-100 p-1 text-slate-400 hover:text-slate-700 transition-opacity"
+                              className="opacity-0 group-hover/edit:opacity-100 p-1 text-slate-400 hover:text-slate-700 transition-opacity shrink-0 cursor-pointer"
                               title="Edit product name"
                             >
                               <Edit2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         )}
-                        <a
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-[#0066FF] hover:underline block truncate mt-0.5"
-                          title={item.url}
-                        >
-                          {item.url}
-                        </a>
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
+                          <StoreBadge store={item.storeName} size="sm" />
+                          {item.url && (
+                            <a
+                              href={item.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0066FF] hover:text-blue-800 bg-blue-50/70 hover:bg-blue-100/70 px-2 py-0.5 rounded-md border border-blue-100 transition-colors"
+                              title={item.url}
+                            >
+                              <ExternalLink className="w-3 h-3 shrink-0" />
+                              <span>View Product Link</span>
+                            </a>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                        <StoreBadge store={item.storeName} size="sm" />
+                      <div className="flex items-center shrink-0">
                         <button
                           type="button"
                           onClick={() => removeProduct(item.id)}
-                          className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                           title="Remove item"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -1028,17 +1104,17 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
                       </div>
                     </div>
 
-                    {/* Bottom Fields Row: Quantity, Size, Colour, Price */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {/* Bottom Fields Row: Uniform 4-Column Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 pt-1">
                       {/* Quantity */}
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                           Quantity
                         </label>
                         <select
                           value={item.quantity}
                           onChange={(e) => updateQuantity(item.id, Number(e.target.value))}
-                          className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-sm font-semibold text-slate-800 focus:outline-hidden focus:border-[#0066FF]"
+                          className="w-full h-9 px-2.5 border border-slate-200 rounded-lg bg-slate-50/60 hover:bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-hidden focus:border-[#0066FF] focus:bg-white transition-colors"
                         >
                           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
                             <option key={num} value={num}>
@@ -1048,65 +1124,62 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
                         </select>
                       </div>
 
-                      {/* Size (optional) */}
-                      {item.size !== undefined ? (
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                            Size
-                          </label>
-                          <select
-                            value={item.size}
-                            onChange={(e) => updateSize(item.id, e.target.value)}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-sm font-semibold text-slate-800 focus:outline-hidden focus:border-[#0066FF]"
-                          >
-                            {['7', '8', '9', '10', '11', 'XS', 'S', 'M', 'L', 'XL', 'Standard'].map(
-                              (s) => (
-                                <option key={s} value={s}>
-                                  {s}
-                                </option>
-                              )
-                            )}
-                          </select>
-                        </div>
-                      ) : (
-                        <div />
-                      )}
+                      {/* Size */}
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                          Size
+                        </label>
+                        <select
+                          value={item.size ?? 'Standard'}
+                          onChange={(e) => updateSize(item.id, e.target.value)}
+                          className="w-full h-9 px-2.5 border border-slate-200 rounded-lg bg-slate-50/60 hover:bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-hidden focus:border-[#0066FF] focus:bg-white transition-colors"
+                        >
+                          {['Standard', 'XS', 'S', 'M', 'L', 'XL', '7', '8', '9', '10', '11'].map(
+                            (s) => (
+                              <option key={s} value={s}>
+                                {s}
+                              </option>
+                            )
+                          )}
+                        </select>
+                      </div>
 
-                      {/* Colour (optional) */}
-                      {item.colour !== undefined ? (
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
-                            Colour
-                          </label>
-                          <select
-                            value={item.colour}
-                            onChange={(e) => updateColour(item.id, e.target.value)}
-                            className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-sm font-semibold text-slate-800 focus:outline-hidden focus:border-[#0066FF]"
-                          >
-                            {['Blue', 'Pink', 'Black', 'White', 'Red', 'Green', 'Default'].map(
-                              (c) => (
-                                <option key={c} value={c}>
-                                  {c}
-                                </option>
-                              )
-                            )}
-                          </select>
-                        </div>
-                      ) : (
-                        <div />
-                      )}
+                      {/* Colour */}
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                          Colour
+                        </label>
+                        <select
+                          value={item.colour ?? 'Default'}
+                          onChange={(e) => updateColour(item.id, e.target.value)}
+                          className="w-full h-9 px-2.5 border border-slate-200 rounded-lg bg-slate-50/60 hover:bg-white text-xs sm:text-sm font-semibold text-slate-800 focus:outline-hidden focus:border-[#0066FF] focus:bg-white transition-colors"
+                        >
+                          {['Default', 'Black', 'White', 'Blue', 'Red', 'Pink', 'Green'].map(
+                            (c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            )
+                          )}
+                        </select>
+                      </div>
 
                       {/* Price (INR) */}
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">
                           Price (INR)
                         </label>
-                        <input
-                          type="text"
-                          value={item.priceINR.toLocaleString('en-IN')}
-                          onChange={(e) => updatePrice(item.id, e.target.value)}
-                          className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white text-sm font-bold text-slate-800 focus:outline-hidden focus:border-[#0066FF]"
-                        />
+                        <div className="relative flex items-center">
+                          <span className="absolute left-2.5 text-xs font-bold text-slate-400 pointer-events-none">
+                            ₹
+                          </span>
+                          <input
+                            type="text"
+                            value={item.priceINR.toLocaleString('en-IN')}
+                            onChange={(e) => updatePrice(item.id, e.target.value)}
+                            className="w-full h-9 pl-6 pr-2.5 border border-slate-200 rounded-lg bg-slate-50/60 hover:bg-white text-xs sm:text-sm font-bold text-slate-900 focus:outline-hidden focus:border-[#0066FF] focus:bg-white transition-colors"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1116,56 +1189,62 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
           )}
         </div>
 
-          {/* Action Buttons */}
-          <div className="space-y-3 pt-2">
-            {/* + Add Another Product */}
-            <button
-              type="button"
-              onClick={() => setShowAddModal(true)}
-              className="w-full py-3.5 px-4 bg-blue-50/80 hover:bg-blue-100 text-[#0066FF] border border-blue-200 rounded-2xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all cursor-pointer"
-            >
-              <Plus className="w-5 h-5" />
-              <span>Add Another Product</span>
-            </button>
-
-            {/* Summary Bar */}
-            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/70 flex flex-wrap items-center justify-between text-sm">
-              <div className="text-slate-600">
-                Total Products: <strong className="text-slate-900">{products.length}</strong> (
-                {products.reduce((acc, p) => acc + p.quantity, 0)} items)
+          {/* Unified Compact Order Summary & Action Bar */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
+              <div>
+                <span className="text-[11px] font-semibold text-slate-500 block">Draft Cart</span>
+                <span className="text-sm font-extrabold text-slate-900">
+                  {products.length} {products.length === 1 ? 'product' : 'products'} ({products.reduce((acc, p) => acc + p.quantity, 0)}{' '}
+                  {products.reduce((acc, p) => acc + p.quantity, 0) === 1 ? 'item' : 'items'})
+                </span>
               </div>
-              <div className="text-slate-700">
-                Estimated Items Subtotal:{' '}
-                <strong className="text-xl font-extrabold text-[#0066FF]">
+              <div className="h-8 w-px bg-slate-200 hidden sm:block" />
+              <div>
+                <span className="text-[11px] font-semibold text-slate-500 block">Estimated Subtotal</span>
+                <span className="text-lg sm:text-xl font-extrabold text-[#0066FF]">
                   ₹{subtotalINR.toLocaleString('en-IN')}
-                </strong>
+                </span>
               </div>
             </div>
 
-            {/* Submit for Review */}
-            <button
-              type="button"
-              disabled={products.length === 0}
-              onClick={() => {
-                if (products.length === 0) {
-                  showToast('Please add at least one product before submitting for review.');
-                  return;
-                }
-                setCurrentStep(2);
-              }}
-              className={`w-full py-4 px-6 rounded-2xl font-extrabold text-base shadow-md transition-all flex items-center justify-center gap-2 ${
-                products.length === 0
-                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
-                  : 'bg-[#0066FF] hover:bg-[#0052CC] text-white hover:shadow-lg active:scale-[0.99] cursor-pointer'
-              }`}
-            >
-              <span>Submit for Review</span>
-              <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowAddModal(true)}
+                className="px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200 rounded-xl font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-1.5 transition-all cursor-pointer whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4 shrink-0" />
+                <span>Add Manually</span>
+              </button>
 
-          {/* Customer-Specific Previously Submitted Requests & Items (Strict Data Isolation) */}
-          <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-xs border border-slate-200/80 space-y-4">
+              <button
+                type="button"
+                disabled={products.length === 0}
+                onClick={() => {
+                  if (products.length === 0) {
+                    showToast('Please add at least one product before submitting for review.');
+                    return;
+                  }
+                  setCurrentStep(2);
+                }}
+                className={`px-6 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm shadow-sm transition-all inline-flex items-center justify-center gap-2 whitespace-nowrap ${
+                  products.length === 0
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                    : 'bg-[#0066FF] hover:bg-[#0052CC] text-white hover:shadow-md active:scale-[0.99] cursor-pointer'
+                }`}
+              >
+                <span>Continue to Review</span>
+                <ArrowRight className="w-4 h-4 shrink-0" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB: MY PREVIOUSLY SUBMITTED REQUESTS (Dedicated Clean Page View) */}
+      {activeSection === 'requests' && (
+          <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200/80 space-y-4 animate-in fade-in duration-200">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
               <div>
                 <h3 className="font-extrabold text-slate-900 text-lg sm:text-xl flex items-center gap-2">
@@ -1181,11 +1260,14 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
 
               <button
                 type="button"
-                onClick={handleStartNewRequest}
-                className="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200/70 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer w-fit"
+                onClick={() => {
+                  setActiveSection('builder');
+                  handleStartNewRequest();
+                }}
+                className="px-3.5 py-2 bg-[#0066FF] hover:bg-[#0052CC] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer w-fit"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>+ New Request</span>
+                <span>New Request</span>
               </button>
             </div>
 
@@ -1261,10 +1343,11 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
               </div>
             )}
           </div>
+      )}
 
-          {/* Customer's Previous Orders (Strictly Isolated) */}
-          {customerPreviousOrders.length > 0 && (
-            <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-xs border border-slate-200/80 space-y-4">
+      {/* TAB: MY ORDER HISTORY (Dedicated Clean Page View) */}
+      {activeSection === 'orders' && (
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-xs border border-slate-200/80 space-y-4 animate-in fade-in duration-200">
               <div className="pb-3 border-b border-slate-100 flex items-center justify-between">
                 <div>
                   <h3 className="font-extrabold text-slate-900 text-lg sm:text-xl flex items-center gap-2">
@@ -1279,46 +1362,99 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
                 </div>
               </div>
 
-              <div className="space-y-3">
-                {customerPreviousOrders.map((ord: any) => (
-                  <div
-                    key={ord.orderId}
-                    className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200 hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
-                          {ord.orderId}
-                        </span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          {ord.orderStatus || 'Procuring'}
-                        </span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                          {ord.paymentStatus || 'Paid'}
-                        </span>
-                        <span className="text-xs text-slate-400">{ord.orderDate || ord.createdAt}</span>
-                      </div>
-                      <p className="text-xs text-slate-600 font-medium pt-1">
-                        {ord.products?.length || ord.items?.length || 1} items • Delivery to {ord.deliveryAddress?.city || 'Dubai'}, {ord.deliveryAddress?.country || 'UAE'}
-                      </p>
-                    </div>
+              {customerPreviousOrders.length === 0 ? (
+                <div className="py-8 text-center text-slate-500 text-xs sm:text-sm">
+                  <Package className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                  <p className="font-semibold text-slate-700">No paid orders yet</p>
+                  <p className="text-slate-400 mt-0.5">Once you complete payment for a request, your orders will appear here.</p>
+                </div>
+              ) : (
 
-                    <div className="text-right shrink-0">
-                      <span className="text-xs text-slate-500 block">Total Paid:</span>
-                      <span className="text-base font-extrabold text-emerald-700">
-                        ₹{(ord.totalINR || ord.totalAmount || 0).toLocaleString('en-IN')}
-                      </span>
+              <div className="space-y-3">
+                {customerPreviousOrders.map((ord: any) => {
+                  const productsList: any[] = Array.isArray(ord.products)
+                    ? ord.products
+                    : Array.isArray(ord.invoice?.items)
+                    ? ord.invoice.items
+                    : Array.isArray(ord.items)
+                    ? ord.items
+                    : [];
+                  const totalQty =
+                    productsList.reduce(
+                      (sum: number, p: any) => sum + Number(p.qty || p.quantity || 1),
+                      0
+                    ) || 1;
+                  const orderTotalINR =
+                    Number(ord.costSummary?.total) ||
+                    Number(ord.invoice?.totalINR) ||
+                    Number(ord.totalINR) ||
+                    Number(ord.totalAmount) ||
+                    productsList.reduce(
+                      (sum: number, p: any) =>
+                        sum + Number(p.price || p.priceINR || 0) * Number(p.qty || p.quantity || 1),
+                      0
+                    );
+                  const firstProductName = productsList[0]?.name || productsList[0]?.title || '';
+                  const extraCount = Math.max(0, productsList.length - 1);
+                  const storesLabel =
+                    Array.isArray(ord.stores) && ord.stores.length > 0
+                      ? ord.stores.join(', ')
+                      : productsList[0]?.store || productsList[0]?.storeName || '';
+
+                  return (
+                    <div
+                      key={ord.orderId}
+                      className="p-4 rounded-2xl bg-slate-50/70 border border-slate-200 hover:border-slate-300 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4"
+                    >
+                      <div className="space-y-1.5 min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-slate-900 bg-white px-2 py-0.5 rounded border border-slate-200">
+                            {ord.orderId}
+                          </span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            {ord.orderStatus || 'Procuring'}
+                          </span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                            {ord.paymentStatus || 'Paid'}
+                          </span>
+                          <span className="text-xs text-slate-400">{ord.orderDate || ord.createdAt}</span>
+                        </div>
+
+                        {firstProductName && (
+                          <p className="text-xs sm:text-[13px] font-bold text-slate-800 truncate">
+                            {firstProductName}
+                            {extraCount > 0 && (
+                              <span className="font-semibold text-slate-500">
+                                {' '}+{extraCount} more {extraCount === 1 ? 'item' : 'items'}
+                              </span>
+                            )}
+                          </p>
+                        )}
+
+                        <p className="text-xs text-slate-600 font-medium">
+                          {totalQty} {totalQty === 1 ? 'item' : 'items'}
+                          {storesLabel ? ` • ${storesLabel}` : ''} • Delivery to{' '}
+                          {ord.deliveryAddress?.city || ord.invoice?.destinationCity || 'Dubai'},{' '}
+                          {ord.deliveryAddress?.country || ord.invoice?.destinationCountry || 'UAE'}
+                        </p>
+                      </div>
+
+                      <div className="text-left sm:text-right shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-200/70">
+                        <span className="text-[11px] text-slate-500 block">Total Paid:</span>
+                        <span className="text-base sm:text-lg font-extrabold text-emerald-700">
+                          ₹{Math.round(orderTotalINR).toLocaleString('en-IN')}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
+              )}
             </div>
-          )}
-        </div>
       )}
 
       {/* STEP 2: REVIEW & SUBMIT */}
-      {currentStep === 2 && (
+      {activeSection === 'builder' && currentStep === 2 && (
         <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-100 space-y-6 animate-in fade-in duration-300">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div>
@@ -1496,7 +1632,7 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
       )}
 
       {/* STEP 3: ADMIN REVIEW DEMONSTRATION */}
-      {currentStep === 3 && (
+      {activeSection === 'builder' && currentStep === 3 && (
         <div className="bg-white rounded-3xl p-8 shadow-xs border border-slate-100 text-center space-y-6 animate-in fade-in duration-300">
           <div className="w-16 h-16 rounded-2xl bg-amber-100 text-amber-600 mx-auto flex items-center justify-center">
             <Clock className="w-8 h-8 animate-pulse" />
@@ -1531,7 +1667,7 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
       )}
 
       {/* STEP 4: GET QUOTE */}
-      {currentStep === 4 && (
+      {activeSection === 'builder' && currentStep === 4 && (
         <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-100 space-y-6 animate-in fade-in duration-300">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div>
@@ -1587,7 +1723,7 @@ export const BuyForMePage: React.FC<BuyForMePageProps> = ({ onNavigate, initialU
       )}
 
       {/* STEP 5: MAKE PAYMENT */}
-      {currentStep === 5 && (
+      {activeSection === 'builder' && currentStep === 5 && (
         <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-100 space-y-6 animate-in fade-in duration-300">
           <div className="pb-4 border-b border-slate-100">
             <h3 className="font-extrabold text-slate-900 text-2xl">Payment & Invoice Confirmation</h3>

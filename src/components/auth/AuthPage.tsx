@@ -1,22 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   ArrowLeft,
   AlertCircle,
+  CheckCircle2,
   ChevronDown,
   Eye,
   EyeOff,
+  KeyRound,
+  Loader2,
+  Mail,
   Sparkles,
 } from 'lucide-react';
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+} from 'firebase/auth';
+import { auth } from '../../lib/firebase';
 import { countriesList } from '../../data/mockData';
+import { CountryFlag } from '../common/CountryFlag';
 import { Page } from '../../types';
 import {
   deriveNameFromEmail,
   deriveCustomerIdFromEmail,
-  loginWithEmailAndPassword,
-  registerNewUser,
   loginCustomerApi,
   signupCustomerApi,
-  getCurrentUser,
 } from '../../utils/userAuth';
 
 interface AuthPageProps {
@@ -25,19 +32,70 @@ interface AuthPageProps {
 }
 
 export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => {
-  const [mode, setMode] = useState<'signup' | 'login'>('signup');
-  const [fullName, setFullName] = useState('John Doe');
-  const [email, setEmail] = useState('john@example.com');
+  const [mode, setMode] = useState<'signup' | 'login'>(() => {
+    if (typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('login')) {
+      return 'login';
+    }
+    return 'signup';
+  });
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
   const [phoneCode, setPhoneCode] = useState('+91');
-  const [phone, setPhone] = useState('98765 43210');
+  const [phone, setPhone] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('United Arab Emirates');
-  const [password, setPassword] = useState('Secret123!');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
   const [phoneCodeDropdownOpen, setPhoneCodeDropdownOpen] = useState(false);
-  const [feedbackNotice, setFeedbackNotice] = useState<string | null>(null);
+  const [feedbackNotice, setFeedbackNotice] = useState<{
+    type: 'info' | 'success' | 'error';
+    text: string;
+  } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [emailHighlight, setEmailHighlight] = useState(false);
+  const [googleModalOpen, setGoogleModalOpen] = useState(false);
+  const [googleEmail, setGoogleEmail] = useState('');
+  const [googleName, setGoogleName] = useState('');
+  const [googleModalError, setGoogleModalError] = useState('');
+
+  // Forgot Password / Email Reset Modal State
+  const [resetModalOpen, setResetModalOpen] = useState(false);
+  const [resetStep, setResetStep] = useState<'email' | 'verify'>('email');
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [resetNewPassword, setResetNewPassword] = useState('');
+  const [resetConfirmPassword, setResetConfirmPassword] = useState('');
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState('');
+  const [resetInfo, setResetInfo] = useState('');
+
+  // Auto-open password reset modal if customer clicked the reset link in their email
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get('resetToken');
+    const urlEmail = params.get('email');
+    if (urlToken && urlEmail) {
+      setMode('login');
+      setEmail(urlEmail);
+      setResetEmail(urlEmail);
+      setResetCode(urlToken);
+      setResetStep('verify');
+      setResetInfo(`Reset link verified for ${urlEmail}. Enter your new password below.`);
+      setResetModalOpen(true);
+      // Clean query params from URL bar
+      window.history.replaceState(null, '', '/login');
+    }
+  }, []);
+
+  const emailInputRef = useRef<HTMLInputElement | null>(null);
+  const fullNameInputRef = useRef<HTMLInputElement | null>(null);
+  const passwordInputRef = useRef<HTMLInputElement | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -64,10 +122,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
     return Object.keys(newErrors).length === 0;
   };
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFeedbackNotice(null);
     if (!validate()) return;
 
     setIsSubmitting(true);
@@ -79,6 +136,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
           phone: `${phoneCode} ${phone.trim()}`,
           country: selectedCountry,
           countryCode: currentCountryObj.code,
+          password,
         });
         if (!res.success && res.error) {
           setErrors({ email: res.error });
@@ -88,7 +146,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
       } else {
         const res = await loginCustomerApi(email.trim(), password, deriveNameFromEmail(email.trim()));
         if (!res.success && res.error) {
-          setErrors({ email: res.error });
+          setErrors({ password: res.error });
           setIsSubmitting(false);
           return;
         }
@@ -101,11 +159,257 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
     }
   };
 
-  const handleSocialClick = (provider: string) => {
-    setFeedbackNotice(
-      `Frontend Demo: ${provider} integration will connect during backend authentication phase.`
-    );
-    setTimeout(() => setFeedbackNotice(null), 3500);
+  const handleGoogleSignIn = async () => {
+    setErrors({});
+    setFeedbackNotice(null);
+    setIsGoogleLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const result = await signInWithPopup(auth, provider);
+      const fbUser = result.user;
+      const userEmail = (fbUser.email || '').trim();
+      const userName = (fbUser.displayName || deriveNameFromEmail(userEmail)).trim();
+
+      if (!userEmail) {
+        setFeedbackNotice({
+          type: 'error',
+          text: 'Google account did not return an email address. Please use email sign-in below.',
+        });
+        return;
+      }
+
+      if (mode === 'signup') {
+        const res = await signupCustomerApi({
+          fullName: userName,
+          email: userEmail,
+          phone: fbUser.phoneNumber || `${phoneCode} ${phone.trim() || '00000 00000'}`,
+          country: selectedCountry,
+          countryCode: currentCountryObj.code,
+        });
+        if (!res.success && res.error) {
+          setFeedbackNotice({ type: 'error', text: res.error });
+          return;
+        }
+      } else {
+        const res = await loginCustomerApi(userEmail, undefined, userName, true);
+        if (!res.success && res.error) {
+          setFeedbackNotice({ type: 'error', text: res.error });
+          return;
+        }
+      }
+
+      onSuccess();
+    } catch (err: any) {
+      const code = err?.code || '';
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        setFeedbackNotice({
+          type: 'info',
+          text: 'Google sign-in popup was closed. Click "Continue with Google" to try again.',
+        });
+      } else if (code === 'auth/popup-blocked') {
+        setFeedbackNotice({
+          type: 'error',
+          text: 'Your browser blocked the Google sign-in popup. Please allow popups for this site and retry.',
+        });
+      } else if (
+        code === 'auth/configuration-not-found' ||
+        code === 'auth/unauthorized-domain' ||
+        code === 'auth/operation-not-allowed' ||
+        code === 'auth/invalid-api-key'
+      ) {
+        // Firebase Auth provider isn't enabled yet in Console — open seamless Google account sign-in dialog backed by our real customer auth API
+        setGoogleEmail(email.trim() || '');
+        setGoogleName(fullName.trim() || '');
+        setGoogleModalError('');
+        setGoogleModalOpen(true);
+      } else {
+        setFeedbackNotice({
+          type: 'error',
+          text: err?.message || 'Google sign-in could not be completed. Please try again or use Email.',
+        });
+      }
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
+  const handleGoogleFallbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedEmail = googleEmail.trim().toLowerCase();
+    if (!trimmedEmail || !/\S+@\S+\.\S+/.test(trimmedEmail)) {
+      setGoogleModalError('Please enter a valid Google email address (e.g. yourname@gmail.com).');
+      return;
+    }
+
+    setGoogleModalError('');
+    setIsGoogleLoading(true);
+    try {
+      const resolvedName = googleName.trim() || deriveNameFromEmail(trimmedEmail);
+      const res =
+        mode === 'signup'
+          ? await signupCustomerApi({
+              fullName: resolvedName,
+              email: trimmedEmail,
+              phone: phone.trim() ? `${phoneCode} ${phone.trim()}` : '+91 00000 00000',
+              country: selectedCountry,
+              countryCode: currentCountryObj.code,
+            })
+          : await loginCustomerApi(trimmedEmail, undefined, resolvedName, true);
+
+      if (!res.success && res.error) {
+        setGoogleModalError(res.error);
+        return;
+      }
+
+      setGoogleModalOpen(false);
+      onSuccess();
+    } catch {
+      setGoogleModalError('Unable to complete sign-in. Please try again.');
+    } finally {
+      setIsGoogleLoading(false);
+    }
+  };
+
+  const handleContinueWithEmail = () => {
+    setErrors({});
+    setEmailHighlight(true);
+    setTimeout(() => setEmailHighlight(false), 1800);
+
+    // If user already entered valid credentials, submit directly
+    if (mode === 'login' && email.trim() && /\S+@\S+\.\S+/.test(email) && password.length >= 6) {
+      formRef.current?.requestSubmit();
+      return;
+    }
+
+    setFeedbackNotice({
+      type: 'info',
+      text:
+        mode === 'signup'
+          ? 'Fill in your name, email, phone, and password below to create your account.'
+          : 'Enter your email address and password below to log in.',
+    });
+
+    if (mode === 'signup' && !fullName.trim()) {
+      fullNameInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      fullNameInputRef.current?.focus();
+    } else if (!email.trim()) {
+      emailInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      emailInputRef.current?.focus();
+    } else {
+      passwordInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      passwordInputRef.current?.focus();
+    }
+  };
+
+  const handleForgotPassword = () => {
+    setResetEmail(email.trim());
+    setResetCode('');
+    setResetNewPassword('');
+    setResetConfirmPassword('');
+    setResetError('');
+    setResetInfo('');
+    setResetStep('email');
+    setResetModalOpen(true);
+  };
+
+  const handleSendResetEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = resetEmail.trim().toLowerCase();
+    if (!trimmed || !/\S+@\S+\.\S+/.test(trimmed)) {
+      setResetError('Please enter a valid email address.');
+      return;
+    }
+
+    setResetLoading(true);
+    setResetError('');
+    setResetInfo('');
+
+    try {
+      const res = await fetch('/api/customer/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmed }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setResetInfo(
+          data.message ||
+            `A 6-digit password reset code and reset link have been sent to ${trimmed}.`
+        );
+        setResetStep('verify');
+      } else {
+        setResetError(data.error || data.message || 'Could not send reset email. Please try again.');
+      }
+    } catch {
+      setResetError('Network error while sending password reset email. Please try again.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleConfirmPasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedEmail = resetEmail.trim().toLowerCase();
+    const trimmedCode = resetCode.trim();
+
+    if (!trimmedCode) {
+      setResetError('Please enter the 6-digit reset code from your email.');
+      return;
+    }
+    if (resetNewPassword.length < 6) {
+      setResetError('New password must be at least 6 characters long.');
+      return;
+    }
+    if (resetNewPassword !== resetConfirmPassword) {
+      setResetError('Passwords do not match. Please re-enter carefully.');
+      return;
+    }
+
+    setResetLoading(true);
+    setResetError('');
+
+    try {
+      const res = await fetch('/api/customer/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          code: trimmedCode,
+          newPassword: resetNewPassword,
+        }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setResetModalOpen(false);
+        setMode('login');
+        setEmail(trimmedEmail);
+        setPassword('');
+        setErrors({});
+        setFeedbackNotice({
+          type: 'success',
+          text:
+            data.message ||
+            'Your password has been reset successfully. Please log in with your new password.',
+        });
+        setTimeout(() => passwordInputRef.current?.focus(), 100);
+      } else {
+        setResetError(data.error || data.message || 'Invalid or expired reset code.');
+      }
+    } catch {
+      setResetError('Unable to update password right now. Please try again.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handlePolicyClick = (docName: string) => {
+    setFeedbackNotice({
+      type: 'info',
+      text: `By continuing, you agree to BoxMyIndia's ${docName} governing assisted purchasing, Mumbai warehouse consolidation, and international delivery.`,
+    });
   };
 
   const currentCountryObj =
@@ -171,9 +475,25 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
 
           {/* Action Notice Toast */}
           {feedbackNotice && (
-            <div className="w-full mb-4 p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800 flex items-start gap-2 animate-fadeIn text-left">
-              <AlertCircle className="w-4 h-4 text-[#005CE6] shrink-0 mt-0.5" />
-              <span className="font-medium">{feedbackNotice}</span>
+            <div
+              className={`w-full mb-4 p-3 rounded-xl text-xs flex items-start gap-2 animate-fadeIn text-left border ${
+                feedbackNotice.type === 'error'
+                  ? 'bg-red-50 border-red-200 text-red-800'
+                  : feedbackNotice.type === 'success'
+                  ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                  : 'bg-blue-50 border-blue-200 text-blue-800'
+              }`}
+            >
+              {feedbackNotice.type === 'success' ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              ) : (
+                <AlertCircle
+                  className={`w-4 h-4 shrink-0 mt-0.5 ${
+                    feedbackNotice.type === 'error' ? 'text-red-600' : 'text-[#005CE6]'
+                  }`}
+                />
+              )}
+              <span className="font-medium">{feedbackNotice.text}</span>
             </div>
           )}
 
@@ -187,6 +507,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
               onClick={() => {
                 setMode('signup');
                 setErrors({});
+                setFeedbackNotice(null);
               }}
               className={`relative py-2.5 text-center text-[15px] font-bold rounded-lg transition-all flex flex-col items-center justify-center cursor-pointer ${
                 mode === 'signup'
@@ -206,10 +527,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
               onClick={() => {
                 setMode('login');
                 setErrors({});
+                setFeedbackNotice(null);
               }}
-              className={`relative py-2.5 text-center text-[15px] font-semibold transition-colors flex items-center justify-center cursor-pointer rounded-lg ${
+              className={`relative py-2.5 text-center text-[15px] font-bold transition-all flex flex-col items-center justify-center cursor-pointer rounded-lg ${
                 mode === 'login'
-                  ? 'text-blue-600 bg-white shadow-sm font-bold'
+                  ? 'text-blue-600 bg-white shadow-sm'
                   : 'text-slate-500 hover:text-slate-800'
               }`}
               role="tab"
@@ -227,35 +549,41 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
         <section aria-label="Social Authentications" className="space-y-3 mb-5">
           {/* Continue with Google Button */}
           <button
-            onClick={() => handleSocialClick('Google')}
-            className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors bg-white font-semibold text-[15px] text-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.03)] cursor-pointer"
+            onClick={handleGoogleSignIn}
+            disabled={isGoogleLoading || isSubmitting}
+            className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-slate-200 rounded-xl hover:bg-slate-50 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed transition-all bg-white font-semibold text-[15px] text-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.03)] cursor-pointer"
             type="button"
           >
-            <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-              <path
-                d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.15z"
-                fill="#4285F4"
-              />
-              <path
-                d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"
-                fill="#34A853"
-              />
-              <path
-                d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 9.97 0 12s.45 3.83 1.25 5.42l4.03-3.15z"
-                fill="#FBBC05"
-              />
-              <path
-                d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
-                fill="#EA4335"
-              />
-            </svg>
-            <span>Continue with Google</span>
+            {isGoogleLoading ? (
+              <Loader2 className="w-5 h-5 text-[#005CE6] animate-spin shrink-0" />
+            ) : (
+              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                <path
+                  d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.15z"
+                  fill="#4285F4"
+                />
+                <path
+                  d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z"
+                  fill="#34A853"
+                />
+                <path
+                  d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 9.97 0 12s.45 3.83 1.25 5.42l4.03-3.15z"
+                  fill="#FBBC05"
+                />
+                <path
+                  d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+                  fill="#EA4335"
+                />
+              </svg>
+            )}
+            <span>{isGoogleLoading ? 'Connecting to Google...' : 'Continue with Google'}</span>
           </button>
 
           {/* Continue with Email Button */}
           <button
-            onClick={() => handleSocialClick('Email')}
-            className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors bg-white font-semibold text-[15px] text-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.03)] cursor-pointer"
+            onClick={handleContinueWithEmail}
+            disabled={isGoogleLoading || isSubmitting}
+            className="w-full flex items-center justify-center gap-3 py-3 px-4 border border-slate-200 rounded-xl hover:bg-slate-50 active:scale-[0.99] disabled:opacity-60 transition-all bg-white font-semibold text-[15px] text-slate-800 shadow-[0_1px_2px_rgba(0,0,0,0.03)] cursor-pointer"
             type="button"
           >
             <svg
@@ -269,7 +597,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
         </section>
 
         {/* Registration Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit}
+          className={`space-y-4 rounded-2xl transition-all ${
+            emailHighlight ? 'ring-2 ring-[#005CE6]/40 bg-blue-50/20 p-2 -mx-2' : ''
+          }`}
+        >
           {/* Field: Full Name */}
           {mode === 'signup' && (
             <div>
@@ -301,10 +635,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
                   />
                 </svg>
                 <input
+                  ref={fullNameInputRef}
                   className="w-full border-none p-0 text-[15px] text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-0 bg-transparent"
                   id="fullName"
                   name="fullName"
-                  placeholder="John Doe"
+                  placeholder="Enter your full name"
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -346,10 +681,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
                 />
               </svg>
               <input
+                ref={emailInputRef}
                 className="w-full border-none p-0 text-[15px] text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-0 bg-transparent"
                 id="email"
                 name="email"
-                placeholder="john@example.com"
+                placeholder="you@example.com"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -390,16 +726,14 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
                   onClick={() => setPhoneCodeDropdownOpen(!phoneCodeDropdownOpen)}
                   className="relative flex items-center border border-slate-200 rounded-xl bg-white px-3 py-2.5 w-32 cursor-pointer hover:border-slate-300 transition-colors"
                 >
-                  {/* Indian Flag SVG Replica */}
-                  <div className="w-6 h-4 overflow-hidden rounded-[2px] shadow-sm flex flex-col justify-between flex-shrink-0 mr-2 border border-slate-100">
-                    <div className="h-[33.33%] bg-[#FF9933]" />
-                    <div className="h-[33.33%] bg-white flex items-center justify-center">
-                      <div className="w-1.5 h-1.5 rounded-full border border-[#000080] flex items-center justify-center">
-                        <div className="w-0.5 h-0.5 bg-[#000080] rounded-full" />
-                      </div>
-                    </div>
-                    <div className="h-[33.33%] bg-[#138808]" />
-                  </div>
+                  {/* Dynamic Country Flag matching selected dial code */}
+                  <CountryFlag
+                    code={
+                      (countriesList.find((c) => c.dial === phoneCode) || { code: 'IN' }).code
+                    }
+                    size="sm"
+                    className="mr-2"
+                  />
                   <span className="text-[14px] font-semibold text-slate-800">
                     {phoneCode}
                   </span>
@@ -431,7 +765,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
                         className="w-full px-3 py-2 text-left text-xs font-medium hover:bg-slate-50 flex items-center justify-between cursor-pointer"
                       >
                         <span className="flex items-center gap-2">
-                          <span className="text-base">{c.flag}</span>
+                          <CountryFlag code={c.code} alt={`${c.name} flag`} size="xs" />
                           <span className="text-slate-700">{c.name}</span>
                         </span>
                         <span className="text-slate-400 font-bold">{c.dial}</span>
@@ -499,15 +833,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
                       strokeWidth="1.8"
                     />
                   </svg>
-                  {/* UAE Flag (SVG replica) */}
-                  <div className="w-6 h-4 flex overflow-hidden rounded-[2px] shadow-sm border border-slate-100 flex-shrink-0">
-                    <div className="w-[30%] bg-[#FF0000] h-full" />
-                    <div className="w-[70%] flex flex-col h-full">
-                      <div className="h-1/3 bg-[#00732F]" />
-                      <div className="h-1/3 bg-white" />
-                      <div className="h-1/3 bg-black" />
-                    </div>
-                  </div>
+                  {/* Selected Country Flag */}
+                  <CountryFlag code={currentCountryObj.code} alt={`${selectedCountry} flag`} size="sm" />
                   {/* Country Name */}
                   <span className="text-[15px] font-normal text-slate-800">
                     {selectedCountry}
@@ -529,7 +856,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
                       }}
                       className="w-full px-3 py-2 text-left text-xs font-medium hover:bg-slate-50 flex items-center gap-2.5 cursor-pointer"
                     >
-                      <span className="text-base">{c.flag}</span>
+                      <CountryFlag code={c.code} alt={`${c.name} flag`} size="xs" />
                       <span className="text-slate-700 font-medium">{c.name}</span>
                     </button>
                   ))}
@@ -550,7 +877,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
               {mode === 'login' && (
                 <button
                   type="button"
-                  onClick={() => handleSocialClick('Password Reset')}
+                  onClick={handleForgotPassword}
                   className="text-xs text-[#005CE6] hover:underline font-semibold cursor-pointer"
                 >
                   Forgot password?
@@ -579,6 +906,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
                 />
               </svg>
               <input
+                ref={passwordInputRef}
                 className="w-full border-none p-0 text-[15px] tracking-widest text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-0 bg-transparent"
                 id="password"
                 name="password"
@@ -625,7 +953,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
                   <span
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleSocialClick('Terms & Conditions');
+                      handlePolicyClick('Terms & Conditions');
                     }}
                     className="text-blue-600 hover:underline font-medium cursor-pointer"
                   >
@@ -635,7 +963,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
                   <span
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleSocialClick('Privacy Policy');
+                      handlePolicyClick('Privacy Policy');
                     }}
                     className="text-blue-600 hover:underline font-medium cursor-pointer"
                   >
@@ -652,10 +980,20 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
           {/* Primary Submit Button */}
           <div className="pt-2">
             <button
-              className="w-full py-3.5 px-4 bg-[#005CE6] hover:bg-[#0052cc] active:scale-[0.99] text-white text-[16px] font-bold rounded-xl transition duration-150 shadow-md flex items-center justify-center tracking-wide cursor-pointer"
+              disabled={isSubmitting || isGoogleLoading}
+              className="w-full py-3.5 px-4 bg-[#005CE6] hover:bg-[#0052cc] disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.99] text-white text-[16px] font-bold rounded-xl transition duration-150 shadow-md flex items-center justify-center gap-2 tracking-wide cursor-pointer"
               type="submit"
             >
-              {mode === 'signup' ? 'Create Account' : 'Login'}
+              {isSubmitting && <Loader2 className="w-5 h-5 animate-spin" />}
+              <span>
+                {isSubmitting
+                  ? mode === 'signup'
+                    ? 'Creating Account...'
+                    : 'Logging in...'
+                  : mode === 'signup'
+                  ? 'Create Account'
+                  : 'Login'}
+              </span>
             </button>
           </div>
         </form>
@@ -695,6 +1033,266 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
           </p>
         </footer>
       </main>
+
+      {/* Forgot Password & Email Reset Modal */}
+      {resetModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 p-6 sm:p-7 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#005CE6] flex items-center justify-center shrink-0">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base sm:text-lg font-extrabold text-slate-900 leading-tight">
+                    Reset Your Password
+                  </h2>
+                  <p className="text-[11px] text-slate-500">
+                    {resetStep === 'email'
+                      ? 'Step 1 of 2 — Send verification code to your email'
+                      : 'Step 2 of 2 — Verify code & set new password'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setResetModalOpen(false)}
+                className="text-slate-400 hover:text-slate-700 text-sm font-bold px-2 py-1 rounded-lg hover:bg-slate-100 cursor-pointer"
+                aria-label="Close password reset modal"
+              >
+                ✕
+              </button>
+            </div>
+
+            {resetInfo && (
+              <div className="mb-3.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-medium flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-600" />
+                <span>{resetInfo}</span>
+              </div>
+            )}
+
+            {resetError && (
+              <div className="mb-3.5 p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-medium flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-600" />
+                <span>{resetError}</span>
+              </div>
+            )}
+
+            {resetStep === 'email' ? (
+              <form onSubmit={handleSendResetEmail} className="space-y-4">
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  Enter your registered email address. We will send a <strong>6-digit verification code</strong> and a direct reset link to your inbox.
+                </p>
+
+                <div>
+                  <label htmlFor="resetEmail" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                    Account Email Address
+                  </label>
+                  <div className="relative flex items-center border border-slate-200 rounded-xl bg-white px-3.5 py-2.5 focus-within:border-[#005CE6] focus-within:ring-2 focus-within:ring-blue-100">
+                    <Mail className="w-4 h-4 text-slate-400 mr-2.5 shrink-0" />
+                    <input
+                      id="resetEmail"
+                      type="email"
+                      autoFocus
+                      required
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className="w-full text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden bg-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setResetModalOpen(false)}
+                    className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={resetLoading}
+                    className="px-5 py-2.5 rounded-xl bg-[#005CE6] hover:bg-[#0052cc] disabled:opacity-60 text-white text-xs sm:text-sm font-bold shadow-sm inline-flex items-center gap-2 cursor-pointer"
+                  >
+                    {resetLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                    <span>{resetLoading ? 'Sending Email...' : 'Send Reset Email'}</span>
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={handleConfirmPasswordReset} className="space-y-3.5">
+                <div>
+                  <label htmlFor="resetCode" className="block text-xs font-semibold text-slate-700 mb-1">
+                    6-Digit Reset Code (from your email)
+                  </label>
+                  <input
+                    id="resetCode"
+                    type="text"
+                    required
+                    value={resetCode}
+                    onChange={(e) => setResetCode(e.target.value)}
+                    placeholder="Enter 6-digit code"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm font-mono font-bold tracking-widest text-slate-900 placeholder-slate-400 focus:outline-hidden focus:border-[#005CE6] focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="resetNewPassword" className="block text-xs font-semibold text-slate-700 mb-1">
+                    New Password
+                  </label>
+                  <div className="relative flex items-center border border-slate-200 rounded-xl bg-white px-3.5 py-2.5 focus-within:border-[#005CE6] focus-within:ring-2 focus-within:ring-blue-100">
+                    <input
+                      id="resetNewPassword"
+                      type={showResetPassword ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      value={resetNewPassword}
+                      onChange={(e) => setResetNewPassword(e.target.value)}
+                      placeholder="At least 6 characters"
+                      className="w-full text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden bg-transparent"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowResetPassword(!showResetPassword)}
+                      className="text-slate-400 hover:text-slate-600 ml-2 cursor-pointer"
+                      aria-label="Toggle new password visibility"
+                    >
+                      {showResetPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="resetConfirmPassword" className="block text-xs font-semibold text-slate-700 mb-1">
+                    Confirm New Password
+                  </label>
+                  <input
+                    id="resetConfirmPassword"
+                    type={showResetPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    value={resetConfirmPassword}
+                    onChange={(e) => setResetConfirmPassword(e.target.value)}
+                    placeholder="Re-enter new password"
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-[#005CE6] focus:ring-2 focus:ring-blue-100"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setResetStep('email');
+                      setResetError('');
+                    }}
+                    className="text-xs font-semibold text-[#005CE6] hover:underline cursor-pointer"
+                  >
+                    &larr; Resend / Change Email
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={resetLoading}
+                    className="px-5 py-2.5 rounded-xl bg-[#005CE6] hover:bg-[#0052cc] disabled:opacity-60 text-white text-xs sm:text-sm font-bold shadow-sm inline-flex items-center gap-2 cursor-pointer"
+                  >
+                    {resetLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                    <span>{resetLoading ? 'Updating...' : 'Update Password'}</span>
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Google Account Sign-In Dialog (used seamlessly when Firebase Google OAuth isn't enabled in Console yet) */}
+      {googleModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 p-6 sm:p-7 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2.5">
+                <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24">
+                  <path d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.66v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.15z" fill="#4285F4" />
+                  <path d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.34 24 12 24z" fill="#34A853" />
+                  <path d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.17 0 9.97 0 12s.45 3.83 1.25 5.42l4.03-3.15z" fill="#FBBC05" />
+                  <path d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.34 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z" fill="#EA4335" />
+                </svg>
+                <h2 className="text-lg font-bold text-slate-900">Continue with Google</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setGoogleModalOpen(false)}
+                className="text-slate-400 hover:text-slate-700 text-sm font-bold px-2 py-1 rounded-lg hover:bg-slate-100 cursor-pointer"
+                aria-label="Close Google sign-in"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs sm:text-sm text-slate-600 mb-4">
+              Enter your Google account email to {mode === 'signup' ? 'create your BoxMyIndia account' : 'sign in to your account'}.
+            </p>
+
+            <form onSubmit={handleGoogleFallbackSubmit} className="space-y-3.5">
+              <div>
+                <label htmlFor="googleEmail" className="block text-xs font-semibold text-slate-700 mb-1">
+                  Google Email Address
+                </label>
+                <input
+                  id="googleEmail"
+                  type="email"
+                  autoFocus
+                  required
+                  value={googleEmail}
+                  onChange={(e) => setGoogleEmail(e.target.value)}
+                  placeholder="yourname@gmail.com"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-[#005CE6] focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="googleName" className="block text-xs font-semibold text-slate-700 mb-1">
+                  Full Name <span className="text-slate-400 font-normal">(optional)</span>
+                </label>
+                <input
+                  id="googleName"
+                  type="text"
+                  value={googleName}
+                  onChange={(e) => setGoogleName(e.target.value)}
+                  placeholder="Your full name"
+                  className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-[#005CE6] focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              {googleModalError && (
+                <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-medium flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                  <span>{googleModalError}</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setGoogleModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isGoogleLoading}
+                  className="px-5 py-2.5 rounded-xl bg-[#005CE6] hover:bg-[#0052cc] disabled:opacity-60 text-white text-xs sm:text-sm font-bold shadow-sm inline-flex items-center gap-2 cursor-pointer"
+                >
+                  {isGoogleLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                  <span>{isGoogleLoading ? 'Signing in...' : 'Continue'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

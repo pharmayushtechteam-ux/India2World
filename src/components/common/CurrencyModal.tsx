@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Check, Globe } from 'lucide-react';
+import { CountryFlag } from './CountryFlag';
 
 interface CurrencyModalProps {
   isOpen: boolean;
@@ -17,15 +18,15 @@ export const CurrencyModal: React.FC<CurrencyModalProps> = ({
   if (!isOpen) return null;
 
   const currencies = [
-    { code: 'INR', symbol: '₹', name: 'Indian Rupee (Default)', flag: '🇮🇳' },
-    { code: 'USD', symbol: '$', name: 'US Dollar', flag: '🇺🇸' },
-    { code: 'AED', symbol: 'AED', name: 'UAE Dirham', flag: '🇦🇪' },
-    { code: 'GBP', symbol: '£', name: 'British Pound', flag: '🇬🇧' },
-    { code: 'EUR', symbol: '€', name: 'Euro', flag: '🇪🇺' },
-    { code: 'CAD', symbol: 'CA$', name: 'Canadian Dollar', flag: '🇨🇦' },
-    { code: 'AUD', symbol: 'AU$', name: 'Australian Dollar', flag: '🇦🇺' },
-    { code: 'SGD', symbol: 'SG$', name: 'Singapore Dollar', flag: '🇸🇬' },
-    { code: 'SAR', symbol: 'SAR', name: 'Saudi Riyal', flag: '🇸🇦' },
+    { code: 'INR', countryCode: 'IN', symbol: '₹', name: 'Indian Rupee (Default)', flag: '🇮🇳' },
+    { code: 'USD', countryCode: 'US', symbol: '$', name: 'US Dollar', flag: '🇺🇸' },
+    { code: 'AED', countryCode: 'AE', symbol: 'AED', name: 'UAE Dirham', flag: '🇦🇪' },
+    { code: 'GBP', countryCode: 'GB', symbol: '£', name: 'British Pound', flag: '🇬🇧' },
+    { code: 'EUR', countryCode: 'EU', symbol: '€', name: 'Euro', flag: '🇪🇺' },
+    { code: 'CAD', countryCode: 'CA', symbol: 'CA$', name: 'Canadian Dollar', flag: '🇨🇦' },
+    { code: 'AUD', countryCode: 'AU', symbol: 'AU$', name: 'Australian Dollar', flag: '🇦🇺' },
+    { code: 'SGD', countryCode: 'SG', symbol: 'SG$', name: 'Singapore Dollar', flag: '🇸🇬' },
+    { code: 'SAR', countryCode: 'SA', symbol: 'SAR', name: 'Saudi Riyal', flag: '🇸🇦' },
   ];
 
   return (
@@ -61,7 +62,7 @@ export const CurrencyModal: React.FC<CurrencyModalProps> = ({
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-xl">{c.flag}</span>
+                  <CountryFlag code={c.countryCode} alt={`${c.name} flag`} size="md" />
                   <div>
                     <div className="text-sm">
                       {c.name} <span className="font-bold">({c.symbol})</span>

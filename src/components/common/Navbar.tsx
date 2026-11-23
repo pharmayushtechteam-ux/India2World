@@ -32,13 +32,13 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/98 backdrop-blur-md border-b border-slate-200/80 shadow-2xs">
-      <div className="w-full px-3 sm:px-6 lg:px-8 xl:px-12 h-16 sm:h-18 lg:h-20 flex items-center justify-between gap-2 sm:gap-4">
+    <header className="sticky top-0 z-40 w-full max-w-full bg-white/98 backdrop-blur-md border-b border-slate-200/80 shadow-2xs overflow-x-clip">
+      <div className="w-full max-w-full px-3 sm:px-6 lg:px-6 xl:px-10 2xl:px-12 h-15 sm:h-18 lg:h-20 flex items-center justify-between gap-2 sm:gap-3 lg:gap-4">
         {/* Left Side: Brand Logo */}
-        <div className="shrink-0 flex items-center">
+        <div className="min-w-0 shrink flex items-center">
           <Logo
             size="md"
-            className="max-w-[130px] sm:max-w-[160px] lg:max-w-[185px] xl:max-w-[210px]"
+            className="max-w-[112px] min-[360px]:max-w-[126px] min-[400px]:max-w-[142px] sm:max-w-[165px] lg:max-w-[180px] xl:max-w-[205px]"
             onClick={() => {
               onNavigate('home');
               setMobileMenuOpen(false);
@@ -47,7 +47,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Centre Navigation: Home → How It Works → Pricing → Countries → Help → Track */}
-        <nav className="hidden lg:flex items-center justify-center lg:gap-4 xl:gap-7 text-[13.5px] xl:text-[14.5px] font-bold whitespace-nowrap px-2">
+        <nav className="hidden lg:flex items-center justify-center lg:gap-3.5 xl:gap-6 2xl:gap-7 text-[13px] xl:text-[14px] 2xl:text-[14.5px] font-bold whitespace-nowrap px-1 min-w-0">
           {navLinks.map((link) => (
             <button
               key={link.label}
@@ -75,16 +75,16 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('request-external-purchase')}
-            className="hidden min-[1200px]:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200/90 font-bold text-xs cursor-pointer transition-colors whitespace-nowrap shrink-0 shadow-2xs"
+            className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200/90 font-bold text-xs cursor-pointer transition-colors whitespace-nowrap shrink-0 shadow-2xs"
           >
             <span className="hidden 2xl:inline">Request a Product from Another Platform</span>
             <span className="inline 2xl:hidden">Request Product</span>
           </button>
-          {/* Login */}
+          {/* Login (visible on tablet/desktop; inside mobile drawer on small screens) */}
           <button
             type="button"
             onClick={() => onNavigate('auth')}
-            className={`transition-colors hover:text-[#0066FF] font-bold text-xs sm:text-sm cursor-pointer px-2 py-1.5 select-none whitespace-nowrap ${
+            className={`hidden sm:inline-flex items-center justify-center transition-colors hover:text-[#0066FF] font-bold text-sm cursor-pointer px-2 py-1.5 select-none whitespace-nowrap ${
               currentPage === 'auth' ? 'text-[#0066FF]' : 'text-[#0B1940]'
             }`}
           >
@@ -95,7 +95,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('auth')}
-            className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl bg-[#0066FF] hover:bg-[#0052cc] text-white font-bold text-xs sm:text-sm shadow-xs hover:shadow-md transition-all active:scale-[0.98] cursor-pointer select-none whitespace-nowrap"
+            className="h-8 sm:h-9 px-2.5 min-[375px]:px-3 sm:px-4 rounded-lg sm:rounded-xl bg-[#0066FF] hover:bg-[#0052cc] text-white font-bold text-[11px] min-[375px]:text-xs sm:text-sm shadow-xs hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center justify-center cursor-pointer select-none whitespace-nowrap shrink-0"
           >
             Sign Up
           </button>
@@ -106,23 +106,29 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={onOpenCurrencyModal}
             title={`Select Currency (${currentCurrency})`}
             aria-label={`Select Currency (${currentCurrency})`}
-            className="h-8 sm:h-9 px-2 sm:px-2.5 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 bg-white hover:bg-slate-50 text-[#0B1940] transition-colors border border-slate-200/90 hover:border-slate-300 shadow-2xs cursor-pointer shrink-0 active:scale-95 text-xs font-bold whitespace-nowrap"
+            className="h-8 sm:h-9 px-2 sm:px-2.5 rounded-full inline-flex items-center justify-center gap-1 sm:gap-1.5 bg-white hover:bg-slate-50 text-[#0B1940] transition-colors border border-slate-200/90 hover:border-slate-300 shadow-2xs cursor-pointer shrink-0 active:scale-95 text-[11px] min-[375px]:text-xs font-bold whitespace-nowrap"
           >
             <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0066FF] shrink-0" />
-            <span>{currencyInfo.code}</span>
-            <span className="hidden sm:inline text-slate-500 font-semibold">
+            <span className="hidden min-[360px]:inline">{currencyInfo.code}</span>
+            <span className="hidden md:inline text-slate-500 font-semibold">
               ({currencyInfo.symbol.trim()})
             </span>
           </button>
 
-          {/* Hamburger Menu Button */}
+          {/* Hamburger Menu Button (Three Lines) */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-white hover:bg-slate-50 text-[#0B1940] hover:text-[#0066FF] rounded-full transition-colors cursor-pointer shrink-0 border border-slate-200/90 hover:border-slate-300 shadow-2xs active:scale-95"
+            className="w-9 h-9 sm:w-10 sm:h-10 inline-flex items-center justify-center bg-slate-50/90 hover:bg-blue-50 text-[#0B1940] hover:text-[#0066FF] rounded-full transition-all cursor-pointer shrink-0 border border-slate-200/90 hover:border-blue-200 shadow-2xs active:scale-95"
             aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
+            title="Menu"
           >
-            {mobileMenuOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5 text-[#0B1940]" /> : <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-[#0B1940]" />}
+            {mobileMenuOpen ? (
+              <X className="w-[18px] h-[18px] sm:w-5 sm:h-5 text-current" strokeWidth={2.2} />
+            ) : (
+              <Menu className="w-[18px] h-[18px] sm:w-5 sm:h-5 text-current" strokeWidth={2.2} />
+            )}
           </button>
         </div>
       </div>

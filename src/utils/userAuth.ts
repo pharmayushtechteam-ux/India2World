@@ -229,14 +229,15 @@ export function logoutUser(): void {
  */
 export async function loginCustomerApi(
   email: string,
-  _password?: string,
-  explicitFullName?: string
+  password?: string,
+  explicitFullName?: string,
+  isSocialLogin?: boolean
 ): Promise<{ success: boolean; user?: UserProfile; error?: string }> {
   try {
     const res = await fetch('/api/customer/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, fullName: explicitFullName }),
+      body: JSON.stringify({ email, password, fullName: explicitFullName, isSocialLogin }),
     });
     const data = await res.json();
     if (data.success && data.token && data.user) {
@@ -258,7 +259,7 @@ export async function loginCustomerApi(
     return { success: false, error: data.error || 'Login failed' };
   } catch (err: any) {
     // Fallback to local deterministic profile if network is down
-    const user = loginWithEmailAndPassword(email, _password, explicitFullName);
+    const user = loginWithEmailAndPassword(email, password, explicitFullName);
     return { success: true, user };
   }
 }
@@ -272,6 +273,7 @@ export async function signupCustomerApi(details: {
   phone: string;
   country: string;
   countryCode?: string;
+  password?: string;
 }): Promise<{ success: boolean; user?: UserProfile; error?: string }> {
   try {
     const res = await fetch('/api/customer/auth/signup', {

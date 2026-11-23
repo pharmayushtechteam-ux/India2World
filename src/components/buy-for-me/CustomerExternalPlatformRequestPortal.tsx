@@ -310,7 +310,7 @@ export const CustomerExternalPlatformRequestPortal: React.FC = () => {
   };
 
   return (
-    <div className="mb-8 space-y-6">
+    <div className="space-y-4">
       {/* Secure Quotation Approval Modal / Card when opened via email link */}
       {(tokenReviewRecord || tokenDecisionResult) && (
         <div className="bg-white rounded-3xl border-2 border-blue-600 shadow-xl overflow-hidden">
@@ -485,33 +485,30 @@ export const CustomerExternalPlatformRequestPortal: React.FC = () => {
         </div>
       )}
 
-      {/* Main Call-to-Action Card: "Request a Product from Another Platform" */}
-      <div className="bg-gradient-to-r from-[#0B1933] via-[#132952] to-[#1E3A8A] rounded-3xl p-6 sm:p-8 text-white shadow-xl border border-blue-500/20">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-bold uppercase tracking-wider">
-              <Sparkles className="w-3.5 h-3.5" />
-              EXTERNAL PLATFORM PROCUREMENT SERVICE
+      {/* Compact Sleek Ribbon: "Request a Product from Another Platform" */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-[#0B1933] via-[#132E63] to-[#1D4ED8] rounded-xl sm:rounded-2xl px-4 py-3 text-white shadow-sm border border-blue-400/20">
+        <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-white/12 border border-white/20 flex items-center justify-center shrink-0">
+              <Sparkles className="w-4 h-4 text-blue-200" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight">
-              Request a Product from Another Platform
-            </h2>
-            <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed">
-              Want products from Amazon India, Flipkart, Myntra, Nykaa, AJIO, or
-              any other external online store? Submit your product requirements
-              below. Our admin team will verify pricing, send you an official
-              quotation by email, purchase the items on your behalf, and ship
-              them straight to your doorstep.
-            </p>
+            <div className="min-w-0">
+              <h2 className="text-xs sm:text-sm font-extrabold tracking-tight leading-snug truncate">
+                Request a Product from Another Platform
+              </h2>
+              <p className="text-[11px] text-blue-100/85 truncate">
+                Amazon India, Flipkart, Myntra, Nykaa, AJIO &amp; more — we verify, quote &amp; ship worldwide.
+              </p>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <a
               href="/request-external-purchase"
-              className="px-6 py-3.5 rounded-2xl bg-blue-500 hover:bg-blue-400 text-white font-black text-xs sm:text-sm shadow-lg inline-flex items-center justify-center gap-2 transition cursor-pointer"
+              className="flex-1 sm:flex-none px-3.5 py-2 rounded-lg bg-white hover:bg-blue-50 text-[#0B1933] font-extrabold text-xs shadow-xs inline-flex items-center justify-center gap-1.5 transition cursor-pointer whitespace-nowrap"
             >
-              <ShoppingBag className="w-4 h-4" />
-              Request a Product from Another Platform
+              <ShoppingBag className="w-3.5 h-3.5 text-[#0066FF] shrink-0" />
+              <span>External Request</span>
             </a>
             <button
               type="button"
@@ -519,9 +516,9 @@ export const CustomerExternalPlatformRequestPortal: React.FC = () => {
                 setSubmittedRecord(null);
                 setIsFormOpen((prev) => !prev);
               }}
-              className="px-4 py-3.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 transition cursor-pointer"
+              className="px-3 py-2 rounded-lg bg-white/12 hover:bg-white/20 border border-white/25 text-white font-bold text-xs inline-flex items-center justify-center gap-1.5 transition cursor-pointer whitespace-nowrap"
             >
-              {isFormOpen ? 'Hide Quick Form' : 'Quick Inline Form'}
+              {isFormOpen ? 'Hide Form' : 'Quick Form'}
             </button>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link2, ArrowRight, Check, ShoppingBag, ExternalLink, Calculator } from 'lucide-react';
 import { Logo } from '../common/Logo';
+import { CountryFlag } from '../common/CountryFlag';
 import { CustomerExternalPlatformRequestPortal } from '../buy-for-me/CustomerExternalPlatformRequestPortal';
 import { Page } from '../../types';
 import { countriesList } from '../../data/mockData';
@@ -195,19 +196,19 @@ export const HomePage: React.FC<HomePageProps> = ({
   return (
     <div className="w-full min-h-screen bg-white text-slate-800 antialiased flex flex-col m-0 p-0 max-w-none overflow-x-hidden">
       {/* BEGIN: Header */}
-      <header className="sticky top-0 z-40 w-full bg-white/98 backdrop-blur-md border-b border-slate-200/80 shadow-2xs">
-        <div className="w-full px-3 sm:px-6 lg:px-8 xl:px-12 h-16 sm:h-18 lg:h-20 flex items-center justify-between gap-2 sm:gap-4">
+      <header className="sticky top-0 z-40 w-full max-w-full bg-white/98 backdrop-blur-md border-b border-slate-200/80 shadow-2xs overflow-x-clip">
+        <div className="w-full max-w-full px-3 sm:px-6 lg:px-6 xl:px-10 2xl:px-12 h-15 sm:h-18 lg:h-20 flex items-center justify-between gap-2 sm:gap-3 lg:gap-4">
           {/* Left Side: Brand Logo */}
-          <div className="shrink-0 flex items-center">
+          <div className="min-w-0 shrink flex items-center">
             <Logo
               size="md"
-              className="max-w-[130px] sm:max-w-[160px] lg:max-w-[185px] xl:max-w-[210px]"
+              className="max-w-[112px] min-[360px]:max-w-[126px] min-[400px]:max-w-[142px] sm:max-w-[165px] lg:max-w-[180px] xl:max-w-[205px]"
               onClick={() => onNavigate('home')}
             />
           </div>
 
           {/* Centre Navigation: Home → How It Works → Pricing → Countries → Help → Track */}
-          <nav className="hidden lg:flex items-center justify-center lg:gap-4 xl:gap-7 text-[13.5px] xl:text-[14.5px] font-bold whitespace-nowrap px-2">
+          <nav className="hidden lg:flex items-center justify-center lg:gap-3.5 xl:gap-6 2xl:gap-7 text-[13px] xl:text-[14px] 2xl:text-[14.5px] font-bold whitespace-nowrap px-1 min-w-0">
             <button
               type="button"
               onClick={() => onNavigate('home')}
@@ -258,17 +259,17 @@ export const HomePage: React.FC<HomePageProps> = ({
             <button
               type="button"
               onClick={() => onNavigate('request-external-purchase')}
-              className="hidden min-[1200px]:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200/90 font-bold text-xs cursor-pointer transition-colors whitespace-nowrap shrink-0 shadow-2xs"
+              className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200/90 font-bold text-xs cursor-pointer transition-colors whitespace-nowrap shrink-0 shadow-2xs"
             >
               <span className="hidden 2xl:inline">Request a Product from Another Platform</span>
               <span className="inline 2xl:hidden">Request Product</span>
             </button>
 
-            {/* Login */}
+            {/* Login (visible on tablet/desktop; inside mobile drawer on small screens) */}
             <button
               type="button"
               onClick={() => onNavigate('auth')}
-              className="text-xs sm:text-sm font-bold text-[#0B1940] hover:text-[#0066FF] transition-colors cursor-pointer px-2 py-1.5 select-none whitespace-nowrap"
+              className="hidden sm:inline-flex items-center justify-center text-sm font-bold text-[#0B1940] hover:text-[#0066FF] transition-colors cursor-pointer px-2 py-1.5 select-none whitespace-nowrap"
             >
               Login
             </button>
@@ -277,7 +278,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <button
               type="button"
               onClick={() => onNavigate('auth')}
-              className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl bg-[#0066FF] hover:bg-[#0052cc] text-white font-bold text-xs sm:text-sm shadow-xs hover:shadow-md transition-all active:scale-[0.98] text-center inline-flex items-center justify-center cursor-pointer select-none whitespace-nowrap"
+              className="h-8 sm:h-9 px-2.5 min-[375px]:px-3 sm:px-4 rounded-lg sm:rounded-xl bg-[#0066FF] hover:bg-[#0052cc] text-white font-bold text-[11px] min-[375px]:text-xs sm:text-sm shadow-xs hover:shadow-md transition-all active:scale-[0.98] text-center inline-flex items-center justify-center cursor-pointer select-none whitespace-nowrap shrink-0"
             >
               Sign Up
             </button>
@@ -286,7 +287,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <button
               onClick={onOpenCurrencyModal}
               aria-label={`Select Currency (${selectedCurrency})`}
-              className="h-8 sm:h-9 px-2 sm:px-2.5 rounded-full flex items-center justify-center gap-1 sm:gap-1.5 bg-white hover:bg-slate-50 text-[#0B1940] transition-colors border border-slate-200/90 hover:border-slate-300 shadow-2xs cursor-pointer shrink-0 active:scale-95 text-xs font-bold whitespace-nowrap"
+              className="h-8 sm:h-9 px-2 sm:px-2.5 rounded-full inline-flex items-center justify-center gap-1 sm:gap-1.5 bg-white hover:bg-slate-50 text-[#0B1940] transition-colors border border-slate-200/90 hover:border-slate-300 shadow-2xs cursor-pointer shrink-0 active:scale-95 text-[11px] min-[375px]:text-xs font-bold whitespace-nowrap"
               type="button"
               title={`Display Currency: ${selectedCurrency}`}
             >
@@ -303,25 +304,26 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <line x1="2" y1="12" x2="22" y2="12" />
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
               </svg>
-              <span>{currencyInfo.code}</span>
-              <span className="hidden sm:inline text-slate-500 font-semibold">
+              <span className="hidden min-[360px]:inline">{currencyInfo.code}</span>
+              <span className="hidden md:inline text-slate-500 font-semibold">
                 ({currencyInfo.symbol.trim()})
               </span>
             </button>
 
-            {/* Responsive Menu Button */}
+            {/* Responsive Menu Button (Three Lines) */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-white hover:bg-slate-50 text-[#0B1940] hover:text-[#0066FF] rounded-full transition-colors cursor-pointer shrink-0 border border-slate-200/90 hover:border-slate-300 shadow-2xs active:scale-95"
+              className="w-9 h-9 sm:w-10 sm:h-10 inline-flex items-center justify-center bg-slate-50/90 hover:bg-blue-50 text-[#0B1940] hover:text-[#0066FF] rounded-full transition-all cursor-pointer shrink-0 border border-slate-200/90 hover:border-blue-200 shadow-2xs active:scale-95"
               aria-label="Toggle navigation"
+              aria-expanded={mobileMenuOpen}
               title="Menu"
             >
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-[#0B1940]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-[18px] h-[18px] sm:w-5 sm:h-5 text-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 {mobileMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M6 18L18 6M6 6l12 12" />
                 ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" d="M4 7h16M4 12h16M4 17h16" />
                 )}
               </svg>
             </button>
@@ -394,7 +396,17 @@ export const HomePage: React.FC<HomePageProps> = ({
               ))}
 
               {/* Currency selector inside drawer */}
-              <div className="pt-3 mt-3 border-t border-slate-100">
+              <div className="pt-3 mt-3 border-t border-slate-100 space-y-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onNavigate('request-external-purchase');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full text-center py-2.5 px-3 bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200 font-extrabold rounded-xl cursor-pointer text-xs sm:text-sm transition-colors"
+                >
+                  Request a Product from Another Platform
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -447,17 +459,17 @@ export const HomePage: React.FC<HomePageProps> = ({
       {/* BEGIN: HTML Hero Banner Section */}
       <section className="relative w-full bg-white border-b border-slate-100 overflow-hidden">
         {/* Background Hero Illustration Overlay on mobile/tablet, right-side placement on desktop */}
-        <div className="absolute inset-y-0 right-0 w-full sm:w-[90%] md:w-[80%] lg:w-[60%] xl:w-[58%] flex items-center justify-end pointer-events-none select-none z-0 overflow-hidden">
+        <div className="absolute inset-0 md:hidden pointer-events-none select-none z-0 overflow-hidden">
           <img
             src="/assets/hero-redesigned-hd.jpg?v=6"
             alt="Shop in India, Deliver Worldwide - India Gate, Taj Mahal, Airplane and India2World Parcels"
-            className="w-full h-full object-cover object-right lg:object-contain lg:object-right opacity-100 filter brightness-110 contrast-105"
+            className="w-full h-full object-cover object-[72%_center] opacity-100 filter brightness-110 contrast-105"
           />
         </div>
 
-        <div className="relative z-10 w-full px-4 sm:px-6 md:px-7 lg:px-10 xl:px-12 py-6 sm:py-7 md:py-8 lg:py-8 xl:py-6 flex flex-col md:flex-row md:items-center md:justify-between">
+        <div className="relative z-10 w-full max-w-[1440px] mx-auto px-4 sm:px-6 md:px-6 lg:px-8 xl:px-10 2xl:px-12 py-6 sm:py-7 md:py-0 flex flex-col md:flex-row md:items-center">
           {/* Left Side: HTML Text & HTML Search Bar */}
-          <div className="relative z-10 w-full md:w-[56%] min-[820px]:w-[54%] lg:w-[53%] xl:w-[52%] min-w-0 shrink-0 bg-white/90 sm:bg-white/85 md:bg-transparent backdrop-blur-md md:backdrop-blur-none p-4 sm:p-6 md:p-0 rounded-2xl md:rounded-none border border-white/80 md:border-none shadow-xl shadow-blue-950/5 md:shadow-none">
+          <div className="relative z-20 w-full md:w-[53%] lg:w-[51%] xl:w-[49%] min-w-0 shrink-0 bg-white/90 sm:bg-white/85 md:bg-transparent backdrop-blur-md md:backdrop-blur-none p-4 sm:p-6 md:py-6 lg:py-7 xl:py-8 md:px-0 rounded-2xl md:rounded-none border border-white/80 md:border-none shadow-xl shadow-blue-950/5 md:shadow-none">
             {/* Badge: From India to Your Doorstep */}
             <div className="inline-flex items-center gap-2 md:gap-2.5 px-3 md:px-3.5 py-1 md:py-1.5 rounded-full bg-[#EAF2FF] border border-[#BFDBFE] mb-2.5 md:mb-3 shadow-2xs max-w-full">
               <svg
@@ -478,21 +490,21 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
 
             {/* Main Heading with enhanced darkness and contrast */}
-            <h1 className="font-black tracking-tight text-[#020617] leading-[1.12] md:leading-[1.08] text-[clamp(1.65rem,6.6vw,2.2rem)] sm:text-[32px] md:text-[31px] min-[820px]:text-[35px] lg:text-[42px] xl:text-[50px] mb-2.5 md:mb-3">
+            <h1 className="font-black tracking-tight text-[#020617] leading-[1.12] md:leading-[1.08] text-[clamp(1.65rem,6.6vw,2.2rem)] sm:text-[32px] md:text-[30px] min-[860px]:text-[34px] lg:text-[40px] xl:text-[48px] 2xl:text-[52px] mb-2.5 md:mb-3">
               <span className="inline md:block md:whitespace-nowrap">Shop Anywhere </span>
               <span className="inline md:block md:whitespace-nowrap">in India.</span>
               <span className="block text-[#0052FF] font-black mt-0.5 md:whitespace-nowrap">We Deliver Worldwide.</span>
             </h1>
 
             {/* Subtitle / Description with bright backdrop for high legibility */}
-            <p className="text-[#0F172A] text-[13px] min-[375px]:text-[13.5px] sm:text-[14px] md:text-[13.5px] min-[820px]:text-[14px] lg:text-[15px] xl:text-[15.5px] leading-[1.55] md:leading-[1.5] font-semibold max-w-full sm:max-w-[540px] md:max-w-[420px] min-[820px]:max-w-[450px] lg:max-w-[480px] xl:max-w-[500px] mb-3.5 md:mb-4 bg-white/70 md:bg-transparent p-2.5 sm:p-3 md:p-0 rounded-xl md:rounded-none border border-white/60 md:border-none shadow-xs md:shadow-none">
+            <p className="text-[#0F172A] text-[13px] min-[375px]:text-[13.5px] sm:text-[14px] md:text-[13.5px] lg:text-[14.5px] xl:text-[15.5px] leading-[1.55] md:leading-[1.5] font-semibold max-w-full sm:max-w-[540px] md:max-w-[430px] lg:max-w-[490px] xl:max-w-[550px] mb-3.5 md:mb-4 bg-white/70 md:bg-transparent p-2.5 sm:p-3 md:p-0 rounded-xl md:rounded-none border border-white/60 md:border-none shadow-xs md:shadow-none">
               Found something you love on an Indian website? Send us the product link. We&apos;ll purchase it in India, receive it at our warehouse, combine your orders, and ship them to your doorstep worldwide.
             </p>
 
             {/* HTML Search Bar Form */}
             <form
               onSubmit={handleGetStarted}
-              className={`w-full max-w-full md:max-w-[430px] min-[820px]:max-w-[455px] lg:max-w-[550px] xl:max-w-[680px] bg-white rounded-xl sm:rounded-2xl p-1.5 md:p-2 flex flex-row items-center gap-1.5 sm:gap-2 border-2 transition-all mb-3 md:mb-3.5 ${
+              className={`w-full max-w-full md:max-w-[430px] lg:max-w-[500px] xl:max-w-[590px] 2xl:max-w-[630px] bg-white rounded-xl sm:rounded-2xl p-1.5 md:p-2 flex flex-row items-center gap-1.5 sm:gap-2 border-2 transition-all mb-3 md:mb-3.5 ${
                 isSearchFocused
                   ? 'border-[#0D59F2] shadow-[0_0_22px_rgba(13,89,242,0.32)]'
                   : 'border-[#2563EB] shadow-[0_0_16px_rgba(37,99,235,0.22)]'
@@ -521,12 +533,12 @@ export const HomePage: React.FC<HomePageProps> = ({
             </form>
 
             {/* 3 Feature Checkmarks with bright, readable pill badges */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 md:gap-x-3.5 min-[820px]:gap-x-4.5 lg:gap-x-6 xl:gap-x-7 gap-y-2 pt-0.5">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 md:gap-x-3.5 lg:gap-x-5 xl:gap-x-6 gap-y-2 pt-0.5">
               <div className="inline-flex items-center gap-1.5 md:gap-2 bg-white/90 md:bg-transparent px-3 py-1.5 md:p-0 rounded-full md:rounded-none border border-white/80 md:border-none shadow-xs md:shadow-none">
                 <span className="w-4 h-4 md:w-4.5 md:h-4.5 xl:w-5 xl:h-5 rounded-full bg-[#16A34A] flex items-center justify-center text-white shadow-2xs shrink-0">
                   <Check className="w-2.5 h-2.5 md:w-3 md:h-3 xl:w-3.5 xl:h-3.5 stroke-[3]" />
                 </span>
-                <span className="text-[12px] sm:text-[12.5px] md:text-[12px] min-[820px]:text-[13px] lg:text-[13.5px] xl:text-[14px] font-bold text-[#0F172A] whitespace-nowrap">
+                <span className="text-[12px] sm:text-[12.5px] md:text-[12px] lg:text-[13px] xl:text-[13.5px] font-bold text-[#0F172A] whitespace-nowrap">
                   Purchase on your behalf
                 </span>
               </div>
@@ -535,7 +547,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <span className="w-4 h-4 md:w-4.5 md:h-4.5 xl:w-5 xl:h-5 rounded-full bg-[#16A34A] flex items-center justify-center text-white shadow-2xs shrink-0">
                   <Check className="w-2.5 h-2.5 md:w-3 md:h-3 xl:w-3.5 xl:h-3.5 stroke-[3]" />
                 </span>
-                <span className="text-[12px] sm:text-[12.5px] md:text-[12px] min-[820px]:text-[13px] lg:text-[13.5px] xl:text-[14px] font-bold text-[#0F172A] whitespace-nowrap">
+                <span className="text-[12px] sm:text-[12.5px] md:text-[12px] lg:text-[13px] xl:text-[13.5px] font-bold text-[#0F172A] whitespace-nowrap">
                   Combine multiple orders
                 </span>
               </div>
@@ -544,11 +556,22 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <span className="w-4 h-4 md:w-4.5 md:h-4.5 xl:w-5 xl:h-5 rounded-full bg-[#16A34A] flex items-center justify-center text-white shadow-2xs shrink-0">
                   <Check className="w-2.5 h-2.5 md:w-3 md:h-3 xl:w-3.5 xl:h-3.5 stroke-[3]" />
                 </span>
-                <span className="text-[12px] sm:text-[12.5px] md:text-[12px] min-[820px]:text-[13px] lg:text-[13.5px] xl:text-[14px] font-bold text-[#0F172A] whitespace-nowrap">
+                <span className="text-[12px] sm:text-[12.5px] md:text-[12px] lg:text-[13px] xl:text-[13.5px] font-bold text-[#0F172A] whitespace-nowrap">
                   Ship worldwide
                 </span>
               </div>
             </div>
+          </div>
+
+          {/* Right Side: Hero Artwork seamlessly paired with left text on tablet & desktop */}
+          <div className="hidden md:flex flex-1 min-w-0 self-stretch items-center justify-end relative z-10 pointer-events-none select-none md:-ml-20 lg:-ml-28 xl:-ml-36 2xl:-ml-40 md:-mr-6 lg:-mr-8 xl:-mr-10 2xl:-mr-12 overflow-hidden">
+            <img
+              src="/assets/hero-redesigned-hd.jpg?v=6"
+              alt="Shop in India, Deliver Worldwide - India Gate, Taj Mahal, Airplane and India2World Parcels"
+              className="w-full h-full object-cover object-[70%_center] lg:h-auto lg:max-h-[470px] xl:max-h-[540px] 2xl:max-h-[560px] lg:object-contain lg:object-right opacity-100 filter brightness-110 contrast-105"
+            />
+            {/* Soft left edge blend for tablet cover mode */}
+            <div className="lg:hidden absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white via-white/75 to-transparent pointer-events-none" />
           </div>
         </div>
       </section>
@@ -1517,7 +1540,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               <div>
                 <div className="flex items-center justify-between text-xs text-blue-200 font-bold uppercase tracking-wider">
                   <span>Estimated Shipping Rate</span>
-                  <span>{selectedCountryObj.flag} {selectedCountryObj.code}</span>
+                  <span className="inline-flex items-center gap-1.5"><CountryFlag code={selectedCountryObj.code} size="xs" /> {selectedCountryObj.code}</span>
                 </div>
 
                 <div className="mt-2 flex flex-wrap items-baseline gap-2">
