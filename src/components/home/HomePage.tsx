@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link2, ArrowRight, Check, ShoppingBag, ExternalLink, Calculator } from 'lucide-react';
 import { Logo } from '../common/Logo';
 import { CountryFlag } from '../common/CountryFlag';
-import { CustomerExternalPlatformRequestPortal } from '../buy-for-me/CustomerExternalPlatformRequestPortal';
 import { Page } from '../../types';
 import { countriesList } from '../../data/mockData';
 import { formatINR, formatUSD, getCurrencyInfo } from '../../utils/currency';
@@ -184,7 +183,6 @@ export const HomePage: React.FC<HomePageProps> = ({
   const consolidationSavingsUSD = Math.max(0, (calcBoxesCount - 1) * Math.round(baseRateUSD * 0.75));
 
   const navLinks = [
-    { label: 'Request from Another Platform', page: 'request-external-purchase' as Page },
                 { label: 'Home', page: 'home' as Page },
     { label: 'How It Works', page: 'how-it-works' as Page },
     { label: 'Pricing', page: 'pricing' as Page },
@@ -253,22 +251,12 @@ export const HomePage: React.FC<HomePageProps> = ({
             </button>
           </nav>
 
-          {/* Right Actions: Request CTA, Login, Sign Up, Currency, Menu */}
+          {/* Right Actions: Login, Sign Up, Currency, Menu */}
           <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5 xl:gap-3 shrink-0">
-            {/* Quick Request Button on larger screens */}
-            <button
-              type="button"
-              onClick={() => onNavigate('request-external-purchase')}
-              className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200/90 font-bold text-xs cursor-pointer transition-colors whitespace-nowrap shrink-0 shadow-2xs"
-            >
-              <span className="hidden 2xl:inline">Request a Product from Another Platform</span>
-              <span className="inline 2xl:hidden">Request Product</span>
-            </button>
-
             {/* Login (visible on tablet/desktop; inside mobile drawer on small screens) */}
             <button
               type="button"
-              onClick={() => onNavigate('auth')}
+              onClick={() => onNavigate('login')}
               className="hidden sm:inline-flex items-center justify-center text-sm font-bold text-[#0B1940] hover:text-[#0066FF] transition-colors cursor-pointer px-2 py-1.5 select-none whitespace-nowrap"
             >
               Login
@@ -277,7 +265,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             {/* Sign Up Button */}
             <button
               type="button"
-              onClick={() => onNavigate('auth')}
+              onClick={() => onNavigate('signup')}
               className="h-8 sm:h-9 px-2.5 min-[375px]:px-3 sm:px-4 rounded-lg sm:rounded-xl bg-[#0066FF] hover:bg-[#0052cc] text-white font-bold text-[11px] min-[375px]:text-xs sm:text-sm shadow-xs hover:shadow-md transition-all active:scale-[0.98] text-center inline-flex items-center justify-center cursor-pointer select-none whitespace-nowrap shrink-0"
             >
               Sign Up
@@ -397,16 +385,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
               {/* Currency selector inside drawer */}
               <div className="pt-3 mt-3 border-t border-slate-100 space-y-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onNavigate('request-external-purchase');
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full text-center py-2.5 px-3 bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200 font-extrabold rounded-xl cursor-pointer text-xs sm:text-sm transition-colors"
-                >
-                  Request a Product from Another Platform
-                </button>
+
                 <button
                   type="button"
                   onClick={() => {
@@ -433,7 +412,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  onNavigate('auth');
+                  onNavigate('signup');
                   setMobileMenuOpen(false);
                 }}
                 className="w-full py-2.5 text-center text-sm font-bold text-white bg-[#0066FF] hover:bg-[#0052cc] rounded-xl shadow-xs transition-all active:scale-98 cursor-pointer"
@@ -443,7 +422,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  onNavigate('auth');
+                  onNavigate('login');
                   setMobileMenuOpen(false);
                 }}
                 className="w-full py-2 text-center text-sm font-semibold text-slate-700 hover:text-slate-900 border border-slate-200 hover:border-slate-300 rounded-xl bg-white transition-colors cursor-pointer"
@@ -577,10 +556,7 @@ export const HomePage: React.FC<HomePageProps> = ({
       </section>
       {/* END: HTML Hero Banner Section */}
 
-      {/* Request a Product from Another Platform (External Purchase Request Section) */}
-      <section className="w-full px-3 sm:px-6 md:px-7 lg:px-12 pt-6 bg-white">
-        <CustomerExternalPlatformRequestPortal />
-      </section>
+
 
       {/* BEGIN: Top Online Stores Section matching stitch clone */}
       <section className="w-full px-3 sm:px-6 md:px-7 lg:px-12 py-5 sm:py-6 md:py-7 lg:py-8 bg-white border-b border-slate-100">

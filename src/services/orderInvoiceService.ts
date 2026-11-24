@@ -651,19 +651,22 @@ export async function resendInvoiceEmail(
       } as any;
     } else {
       const errorMsg = data.error || data.message || 'SMTP sending failed. Check SMTP configuration in .env';
+      const alreadyDelivered = invoice.emailStatus === 'Sent' && Boolean(invoice.emailSentAt);
       const updatedInvoice: CustomerOrderInvoice = {
         ...invoice,
-        emailStatus: 'Failed',
+        emailStatus: alreadyDelivered ? 'Sent' : 'Failed',
         emailAttemptCount: (invoice.emailAttemptCount || 0) + 1,
-        emailDeliveryLog: `Email delivery attempt failed: ${errorMsg}`,
+        emailDeliveryLog: alreadyDelivered
+          ? invoice.emailDeliveryLog || `Delivered ${invoice.emailSentAt}`
+          : `Email delivery attempt failed: ${errorMsg}`,
       };
       all[index] = updatedInvoice;
       saveInvoices(all);
 
       return {
         success: false,
-        status: 'Failed',
-        message: `Failed to deliver email to ${recipient}`,
+        status: alreadyDelivered ? 'Sent' : 'Failed',
+        message: `Failed to deliver email to ${recipient}: ${errorMsg}`,
         error: errorMsg,
         timestamp,
         configMissing: data.configMissing,
@@ -671,22 +674,65 @@ export async function resendInvoiceEmail(
     }
   } catch (err: any) {
     const errorMsg = err.message || 'Network connection to email service failed.';
+    const alreadyDelivered = invoice.emailStatus === 'Sent' && Boolean(invoice.emailSentAt);
     const updatedInvoice: CustomerOrderInvoice = {
       ...invoice,
-      emailStatus: 'Failed',
+      emailStatus: alreadyDelivered ? 'Sent' : 'Failed',
       emailAttemptCount: (invoice.emailAttemptCount || 0) + 1,
-      emailDeliveryLog: `Email delivery failed: ${errorMsg}`,
+      emailDeliveryLog: alreadyDelivered
+        ? invoice.emailDeliveryLog || `Delivered ${invoice.emailSentAt}`
+        : `Email delivery failed: ${errorMsg}`,
     };
     all[index] = updatedInvoice;
     saveInvoices(all);
 
     return {
       success: false,
-      status: 'Failed',
-      message: `Failed to deliver email to ${recipient}`,
+      status: alreadyDelivered ? 'Sent' : 'Failed',
+      message: `Failed to deliver email to ${recipient}: ${errorMsg}`,
       error: errorMsg,
       timestamp,
     };
+  }
+}
+
+/**
+ * Reconcile localStorage invoice delivery statuses against verified server SMTP dispatch logs
+ */
+export async function syncInvoicesWithServerLogs(): Promise<void> {
+  if (typeof window === 'undefined') return;
+  try {
+    const res = await fetch('/api/invoice-dispatch-logs');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data?.success || !Array.isArray(data.logs) || data.logs.length === 0) return;
+
+    const all = getAllInvoices();
+    let changed = false;
+
+    const updated = all.map((inv) => {
+      const matchingLog = data.logs.find(
+        (log: any) =>
+          (log.status === 'SMTP_Accepted' || log.status === 'Sent') &&
+          (log.invoiceNumber === inv.invoiceNumber || (inv.orderId && log.orderId === inv.orderId))
+      );
+      if (matchingLog && inv.emailStatus !== 'Sent') {
+        changed = true;
+        return {
+          ...inv,
+          emailStatus: 'Sent' as InvoiceEmailStatus,
+          emailSentAt: matchingLog.timestamp || inv.emailSentAt,
+          emailDeliveryLog: `Accepted by SMTP relay (${matchingLog.smtpResponse || '250 OK'}). Dispatched to ${matchingLog.recipient}.`,
+        };
+      }
+      return inv;
+    });
+
+    if (changed) {
+      saveInvoices(updated);
+    }
+  } catch {
+    // Non-blocking background sync
   }
 }
 

@@ -37,6 +37,8 @@ import {
   LifeBuoy,
   Printer,
   PhoneCall,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 import {
   dashboardStats,
@@ -58,6 +60,7 @@ import {
   downloadInvoiceDocument,
   printInvoiceDocument,
   resendInvoiceEmail,
+  syncInvoicesWithServerLogs,
 } from '../../services/orderInvoiceService';
 import { DashboardTab, Page } from '../../types';
 import { openWhatsApp, WHATSAPP_DISPLAY_PHONE } from '../../utils/whatsapp';
@@ -65,6 +68,7 @@ import { WhatsAppIcon } from '../common/WhatsAppChatWidget';
 import { WarehouseAddressModal } from '../common/WarehouseAddressModal';
 import { TrackingModal } from '../common/TrackingModal';
 import { BuyForMePage } from '../buy-for-me/BuyForMePage';
+import { RequestExternalPurchasePage } from '../pages/RequestExternalPurchasePage';
 import {
   getPurchaseRequestsByCustomerId,
   getPackagesByCustomerId,
@@ -72,6 +76,8 @@ import {
   getOrdersByCustomerId,
   getDynamicCustomerStats,
   confirmPurchaseOrderAndEmailInvoice,
+  createConsolidatedShipment,
+  getAllPayments,
   DATA_SYNC_EVENT,
   IntegratedPurchaseRequest,
   AdminIncomingPackage,
@@ -186,12 +192,17 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
     }
   }, [initialTab]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const [trackingModalOpen, setTrackingModalOpen] = useState(false);
   const [trackingNumberToView, setTrackingNumberToView] = useState('SHP-50012');
   const [addressModalOpen, setAddressModalOpen] = useState(false);
   const [trackingInput, setTrackingInput] = useState('');
   const [trackingError, setTrackingError] = useState('');
   const [notificationsRead, setNotificationsRead] = useState(false);
+  const [readNotificationIds, setReadNotificationIds] = useState<string[]>([]);
+  const [notificationFilter, setNotificationFilter] = useState<
+    'all' | 'unread' | 'order' | 'request' | 'warehouse' | 'shipment'
+  >('all');
 
   // Dynamic user profile synced with auth login
   const [currentUser, setCurrentUser] = useState<UserProfile>(getCurrentUser);
@@ -325,6 +336,7 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
 
   useEffect(() => {
     setInvoices(getInvoicesForCustomer(currentUser.customerId || currentUser.email));
+    syncInvoicesWithServerLogs();
   }, [currentUser.customerId, currentUser.email]);
 
   const handleResendInvoice = async (inv: CustomerOrderInvoice) => {
@@ -484,6 +496,7 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
   const sidebarItems: { id: DashboardTab; label: string; icon: React.FC<any> }[] = [
     { id: 'overview', label: 'Dashboard', icon: Home },
     { id: 'buy-for-me', label: 'Buy For Me', icon: ShoppingCart },
+    { id: 'request-external-purchase', label: 'Request Product', icon: Sparkles },
     { id: 'my-requests', label: 'My Requests', icon: FileText },
     { id: 'my-purchases', label: 'My Purchases', icon: ShoppingBag },
     { id: 'my-warehouse', label: 'My Warehouse', icon: Warehouse },
@@ -926,26 +939,39 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed md:sticky top-0 h-screen z-40 w-64 bg-white border-r border-slate-200/80 p-4 flex flex-col justify-between transition-transform duration-300 ease-in-out shrink-0 shadow-xl md:shadow-none ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        className={`fixed inset-y-0 left-0 md:static md:self-stretch z-40 bg-white border-r border-slate-200/80 flex flex-col transition-all duration-300 ease-in-out shrink-0 shadow-xl md:shadow-none ${
+          sidebarOpen ? 'max-md:translate-x-0 w-64' : 'max-md:-translate-x-full'
+        } ${
+          desktopSidebarOpen
+            ? 'md:w-64 md:opacity-100'
+            : 'md:w-0 md:opacity-0 md:overflow-hidden md:border-r-0 md:pointer-events-none'
         }`}
       >
-        <div className="space-y-4 overflow-y-auto no-scrollbar">
-          {/* Logo */}
-          <div className="px-2 pt-1 pb-3.5 border-b border-slate-100 flex items-center justify-between">
+        <div className="h-screen md:sticky md:top-0 w-64 p-4 flex flex-col">
+          {/* Logo pinned at top with Collapse Sidebar toggle */}
+          <div className="px-2 pt-1 pb-3.5 border-b border-slate-100 flex items-center justify-between gap-2 shrink-0">
             <Logo size="md" onClick={() => onNavigatePage('home')} />
             <button
               type="button"
+              onClick={() => setDesktopSidebarOpen(false)}
+              className="hidden md:inline-flex p-1.5 rounded-lg text-slate-400 hover:text-[#0066FF] hover:bg-blue-50 transition-colors cursor-pointer shrink-0"
+              title="Hide Side Menu"
+              aria-label="Hide side menu"
+            >
+              <PanelLeftClose className="w-4.5 h-4.5" />
+            </button>
+            <button
+              type="button"
               onClick={() => setSidebarOpen(false)}
-              className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+              className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer shrink-0"
               aria-label="Close sidebar"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Navigation Links */}
-          <nav className="space-y-1">
+          {/* Navigation Links (fills available height and scrolls smoothly if needed) */}
+          <nav className="flex-1 overflow-y-auto no-scrollbar py-3 space-y-1">
             {sidebarItems.map((item) => {
               const isActive = activeTab === item.id;
               const Icon = item.icon;
@@ -970,39 +996,52 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
               );
             })}
           </nav>
-        </div>
 
-        {/* User Mini Card at bottom of sidebar */}
-        <div className="mt-3 pt-3 border-t border-slate-100">
-          <div className="bg-slate-50/90 border border-slate-200/70 rounded-2xl p-2.5 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <img
-                src={currentUser.avatar}
-                alt={currentUser.name}
-                className="w-9 h-9 rounded-full object-cover border border-white shadow-2xs shrink-0"
-              />
-              <div className="text-left text-xs min-w-0">
-                <span className="font-bold text-slate-800 block truncate max-w-[105px]">{currentUser.name}</span>
-                <span className="text-slate-400 font-mono text-[10px] block">{currentUser.customerId}</span>
+          {/* User Mini Card pinned cleanly to bottom of sidebar */}
+          <div className="pt-3 border-t border-slate-100 shrink-0">
+            <div className="bg-slate-50/90 border border-slate-200/70 rounded-2xl p-2.5 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <img
+                  src={currentUser.avatar}
+                  alt={currentUser.name}
+                  className="w-9 h-9 rounded-full object-cover border border-white shadow-2xs shrink-0"
+                />
+                <div className="text-left text-xs min-w-0">
+                  <span className="font-bold text-slate-800 block truncate max-w-[105px]">{currentUser.name}</span>
+                  <span className="text-slate-400 font-mono text-[10px] block">{currentUser.customerId}</span>
+                </div>
               </div>
+              <button
+                type="button"
+                onClick={() => onNavigatePage('login')}
+                className="px-2.5 py-1 rounded-lg bg-white hover:bg-blue-50 text-[11px] font-bold text-[#0066FF] border border-slate-200 hover:border-blue-200 transition-colors cursor-pointer shrink-0"
+                title="Switch User or Log In"
+              >
+                Switch
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => onNavigatePage('auth')}
-              className="px-2.5 py-1 rounded-lg bg-white hover:bg-blue-50 text-[11px] font-bold text-[#0066FF] border border-slate-200 hover:border-blue-200 transition-colors cursor-pointer shrink-0"
-              title="Switch User or Log In"
-            >
-              Switch
-            </button>
           </div>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-3 sm:p-4 lg:p-5 w-full space-y-3.5 overflow-x-hidden">
+      <main className="flex-1 min-w-0 p-4 sm:p-5 lg:p-6 w-full space-y-4 overflow-x-clip">
         {/* Compact Top Header Bar */}
         <div className="bg-white rounded-xl px-3.5 sm:px-4 py-2.5 shadow-2xs border border-slate-200/80 flex flex-wrap items-center justify-between gap-2.5">
           <div className="flex items-center gap-2.5 min-w-0">
+            <button
+              type="button"
+              onClick={() => setDesktopSidebarOpen((prev) => !prev)}
+              className="hidden md:inline-flex items-center justify-center p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 text-slate-600 hover:text-[#0066FF] transition-colors cursor-pointer shrink-0"
+              title={desktopSidebarOpen ? 'Hide Side Menu' : 'Show Side Menu'}
+              aria-label={desktopSidebarOpen ? 'Hide side menu' : 'Show side menu'}
+            >
+              {desktopSidebarOpen ? (
+                <PanelLeftClose className="w-4 h-4" />
+              ) : (
+                <PanelLeftOpen className="w-4 h-4" />
+              )}
+            </button>
             <div className="relative shrink-0">
               <img
                 src={currentUser.avatar}
@@ -1408,6 +1447,22 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
           </div>
         )}
 
+        {/* TAB: REQUEST PRODUCT FROM ANOTHER PLATFORM */}
+        {activeTab === 'request-external-purchase' && (
+          <div className="animate-in fade-in duration-200">
+            <RequestExternalPurchasePage
+              onNavigate={(page) => {
+                if (page === 'dashboard') {
+                  setActiveTab('overview');
+                } else {
+                  onNavigatePage(page);
+                }
+              }}
+              isInDashboard={true}
+            />
+          </div>
+        )}
+
         {/* TAB 2: MY REQUESTS */}
         {activeTab === 'my-requests' && (() => {
           const displayedRequests =
@@ -1417,143 +1472,342 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
               ? samplePurchaseRequests
               : [];
 
+          const totalRequestsCount = displayedRequests.length;
+          const totalItemsCount = displayedRequests.reduce(
+            (sum: number, req: any) =>
+              sum +
+              (req.products || []).reduce(
+                (pSum: number, p: any) => pSum + Number(p.quantity || p.qty || 1),
+                0
+              ),
+            0
+          );
+          const activePurchasingCount = displayedRequests.filter(
+            (req: any) =>
+              req.status === 'Purchasing' ||
+              req.status === 'Purchased' ||
+              req.status === 'Quote Ready' ||
+              req.status === 'Awaiting Payment'
+          ).length;
+          const totalRequestsValueINR = displayedRequests.reduce(
+            (sum: number, req: any) => sum + Number(req.totalAmountINR || req.totalINR || 0),
+            0
+          );
+
           return (
-            <div className="bg-white rounded-2xl p-6 shadow-xs border border-slate-100 space-y-6 animate-in fade-in duration-200">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-                <div>
-                  <h3 className="font-extrabold text-slate-900 text-2xl">My Purchase Requests</h3>
-                  <p className="text-slate-500 text-xs sm:text-sm">
-                    Track assisted purchase orders placed through India2World Buy For Me.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setActiveTab('buy-for-me')}
-                  className="px-4 py-2 bg-[#0066FF] text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-xs cursor-pointer hover:bg-[#0052cc]"
-                >
-                  <Plus className="w-4 h-4" /> New Buy For Me Request
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {quotationToast && (
-                  <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold flex items-center justify-between animate-in fade-in">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                      <span>{quotationToast}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setQuotationToast('')}
-                      className="text-emerald-700 hover:text-emerald-950 p-1 cursor-pointer"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-
-                {displayedRequests.length === 0 ? (
-                  <div className="text-center py-12 px-4 rounded-2xl border-2 border-dashed border-slate-200">
-                    <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#0066FF] flex items-center justify-center mx-auto mb-3">
-                      <FileText className="w-6 h-6" />
-                    </div>
-                    <h4 className="font-extrabold text-slate-800 text-base mb-1">No Purchase Requests Yet</h4>
-                    <p className="text-xs text-slate-500 max-w-sm mx-auto mb-4">
-                      Submit a product link from Amazon, Myntra, Flipkart, or any Indian website and our Mumbai operations desk will verify and procure it for you.
+            <div className="space-y-5 pb-16 animate-in fade-in duration-200">
+              {/* Page Header */}
+              <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-xs border border-slate-200/70">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <h3 className="font-extrabold text-slate-900 text-xl sm:text-2xl tracking-tight">
+                      My Purchase Requests
+                    </h3>
+                    <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
+                      Track assisted purchase orders placed through India2World Buy For Me.
                     </p>
-                    <button
-                      onClick={() => setActiveTab('buy-for-me')}
-                      className="px-4 py-2 bg-[#0066FF] text-white font-bold rounded-xl text-xs inline-flex items-center gap-1.5 shadow-xs cursor-pointer hover:bg-[#0052cc]"
-                    >
-                      <Plus className="w-4 h-4" /> Start Buy For Me Request
-                    </button>
                   </div>
-                ) : (
-                  displayedRequests.map((req: any) => (
-                    <div
-                      key={req.id}
-                      className="p-5 rounded-2xl border border-slate-200 hover:border-blue-200 transition-all space-y-4"
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
-                        <div>
-                          <span className="font-mono font-bold text-slate-900 text-base">
-                            {req.requestNumber || req.id}
-                          </span>
-                          <span className="text-xs text-slate-400 block">{req.date || req.submittedAt}</span>
-                        </div>
+                  <button
+                    onClick={() => setActiveTab('buy-for-me')}
+                    className="px-4 py-2.5 bg-[#0066FF] text-white font-bold rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow-xs cursor-pointer hover:bg-[#0052cc] transition-all active:scale-95 shrink-0"
+                  >
+                    <Plus className="w-4 h-4" /> New Buy For Me Request
+                  </button>
+                </div>
 
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-extrabold ${
-                              req.status === 'Purchased' || req.status === 'Purchasing'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : req.status === 'Quote Ready' || req.status === 'Awaiting Payment'
-                                ? 'bg-blue-100 text-[#0066FF]'
-                                : req.status === 'Rejected'
-                                ? 'bg-rose-100 text-rose-800'
-                                : 'bg-amber-100 text-amber-800'
-                            }`}
-                          >
-                            {req.status}
-                          </span>
-                          <strong className="text-slate-900 text-sm">
-                            ₹{(req.totalAmountINR || req.totalINR || 0).toLocaleString('en-IN')}
-                          </strong>
-                        </div>
+                {/* Summary KPI Strip */}
+                {displayedRequests.length > 0 && (
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-5 pt-5 border-t border-slate-100">
+                    <div className="rounded-xl bg-slate-50/80 border border-slate-200/60 px-4 py-3">
+                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">
+                        Total Requests
+                      </span>
+                      <div className="text-xl font-extrabold text-slate-900 mt-0.5">
+                        {totalRequestsCount}
                       </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {req.products.map((p: any, pIdx: number) => (
-                          <div
-                            key={p.id || pIdx}
-                            className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100"
-                          >
-                            <img
-                              src={p.imageUrl || '/assets/cat-wellness.jpg'}
-                              alt={p.name}
-                              className="w-12 h-12 object-contain bg-white rounded-lg p-1"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = '/assets/cat-wellness.jpg';
-                              }}
-                            />
-                            <div className="min-w-0">
-                              <p className="text-xs font-bold text-slate-800 truncate">{p.name}</p>
-                              <span className="text-[11px] text-slate-500">
-                                Qty: {p.quantity || p.qty || 1} {p.priceINR ? `• ₹${p.priceINR.toLocaleString('en-IN')}` : ''}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {(req.status === 'Quote Ready' || req.status === 'Awaiting Payment') && (
-                        <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                          <div>
-                            <div className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
-                              <CheckCircle2 className="w-4 h-4 text-[#0066FF]" />
-                              <span>Official Quotation Ready for Review & Approval</span>
-                            </div>
-                            <p className="text-[11px] text-slate-600 mt-0.5">
-                              Total Cost: <strong>₹{(req.totalAmountINR || req.totalINR || 0).toLocaleString('en-IN')}</strong>. Approving will automatically confirm order, place items into the procurement queue, and dispatch your tax invoice.
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => handleApproveQuotation(req.id)}
-                            className="px-4 py-2 bg-[#0066FF] hover:bg-[#0052cc] text-white text-xs font-bold rounded-xl shrink-0 cursor-pointer shadow-xs transition-all active:scale-95"
-                          >
-                            Approve Quotation & Pay
-                          </button>
-                        </div>
-                      )}
                     </div>
-                  ))
+                    <div className="rounded-xl bg-blue-50/60 border border-blue-100 px-4 py-3">
+                      <span className="text-[11px] font-semibold text-blue-700/80 uppercase tracking-wide">
+                        Total Items
+                      </span>
+                      <div className="text-xl font-extrabold text-[#0066FF] mt-0.5">
+                        {totalItemsCount}
+                      </div>
+                    </div>
+                    <div className="rounded-xl bg-emerald-50/60 border border-emerald-100 px-4 py-3">
+                      <span className="text-[11px] font-semibold text-emerald-700/80 uppercase tracking-wide">
+                        Active / Purchasing
+                      </span>
+                      <div className="text-xl font-extrabold text-emerald-700 mt-0.5">
+                        {activePurchasingCount}
+                      </div>
+                    </div>
+                    <div className="rounded-xl bg-indigo-50/60 border border-indigo-100 px-4 py-3">
+                      <span className="text-[11px] font-semibold text-indigo-700/80 uppercase tracking-wide">
+                        Total Value
+                      </span>
+                      <div className="text-xl font-extrabold text-slate-900 mt-0.5">
+                        ₹{totalRequestsValueINR.toLocaleString('en-IN')}
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
+
+              {quotationToast && (
+                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-semibold flex items-center justify-between animate-in fade-in">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <span>{quotationToast}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setQuotationToast('')}
+                    className="text-emerald-700 hover:text-emerald-950 p-1 cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Requests List */}
+              {displayedRequests.length === 0 ? (
+                <div className="bg-white text-center py-14 px-4 rounded-2xl border-2 border-dashed border-slate-200 shadow-xs">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#0066FF] flex items-center justify-center mx-auto mb-3">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <h4 className="font-extrabold text-slate-800 text-base mb-1">No Purchase Requests Yet</h4>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto mb-4">
+                    Submit a product link from Amazon, Myntra, Flipkart, or any Indian website and our Mumbai operations desk will verify and procure it for you.
+                  </p>
+                  <button
+                    onClick={() => setActiveTab('buy-for-me')}
+                    className="px-4 py-2 bg-[#0066FF] text-white font-bold rounded-xl text-xs inline-flex items-center gap-1.5 shadow-xs cursor-pointer hover:bg-[#0052cc]"
+                  >
+                    <Plus className="w-4 h-4" /> Start Buy For Me Request
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {displayedRequests.map((req: any) => {
+                    const products = Array.isArray(req.products) ? req.products : [];
+                    const itemCount = products.reduce(
+                      (acc: number, p: any) => acc + Number(p.quantity || p.qty || 1),
+                      0
+                    );
+                    const totalAmt = Number(req.totalAmountINR || req.totalINR || 0);
+                    const isPurchasing = req.status === 'Purchased' || req.status === 'Purchasing';
+                    const isQuoteReady = req.status === 'Quote Ready' || req.status === 'Awaiting Payment';
+                    const isRejected = req.status === 'Rejected';
+
+                    const gridColsClass =
+                      products.length === 1
+                        ? 'grid-cols-1'
+                        : products.length === 2
+                        ? 'grid-cols-1 md:grid-cols-2'
+                        : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3';
+
+                    return (
+                      <div
+                        key={req.id}
+                        className="bg-white rounded-2xl border border-slate-200/80 hover:border-blue-200 shadow-xs hover:shadow-sm transition-all overflow-hidden"
+                      >
+                        {/* Card Header Bar */}
+                        <div className="px-5 py-3.5 bg-slate-50/70 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#0066FF] border border-blue-100 flex items-center justify-center shrink-0">
+                              <FileText className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-mono font-extrabold text-slate-900 text-sm sm:text-base">
+                                  {req.requestNumber || req.id}
+                                </span>
+                                <span className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-[11px] font-bold text-slate-600">
+                                  {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-0.5">
+                                <Clock className="w-3 h-3 text-slate-400 shrink-0" />
+                                <span>{req.date || req.submittedAt}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3 sm:gap-4">
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold border ${
+                                isPurchasing
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
+                                  : isQuoteReady
+                                  ? 'bg-blue-50 text-[#0066FF] border-blue-200/80'
+                                  : isRejected
+                                  ? 'bg-rose-50 text-rose-700 border-rose-200/80'
+                                  : 'bg-amber-50 text-amber-700 border-amber-200/80'
+                              }`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${
+                                  isPurchasing
+                                    ? 'bg-emerald-500'
+                                    : isQuoteReady
+                                    ? 'bg-[#0066FF]'
+                                    : isRejected
+                                    ? 'bg-rose-500'
+                                    : 'bg-amber-500'
+                                }`}
+                              />
+                              {req.status}
+                            </span>
+
+                            <div className="text-right">
+                              <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider leading-none">
+                                Total
+                              </div>
+                              <div className="text-base sm:text-lg font-extrabold text-slate-900 leading-tight mt-0.5">
+                                ₹{totalAmt.toLocaleString('en-IN')}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Card Body: Adaptive Product Grid */}
+                        <div className="p-4 sm:p-5 space-y-4">
+                          <div className={`grid ${gridColsClass} gap-3`}>
+                            {products.map((p: any, pIdx: number) => {
+                              const itemName = p.name || p.title || 'Product Item';
+                              const itemQty = Number(p.quantity || p.qty || 1);
+                              const itemPrice = Number(p.priceINR || 0);
+                              const lineTotal = itemPrice * itemQty;
+
+                              return (
+                                <div
+                                  key={p.id || pIdx}
+                                  className="flex items-center justify-between gap-3 p-3 rounded-xl bg-slate-50/80 border border-slate-200/60 hover:border-slate-300/80 transition-colors"
+                                >
+                                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                                    <img
+                                      src={p.imageUrl || '/assets/cat-wellness.jpg'}
+                                      alt={itemName}
+                                      className="w-14 h-14 object-contain bg-white rounded-xl p-1.5 border border-slate-200/70 shrink-0"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).src = '/assets/cat-wellness.jpg';
+                                      }}
+                                    />
+                                    <div className="min-w-0 flex-1">
+                                      <p
+                                        className="text-xs sm:text-[13px] font-bold text-slate-800 line-clamp-2 leading-snug"
+                                        title={itemName}
+                                      >
+                                        {itemName}
+                                      </p>
+                                      <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                                        {p.store && (
+                                          <span className="px-1.5 py-0.5 rounded-md bg-white border border-slate-200 text-[10px] font-semibold text-slate-600">
+                                            {p.store}
+                                          </span>
+                                        )}
+                                        <span className="px-1.5 py-0.5 rounded-md bg-slate-200/70 text-[10px] font-bold text-slate-700">
+                                          Qty: {itemQty}
+                                        </span>
+                                        {itemPrice > 0 && (
+                                          <span className="text-[11px] font-semibold text-slate-500">
+                                            ₹{itemPrice.toLocaleString('en-IN')} each
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {products.length === 1 && lineTotal > 0 && (
+                                    <div className="text-right shrink-0 pl-2 border-l border-slate-200/80">
+                                      <div className="text-[10px] font-semibold text-slate-400 uppercase">
+                                        Item Subtotal
+                                      </div>
+                                      <div className="text-sm font-extrabold text-slate-900">
+                                        ₹{lineTotal.toLocaleString('en-IN')}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {isQuoteReady && (
+                            <div className="p-4 rounded-xl bg-blue-50/70 border border-blue-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                              <div>
+                                <div className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                                  <CheckCircle2 className="w-4 h-4 text-[#0066FF]" />
+                                  <span>Official Quotation Ready for Review &amp; Approval</span>
+                                </div>
+                                <p className="text-[11px] text-slate-600 mt-0.5">
+                                  Total Cost: <strong>₹{totalAmt.toLocaleString('en-IN')}</strong>. Approving will automatically confirm order, place items into the procurement queue, and dispatch your tax invoice.
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => handleApproveQuotation(req.id)}
+                                className="px-4 py-2 bg-[#0066FF] hover:bg-[#0052cc] text-white text-xs font-bold rounded-xl shrink-0 cursor-pointer shadow-xs transition-all active:scale-95"
+                              >
+                                Approve Quotation &amp; Pay
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Card Footer */}
+                        <div className="px-5 py-2.5 bg-slate-50/40 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                          <span className="text-slate-500 font-medium flex items-center gap-1.5">
+                            <Package className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            {isPurchasing
+                              ? 'Our Mumbai team is procuring your items and preparing warehouse check-in.'
+                              : isQuoteReady
+                              ? 'Review the quotation above to proceed with procurement.'
+                              : isRejected
+                              ? 'This request was declined. You can submit a new Buy For Me request anytime.'
+                              : 'Submitted for verification by the India2World operations desk.'}
+                          </span>
+                          {isPurchasing && (
+                            <button
+                              type="button"
+                              onClick={() => setActiveTab('my-purchases')}
+                              className="text-[#0066FF] hover:text-[#0052cc] font-bold inline-flex items-center gap-1 cursor-pointer"
+                            >
+                              <span>View in My Purchases</span>
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })()}
 
         {/* TAB 3: MY PURCHASES */}
         {activeTab === 'my-purchases' && (() => {
+          const resolveItemImage = (order: IntegratedOrderRecord, item: { title: string; imageUrl?: string }) => {
+            if (item.imageUrl && item.imageUrl.trim()) {
+              return item.imageUrl;
+            }
+            const linkedReq = customerRequests.find((r) => r.id === order.requestId);
+            const matchedFromLinked = linkedReq?.products?.find(
+              (p) => p.title.trim().toLowerCase() === item.title.trim().toLowerCase() && p.imageUrl
+            );
+            if (matchedFromLinked?.imageUrl) return matchedFromLinked.imageUrl;
+
+            for (const req of customerRequests) {
+              const matched = req.products?.find(
+                (p) => p.title.trim().toLowerCase() === item.title.trim().toLowerCase() && p.imageUrl
+              );
+              if (matched?.imageUrl) return matched.imageUrl;
+            }
+            return '';
+          };
+
           const purchasedItems = customerOrders.flatMap((order) =>
             order.items.map((i) => ({
               orderId: order.id,
@@ -1570,7 +1824,7 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                   : order.orderStatus === 'Dispatched'
                   ? 'Dispatched Internationally'
                   : 'Delivered',
-              img: '/assets/product-shoes.jpg',
+              img: resolveItemImage(order, i),
             }))
           );
 
@@ -1658,14 +1912,20 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                       {displayPurchasedItems.map((item, idx) => (
                         <tr key={idx}>
                           <td className="p-3 flex items-center gap-3">
-                            <img
-                              src={item.img}
-                              alt={item.name}
-                              className="w-10 h-10 object-contain rounded-lg border border-slate-100"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = '/assets/product-shoes.jpg';
-                              }}
-                            />
+                            {item.img ? (
+                              <img
+                                src={item.img}
+                                alt={item.name}
+                                className="w-11 h-11 object-contain rounded-lg border border-slate-200 bg-white p-0.5 shrink-0"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <div className="w-11 h-11 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 flex items-center justify-center shrink-0">
+                                <ShoppingBag className="w-5 h-5" />
+                              </div>
+                            )}
                             <span className="font-semibold">{item.name}</span>
                           </td>
                           <td className="p-3">{item.store}</td>
@@ -1695,9 +1955,78 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
 
         {/* TAB 4: MY WAREHOUSE */}
         {activeTab === 'my-warehouse' && (() => {
+          const resolveOrderImg = (order: IntegratedOrderRecord, item: { title: string; imageUrl?: string }) => {
+            if (item.imageUrl && item.imageUrl.trim()) return item.imageUrl;
+            const linkedReq = customerRequests.find((r) => r.id === order.requestId);
+            const matchedLinked = linkedReq?.products?.find(
+              (p) => p.title.trim().toLowerCase() === item.title.trim().toLowerCase() && p.imageUrl
+            );
+            if (matchedLinked?.imageUrl) return matchedLinked.imageUrl;
+            for (const req of customerRequests) {
+              const matched = req.products?.find(
+                (p) => p.title.trim().toLowerCase() === item.title.trim().toLowerCase() && p.imageUrl
+              );
+              if (matched?.imageUrl) return matched.imageUrl;
+            }
+            return '';
+          };
+
+          const normalizedPhysicalPackages = customerPackages.map((pkg: any) => ({
+            id: pkg.id,
+            packageNumber: pkg.packageNumber || pkg.id,
+            description:
+              pkg.description ||
+              `${pkg.seller || 'Indian Store'} Parcel${pkg.trackingNumber ? ` (${pkg.trackingNumber})` : ''}`,
+            store: pkg.senderStore || pkg.seller || 'Indian Store',
+            photoUrl: pkg.photos?.[0] || pkg.photoUrl || '',
+            weightKg: pkg.weightKg ?? pkg.actualWeightKg ?? 1.0,
+            dimensionsCm:
+              pkg.dimensionsCm ||
+              (pkg.lengthCm && pkg.widthCm && pkg.heightCm
+                ? `${pkg.lengthCm} × ${pkg.widthCm} × ${pkg.heightCm}`
+                : 'Standard Box'),
+            receivedDate: pkg.receivedDate || pkg.arrivalDate || 'Arrived',
+            freeStorageDaysLeft: pkg.freeStorageDaysLeft ?? Math.max(0, 30 - (pkg.storageDays || 0)),
+            status: pkg.status || 'Received',
+            warehouseLocation: pkg.warehouseLocation || 'Mumbai Hub',
+            isIncomingOrder: false,
+          }));
+
+          const loggedOrderIds = new Set(
+            customerPackages.map((p: any) => p.requestId).filter(Boolean)
+          );
+
+          const orderDerivedPackages = customerOrders
+            .filter((o) => !loggedOrderIds.has(o.id) && (!o.requestId || !loggedOrderIds.has(o.requestId)))
+            .flatMap((order) =>
+              order.items.map((item, idx) => ({
+                id: `PKG-${order.id.replace('ORD-', '')}-${idx + 1}`,
+                packageNumber: `${order.id} • Item ${idx + 1}`,
+                description: item.title,
+                store: item.store || 'Indian Online Store',
+                photoUrl: resolveOrderImg(order, item),
+                weightKg: 0.5,
+                dimensionsCm: 'Pending Hub Weighing',
+                receivedDate: order.createdAt,
+                freeStorageDaysLeft: 30,
+                status:
+                  order.orderStatus === 'In Warehouse'
+                    ? 'In Warehouse'
+                    : order.orderStatus === 'Consolidating'
+                    ? 'Ready for Consolidation'
+                    : order.orderStatus === 'Dispatched'
+                    ? 'Dispatched'
+                    : order.orderStatus === 'Delivered'
+                    ? 'Delivered'
+                    : 'Awaiting Arrival at Hub',
+                warehouseLocation: order.orderStatus === 'In Warehouse' ? 'Mumbai Hub' : 'In Transit to Mumbai Hub',
+                isIncomingOrder: order.orderStatus === 'Procuring',
+              }))
+            );
+
           const displayedPackages =
-            customerPackages.length > 0
-              ? customerPackages
+            normalizedPhysicalPackages.length > 0 || orderDerivedPackages.length > 0
+              ? [...normalizedPhysicalPackages, ...orderDerivedPackages]
               : isDemoUser
               ? sampleWarehousePackages
               : [];
@@ -1706,17 +2035,29 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
             <div className="bg-white rounded-2xl p-6 shadow-xs border border-slate-100 space-y-6 animate-in fade-in duration-200">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-2xl">Packages in Locker ({displayedPackages.length})</h3>
+                  <h3 className="font-extrabold text-slate-900 text-2xl">
+                    Packages in Locker ({displayedPackages.length})
+                  </h3>
                   <p className="text-slate-500 text-xs sm:text-sm">
                     Locker #{currentUser.lockerId || currentUser.customerId || 'I2W-10028'} • Unit 4B, Sakinaka, Andheri East, Mumbai 400072
                   </p>
                 </div>
-                <button
-                  onClick={() => setActiveTab('consolidation')}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
-                >
-                  <Boxes className="w-4 h-4" /> Consolidate Selected
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setAddressModalOpen(true)}
+                    className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+                  >
+                    <MapPin className="w-4 h-4 text-[#0066FF]" /> My Locker Address
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('consolidation')}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                  >
+                    <Boxes className="w-4 h-4" /> Consolidate Selected
+                  </button>
+                </div>
               </div>
 
               {displayedPackages.length === 0 ? (
@@ -1729,6 +2070,7 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                     Order from Indian shopping sites and ship to your personalized India2World locker address. Once packages arrive at our Mumbai hub, you will see high-res photos and package weights here.
                   </p>
                   <button
+                    type="button"
                     onClick={() => setAddressModalOpen(true)}
                     className="px-4 py-2 bg-[#0066FF] text-white font-bold rounded-xl text-xs inline-flex items-center gap-1.5 shadow-xs cursor-pointer hover:bg-[#0052cc]"
                   >
@@ -1736,52 +2078,96 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {displayedPackages.map((pkg: any) => (
-                    <div
-                      key={pkg.id}
-                      className="rounded-2xl border border-slate-200 overflow-hidden hover:shadow-md transition-shadow"
-                    >
-                      <div className="h-40 bg-slate-50 relative flex items-center justify-center p-4">
-                        <img
-                          src={pkg.photoUrl || '/assets/product-shoes.jpg'}
-                          alt={pkg.description}
-                          className="max-h-full object-contain"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/assets/product-shoes.jpg';
-                          }}
-                        />
-                        <span className="absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/90 text-slate-700 shadow-xs">
-                          {pkg.freeStorageDaysLeft ?? (30 - (pkg.storageDays || 0))} days free storage left
-                        </span>
-                      </div>
-                      <div className="p-4 space-y-3">
-                        <div>
-                          <span className="font-mono text-xs font-bold text-[#0066FF] block">
-                            {pkg.packageNumber || pkg.id}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {displayedPackages.map((pkg: any) => {
+                    const isSelected = selectedPackages.includes(pkg.id);
+                    const isAwaiting = pkg.status === 'Awaiting Arrival at Hub';
+                    return (
+                      <div
+                        key={pkg.id}
+                        className={`rounded-2xl border overflow-hidden hover:shadow-md transition-all flex flex-col ${
+                          isSelected ? 'border-[#0066FF] ring-1 ring-[#0066FF]/30' : 'border-slate-200'
+                        }`}
+                      >
+                        <div className="h-44 bg-slate-50 relative flex items-center justify-center p-4">
+                          {pkg.photoUrl ? (
+                            <img
+                              src={pkg.photoUrl}
+                              alt={pkg.description}
+                              className="max-h-full max-w-full object-contain rounded-lg"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-14 h-14 rounded-2xl bg-blue-50 text-[#0066FF] flex items-center justify-center">
+                              <Package className="w-7 h-7" />
+                            </div>
+                          )}
+                          <span
+                            className={`absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-xs ${
+                              isAwaiting
+                                ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            }`}
+                          >
+                            {pkg.status}
                           </span>
-                          <h4 className="font-bold text-slate-900 text-sm mt-0.5 leading-snug">
-                            {pkg.description}
-                          </h4>
+                          <label className="absolute top-3 right-3 inline-flex items-center gap-1 bg-white/95 px-2 py-1 rounded-lg border border-slate-200 shadow-xs cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => {
+                                if (isSelected) {
+                                  setSelectedPackages(selectedPackages.filter((id) => id !== pkg.id));
+                                } else {
+                                  setSelectedPackages([...selectedPackages, pkg.id]);
+                                }
+                              }}
+                              className="w-3.5 h-3.5 rounded text-[#0066FF] cursor-pointer"
+                            />
+                            <span className="text-[10px] font-bold text-slate-600">Select</span>
+                          </label>
                         </div>
+                        <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-mono text-xs font-bold text-[#0066FF] truncate">
+                                {pkg.packageNumber || pkg.id}
+                              </span>
+                              <span className="text-[10px] font-semibold text-slate-400 shrink-0">
+                                {pkg.store || pkg.senderStore}
+                              </span>
+                            </div>
+                            <h4 className="font-bold text-slate-900 text-sm mt-1 leading-snug line-clamp-2">
+                              {pkg.description}
+                            </h4>
+                          </div>
 
-                        <div className="text-xs text-slate-500 space-y-1 pt-2 border-t border-slate-100">
-                          <div className="flex justify-between">
-                            <span>Weight:</span>
-                            <strong className="text-slate-800">{pkg.weightKg || pkg.actualWeightKg} kg</strong>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Dimensions:</span>
-                            <strong className="text-slate-800">{pkg.dimensionsCm} cm</strong>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Received:</span>
-                            <span>{pkg.receivedDate}</span>
+                          <div className="text-xs text-slate-500 space-y-1.5 pt-2.5 border-t border-slate-100">
+                            <div className="flex justify-between">
+                              <span>Est. Weight:</span>
+                              <strong className="text-slate-800">{pkg.weightKg || pkg.actualWeightKg} kg</strong>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Dimensions:</span>
+                              <strong className="text-slate-800">{pkg.dimensionsCm}</strong>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>{isAwaiting ? 'Ordered:' : 'Received:'}</span>
+                              <span>{pkg.receivedDate}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Free Storage:</span>
+                              <span className="text-emerald-700 font-semibold">
+                                {pkg.freeStorageDaysLeft ?? 30} days left
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -1790,110 +2176,275 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
 
         {/* TAB 5: CONSOLIDATION */}
         {activeTab === 'consolidation' && (() => {
+          const normalizedPhysical = customerPackages.map((pkg: any) => ({
+            id: pkg.id,
+            packageNumber: pkg.packageNumber || pkg.id,
+            senderStore: pkg.senderStore || pkg.seller || 'Indian Store',
+            description:
+              pkg.description ||
+              `${pkg.seller || 'Indian Store'} Parcel${pkg.trackingNumber ? ` (${pkg.trackingNumber})` : ''}`,
+            weightKg: pkg.weightKg ?? pkg.actualWeightKg ?? 1.0,
+            dimensionsCm:
+              pkg.dimensionsCm ||
+              (pkg.lengthCm && pkg.widthCm && pkg.heightCm
+                ? `${pkg.lengthCm} × ${pkg.widthCm} × ${pkg.heightCm} cm`
+                : 'Standard Box'),
+          }));
+
+          const loggedOrderIds = new Set(
+            customerPackages.map((p: any) => p.requestId).filter(Boolean)
+          );
+
+          const orderDerived = customerOrders
+            .filter((o) => !loggedOrderIds.has(o.id) && (!o.requestId || !loggedOrderIds.has(o.requestId)))
+            .flatMap((order) =>
+              order.items.map((item, idx) => ({
+                id: `PKG-${order.id.replace('ORD-', '')}-${idx + 1}`,
+                packageNumber: `${order.id} • Item ${idx + 1}`,
+                senderStore: item.store || 'Indian Online Store',
+                description: item.title,
+                weightKg: 0.5,
+                dimensionsCm: 'Pending Hub Weighing',
+              }))
+            );
+
           const displayedPackages =
-            customerPackages.length > 0
-              ? customerPackages
+            normalizedPhysical.length > 0 || orderDerived.length > 0
+              ? [...normalizedPhysical, ...orderDerived]
               : isDemoUser
               ? sampleWarehousePackages
               : [];
 
+          const decodeHtmlText = (text: string) =>
+            (text || '')
+              .replace(/&amp;/gi, '&')
+              .replace(/&quot;/gi, '"')
+              .replace(/&#39;|&apos;/gi, "'")
+              .replace(/&lt;/gi, '<')
+              .replace(/&gt;/gi, '>')
+              .replace(/\s+/g, ' ')
+              .trim();
+
+          const formatDimensionsLabel = (dim?: string) => {
+            const raw = (dim || '').trim();
+            if (!raw) return 'Pending Hub Weighing';
+            if (/cm$/i.test(raw)) return raw;
+            if (/^\d+(\.\d+)?\s*[x×]\s*\d+/i.test(raw)) return `${raw} cm`;
+            return raw;
+          };
+
+          const selectedPkgObjects = displayedPackages.filter((pkg: any) =>
+            selectedPackages.includes(pkg.id)
+          );
+          const totalSelectedWeightKg = selectedPkgObjects.reduce(
+            (sum: number, pkg: any) => sum + Number(pkg.weightKg || pkg.actualWeightKg || 0.5),
+            0
+          );
+          const estimatedSeparateCost = selectedPackages.length > 0 ? selectedPackages.length * 1800 : 0;
+          const estimatedConsolidatedCost =
+            selectedPackages.length > 0 ? Math.round(1450 + Math.max(0, selectedPackages.length - 1) * 350) : 0;
+          const estimatedSavings = Math.max(0, estimatedSeparateCost - estimatedConsolidatedCost);
+          const allSelected =
+            displayedPackages.length > 0 && selectedPackages.length === displayedPackages.length;
+
           return (
-            <div className="bg-white rounded-2xl p-6 shadow-xs border border-slate-100 space-y-6 animate-in fade-in duration-200">
-              <div className="pb-4 border-b border-slate-100">
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-cyan-100 text-cyan-800">
-                  Save Up to 80% on International Courier
-                </span>
-                <h3 className="font-extrabold text-slate-900 text-2xl mt-2">
-                  Order Consolidation Center
-                </h3>
-                <p className="text-slate-500 text-xs sm:text-sm mt-1">
-                  Combine your individual incoming boxes into one single sturdy export carton to eliminate multiple base courier fees.
-                </p>
+            <div className="bg-white rounded-2xl p-5 sm:p-6 pb-20 sm:pb-8 shadow-xs border border-slate-100 space-y-6 animate-in fade-in duration-200">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-5 border-b border-slate-100">
+                <div className="min-w-0">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-cyan-50 text-cyan-700 border border-cyan-200/70">
+                    Save Up to 80% on International Courier
+                  </span>
+                  <h3 className="font-extrabold text-slate-900 text-2xl mt-2.5 tracking-tight">
+                    Order Consolidation Center
+                  </h3>
+                  <p className="text-slate-500 text-xs sm:text-sm mt-1">
+                    Combine your individual incoming boxes into one single sturdy export carton to eliminate multiple base courier fees.
+                  </p>
+                </div>
+
+                {displayedPackages.length > 0 && (
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold whitespace-nowrap">
+                      {selectedPackages.length} / {displayedPackages.length} Selected
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (allSelected) {
+                          setSelectedPackages([]);
+                        } else {
+                          setSelectedPackages(displayedPackages.map((p: any) => p.id));
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-[#0066FF] transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      {allSelected ? 'Clear All' : 'Select All'}
+                    </button>
+                  </div>
+                )}
               </div>
 
-              <div className="space-y-4">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                  Select Packages to Combine:
-                </h4>
+              {/* Package Selection List */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Select Packages to Combine
+                  </h4>
+                  <span className="text-[11px] font-medium text-slate-400 hidden sm:inline">
+                    Weight &amp; Dimensions
+                  </span>
+                </div>
 
                 {displayedPackages.length === 0 ? (
                   <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-xs">
                     No packages currently available in locker to consolidate.
                   </div>
                 ) : (
-                  displayedPackages.map((pkg: any) => {
-                    const isChecked = selectedPackages.includes(pkg.id);
-                    return (
-                      <label
-                        key={pkg.id}
-                        className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
-                          isChecked
-                            ? 'border-[#0066FF] bg-blue-50/50'
-                            : 'border-slate-200 hover:bg-slate-50'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => {
-                              if (isChecked) {
-                                setSelectedPackages(selectedPackages.filter((id) => id !== pkg.id));
-                              } else {
-                                setSelectedPackages([...selectedPackages, pkg.id]);
-                              }
-                            }}
-                            className="w-5 h-5 rounded text-[#0066FF]"
-                          />
-                          <div>
-                            <span className="font-mono text-xs font-bold text-slate-500 block">
-                              {pkg.packageNumber || pkg.id} ({pkg.senderStore || pkg.seller})
-                            </span>
-                            <span className="font-bold text-slate-900 text-sm">{pkg.description}</span>
+                  <div className="space-y-2.5">
+                    {displayedPackages.map((pkg: any) => {
+                      const isChecked = selectedPackages.includes(pkg.id);
+                      const cleanTitle = decodeHtmlText(pkg.description);
+                      const storeName = (pkg.senderStore || pkg.seller || 'Indian Store').trim();
+                      const formattedStore =
+                        storeName.charAt(0).toUpperCase() + storeName.slice(1);
+                      const dimLabel = formatDimensionsLabel(pkg.dimensionsCm);
+                      const isPendingWeighing = dimLabel.toLowerCase().includes('pending');
+
+                      return (
+                        <label
+                          key={pkg.id}
+                          className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 rounded-xl border cursor-pointer transition-all ${
+                            isChecked
+                              ? 'border-[#0066FF] bg-blue-50/50 ring-1 ring-[#0066FF]/20'
+                              : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/70'
+                          }`}
+                        >
+                          {/* Left: Checkbox + Package Info */}
+                          <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => {
+                                if (isChecked) {
+                                  setSelectedPackages(selectedPackages.filter((id) => id !== pkg.id));
+                                } else {
+                                  setSelectedPackages([...selectedPackages, pkg.id]);
+                                }
+                              }}
+                              className="w-4.5 h-4.5 mt-0.5 rounded border-slate-300 text-[#0066FF] accent-[#0066FF] shrink-0 cursor-pointer"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center flex-wrap gap-1.5 mb-1">
+                                <span className="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                                  {pkg.packageNumber || pkg.id}
+                                </span>
+                                <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md">
+                                  {formattedStore}
+                                </span>
+                              </div>
+                              <p
+                                className="font-bold text-slate-900 text-sm leading-snug line-clamp-2 break-words"
+                                title={cleanTitle}
+                              >
+                                {cleanTitle}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-xs font-bold text-slate-700">{pkg.weightKg || pkg.actualWeightKg} kg</span>
-                          <span className="text-[11px] text-slate-400 block">{pkg.dimensionsCm} cm</span>
-                        </div>
-                      </label>
-                    );
-                  })
+
+                          {/* Right: Weight & Dimensions (Fixed alignment, never wraps awkwardly) */}
+                          <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-1.5 sm:gap-1 pl-8 sm:pl-4 sm:border-l sm:border-slate-100 shrink-0 sm:min-w-[156px]">
+                            <span className="text-xs font-extrabold text-slate-800 whitespace-nowrap">
+                              {Number(pkg.weightKg || pkg.actualWeightKg || 0.5).toFixed(1)} kg
+                            </span>
+                            <span
+                              className={`text-[11px] font-medium whitespace-nowrap ${
+                                isPendingWeighing
+                                  ? 'px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/70'
+                                  : 'text-slate-500'
+                              }`}
+                            >
+                              {dimLabel}
+                            </span>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
 
-              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 space-y-2">
-                <div className="flex justify-between text-sm">
+              {/* Savings & Weight Summary */}
+              <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-5 space-y-2.5">
+                <div className="flex items-center justify-between gap-4 text-sm">
                   <span className="font-semibold text-emerald-900">
-                    Combined Estimated Weight ({selectedPackages.length} packages):
+                    Combined Estimated Weight ({selectedPackages.length}{' '}
+                    {selectedPackages.length === 1 ? 'package' : 'packages'}):
                   </span>
-                  <span className="font-extrabold text-emerald-900">
-                    {(selectedPackages.length * 0.7).toFixed(1)} kg
+                  <span className="font-extrabold text-emerald-950 whitespace-nowrap">
+                    {totalSelectedWeightKg.toFixed(1)} kg
                   </span>
                 </div>
-                <div className="flex justify-between text-sm text-emerald-800">
+                <div className="flex items-center justify-between gap-4 text-sm text-emerald-800">
                   <span>Estimated Separate Shipping Costs:</span>
-                  <span className="line-through">₹5,400</span>
+                  <span className={estimatedSeparateCost > 0 ? 'line-through whitespace-nowrap' : 'whitespace-nowrap'}>
+                    ₹{estimatedSeparateCost.toLocaleString('en-IN')}
+                  </span>
                 </div>
-                <div className="flex justify-between text-base font-extrabold text-emerald-950 pt-2 border-t border-emerald-200">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-base font-extrabold text-emerald-950 pt-2.5 border-t border-emerald-200/80">
                   <span>Consolidated Express Shipping:</span>
-                  <span className="text-emerald-700">₹2,150 (You Save ~₹3,250!)</span>
+                  <span className="text-emerald-700 whitespace-nowrap">
+                    {selectedPackages.length > 0 ? (
+                      <>
+                        ₹{estimatedConsolidatedCost.toLocaleString('en-IN')}{' '}
+                        {estimatedSavings > 0 && (
+                          <span className="text-xs font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full ml-1">
+                            You Save ~₹{estimatedSavings.toLocaleString('en-IN')}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-sm font-semibold text-emerald-700/80">
+                        Select packages to estimate
+                      </span>
+                    )}
+                  </span>
                 </div>
               </div>
 
+              {/* Primary Action */}
               <button
+                type="button"
                 onClick={() => {
-                  alert('Consolidation Request created! Our warehouse staff will repack and weigh your combined box within 4 hours.');
-                  setActiveTab('overview');
+                  const weightKg = Number(Math.max(0.5, totalSelectedWeightKg).toFixed(1));
+                  const created = createConsolidatedShipment({
+                    customerId: currentUser.customerId,
+                    customerName: currentUser.name,
+                    destination: currentUser.country || 'United Arab Emirates',
+                    carrier: 'DHL Express',
+                    packageIds: selectedPackages,
+                    chargeableWeightKg: weightKg,
+                  });
+                  setCustomerShipments(getShipmentsByCustomerId(currentUser.customerId));
+                  setSelectedPackages([]);
+                  setQuotationToast(
+                    `Consolidation confirmed! Shipment ${created.trackingNumber} (DHL Express) created for ${selectedPackages.length} package(s).`
+                  );
+                  setTimeout(() => setQuotationToast(''), 6000);
+                  setActiveTab('shipments');
                 }}
                 disabled={selectedPackages.length === 0}
-                className={`w-full py-4 rounded-2xl font-extrabold text-base shadow-md transition-colors cursor-pointer ${
+                className={`w-full py-3.5 px-5 rounded-xl font-extrabold text-sm sm:text-base shadow-sm transition-all ${
                   selectedPackages.length === 0
-                    ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                    : 'bg-[#0066FF] hover:bg-[#0052CC] text-white'
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                    : 'bg-[#0066FF] hover:bg-[#0052CC] text-white cursor-pointer shadow-blue-500/20'
                 }`}
               >
-                Request Consolidation & Repacking
+                {selectedPackages.length > 0
+                  ? `Request Consolidation & Repacking (${selectedPackages.length} ${
+                      selectedPackages.length === 1 ? 'Package' : 'Packages'
+                    })`
+                  : 'Select Packages to Request Consolidation & Repacking'}
               </button>
             </div>
           );
@@ -1901,20 +2452,87 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
 
         {/* TAB 6: SHIPMENTS */}
         {activeTab === 'shipments' && (() => {
+          const normalizedAdminShipments = customerShipments.map((shp: any) => ({
+            id: shp.id,
+            trackingNumber: shp.trackingNumber || shp.id,
+            carrier: shp.carrier || 'DHL Express',
+            destination:
+              shp.destination ||
+              [shp.destinationCity, shp.destinationCountry].filter(Boolean).join(', ') ||
+              currentUser.country ||
+              'International',
+            status: shp.status || 'In Transit',
+            packagesCount: shp.packageCount ?? shp.packagesCount ?? 1,
+            weightKg: shp.chargeableWeightKg ?? shp.weightKg ?? 1.0,
+            estimatedDelivery: shp.estimatedArrival || shp.estimatedDelivery || 'In 3-5 business days',
+            departureDate: shp.departureDate || 'Scheduled',
+            itemsSummary: '',
+          }));
+
+          const orderDerivedShipments = customerOrders
+            .filter(
+              (ord) =>
+                !normalizedAdminShipments.some(
+                  (s) => s.trackingNumber === ord.trackingAwb || s.id === `SHP-${ord.id.replace('ORD-', '')}`
+                )
+            )
+            .map((ord) => ({
+              id: `SHP-${ord.id.replace('ORD-', '')}`,
+              trackingNumber: ord.trackingAwb || `I2W-${ord.id.replace('ORD-', '')}`,
+              carrier: ord.trackingAwb ? 'DHL Express' : 'India2World Air Cargo',
+              destination: ord.destination || currentUser.country || 'International',
+              status:
+                ord.orderStatus === 'Delivered'
+                  ? 'Delivered'
+                  : ord.orderStatus === 'Dispatched'
+                  ? 'In Transit'
+                  : ord.orderStatus === 'Consolidating'
+                  ? 'Consolidating'
+                  : ord.orderStatus === 'In Warehouse'
+                  ? 'At Mumbai Hub (Ready to Dispatch)'
+                  : 'Preparing at Mumbai Hub',
+              packagesCount: ord.itemCount || ord.items.length || 1,
+              weightKg: Number(Math.max(0.5, (ord.itemCount || ord.items.length || 1) * 0.5).toFixed(1)),
+              estimatedDelivery:
+                ord.orderStatus === 'Delivered'
+                  ? 'Delivered'
+                  : ord.orderStatus === 'Dispatched'
+                  ? 'Est. 3-5 business days'
+                  : 'Awaiting hub dispatch',
+              departureDate: ord.createdAt,
+              itemsSummary: ord.items.map((i) => i.title).join(', '),
+            }));
+
           const displayedShipments =
-            customerShipments.length > 0
-              ? customerShipments
+            normalizedAdminShipments.length > 0 || orderDerivedShipments.length > 0
+              ? [...normalizedAdminShipments, ...orderDerivedShipments]
               : isDemoUser
-              ? sampleShipments
+              ? sampleShipments.map((s) => ({
+                  ...s,
+                  destination: `${s.destinationCity}, ${s.destinationCountry}`,
+                  departureDate: 'In Transit',
+                  itemsSummary: '',
+                }))
               : [];
 
           return (
             <div className="bg-white rounded-2xl p-6 shadow-xs border border-slate-100 space-y-6 animate-in fade-in duration-200">
-              <div className="pb-4 border-b border-slate-100">
-                <h3 className="font-extrabold text-slate-900 text-2xl">International Shipments</h3>
-                <p className="text-slate-500 text-xs sm:text-sm">
-                  Real-time tracking of orders en route from India to your destination.
-                </p>
+              <div className="pb-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-2xl">
+                    International Shipments ({displayedShipments.length})
+                  </h3>
+                  <p className="text-slate-500 text-xs sm:text-sm">
+                    Real-time tracking of orders en route from India to your destination.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('consolidation')}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs inline-flex items-center gap-1.5 shadow-xs cursor-pointer self-start sm:self-center"
+                >
+                  <Boxes className="w-4 h-4" /> Consolidate Packages
+                </button>
               </div>
 
               <div className="space-y-4">
@@ -1932,11 +2550,11 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                   displayedShipments.map((shp: any) => (
                     <div
                       key={shp.id}
-                      className="p-5 rounded-2xl border border-slate-200 space-y-4 hover:border-blue-200 transition-all"
+                      className="p-5 rounded-2xl border border-slate-200 space-y-3.5 hover:border-blue-200 transition-all"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
                         <div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-mono font-bold text-slate-900 text-base">
                               {shp.trackingNumber}
                             </span>
@@ -1945,21 +2563,29 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                             </span>
                           </div>
                           <span className="text-xs text-slate-500 mt-0.5 block">
-                            To: {shp.destinationCity}, {shp.destinationCountry}
+                            To: {shp.destination}
                           </span>
+                          {shp.itemsSummary && (
+                            <span className="text-[11px] text-slate-400 mt-0.5 block truncate max-w-md">
+                              Items: {shp.itemsSummary}
+                            </span>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-3">
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-bold ${
-                              shp.status === 'In Transit'
+                              shp.status === 'Delivered'
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : shp.status === 'In Transit'
                                 ? 'bg-blue-100 text-[#0066FF]'
-                                : 'bg-emerald-100 text-emerald-700'
+                                : 'bg-amber-100 text-amber-800'
                             }`}
                           >
                             {shp.status}
                           </span>
                           <button
+                            type="button"
                             onClick={() => {
                               setTrackingNumberToView(shp.trackingNumber);
                               setTrackingModalOpen(true);
@@ -1973,16 +2599,16 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
 
                       <div className="text-xs text-slate-600 flex flex-wrap gap-4">
                         <span>
-                          Packages:{' '}
-                          <strong className="text-slate-800">{shp.packagesCount} consolidated</strong>
+                          Items / Packages:{' '}
+                          <strong className="text-slate-800">{shp.packagesCount}</strong>
                         </span>
                         <span>•</span>
                         <span>
-                          Weight: <strong className="text-slate-800">{shp.weightKg} kg</strong>
+                          Est. Weight: <strong className="text-slate-800">{shp.weightKg} kg</strong>
                         </span>
                         <span>•</span>
                         <span>
-                          Status: <strong className="text-slate-800">{shp.estimatedDelivery}</strong>
+                          ETA: <strong className="text-slate-800">{shp.estimatedDelivery}</strong>
                         </span>
                       </div>
                     </div>
@@ -2024,123 +2650,297 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
               </div>
             )}
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs sm:text-sm">
-                <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
-                  <tr>
-                    <th className="p-3">Invoice # & Order</th>
-                    <th className="p-3">Date</th>
-                    <th className="p-3">Items / Description</th>
-                    <th className="p-3">Total Amount</th>
-                    <th className="p-3">Payment</th>
-                    <th className="p-3">Automated Email Delivery</th>
-                    <th className="p-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
-                  {(() => {
-                    const emailNorm = (currentUser.email || '').trim().toLowerCase();
-                    const idNorm = (currentUser.customerId || '').trim().toLowerCase();
-                    const isolatedInvoices = invoices.filter((inv) => {
-                      const invEmail = (inv.customerEmail || '').trim().toLowerCase();
-                      const invCustId = (inv.customerId || '').trim().toLowerCase();
-                      return (emailNorm && invEmail === emailNorm) || (idNorm && invCustId === idNorm);
-                    });
+            <div className="w-full">
+              {(() => {
+                const emailNorm = (currentUser.email || '').trim().toLowerCase();
+                const idNorm = (currentUser.customerId || '').trim().toLowerCase();
+                const isolatedInvoices = invoices.filter((inv) => {
+                  const invEmail = (inv.customerEmail || '').trim().toLowerCase();
+                  const invCustId = (inv.customerId || '').trim().toLowerCase();
+                  return (emailNorm && invEmail === emailNorm) || (idNorm && invCustId === idNorm);
+                });
 
-                    if (isolatedInvoices.length === 0) {
-                      return (
-                        <tr>
-                          <td colSpan={7} className="p-8 text-center text-slate-400">
-                            <div className="py-6 space-y-2">
-                              <p className="font-semibold text-slate-600">No orders or invoices generated yet for this account.</p>
-                              <p className="text-xs text-slate-400">
-                                When you place or confirm an assisted purchase order, your official tax invoices will appear here automatically.
-                              </p>
+                const customerFreightPayments = getAllPayments().filter(
+                  (p) =>
+                    p.customerId === currentUser.customerId &&
+                    !isolatedInvoices.some((inv) => inv.orderId === p.referenceId || inv.invoiceNumber === p.referenceId)
+                );
+
+                const totalInvoicesPaidINR = isolatedInvoices.reduce((sum, inv) => sum + (inv.totalINR || 0), 0);
+                const totalFreightPaidINR = customerFreightPayments.reduce((sum, p) => sum + (p.amountINR || 0), 0);
+                const grandTotalPaidINR = totalInvoicesPaidINR + totalFreightPaidINR;
+
+                if (isolatedInvoices.length === 0 && customerFreightPayments.length === 0) {
+                  return (
+                    <div className="p-8 text-center text-slate-400 border border-slate-100 rounded-xl">
+                      <div className="py-6 space-y-2">
+                        <p className="font-semibold text-slate-600">No orders or invoices generated yet for this account.</p>
+                        <p className="text-xs text-slate-400">
+                          When you place or confirm an assisted purchase order, your official tax invoices will appear here automatically.
+                        </p>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="space-y-5">
+                    {/* Payment Summary Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-100">
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Total Paid</div>
+                        <div className="text-xl font-extrabold text-[#0B1933] mt-0.5">
+                          ₹{grandTotalPaidINR.toLocaleString('en-IN')}
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-0.5">
+                          Across {isolatedInvoices.length + customerFreightPayments.length} payment{isolatedInvoices.length + customerFreightPayments.length === 1 ? '' : 's'}
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-xl bg-emerald-50/60 border border-emerald-100">
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Order Invoices</div>
+                        <div className="text-xl font-extrabold text-[#0B1933] mt-0.5">
+                          ₹{totalInvoicesPaidINR.toLocaleString('en-IN')}
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-0.5">
+                          {isolatedInvoices.length} paid tax invoice{isolatedInvoices.length === 1 ? '' : 's'}
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                        <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Air Freight &amp; Extra</div>
+                        <div className="text-xl font-extrabold text-[#0B1933] mt-0.5">
+                          ₹{totalFreightPaidINR.toLocaleString('en-IN')}
+                        </div>
+                        <div className="text-[11px] text-slate-500 mt-0.5">
+                          {customerFreightPayments.length} shipping/consolidation charge{customerFreightPayments.length === 1 ? '' : 's'}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Desktop / Tablet Full-Width Table (No Horizontal Scroll) */}
+                    {isolatedInvoices.length > 0 && (
+                    <div className="hidden lg:block w-full border border-slate-100 rounded-xl overflow-hidden">
+                      <table className="w-full table-fixed text-left text-xs">
+                        <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
+                          <tr>
+                            <th className="py-3 px-3 w-[15%]">Invoice # &amp; Order</th>
+                            <th className="py-3 px-2 w-[12%]">Date</th>
+                            <th className="py-3 px-2 w-[21%]">Items / Description</th>
+                            <th className="py-3 px-2 w-[13%]">Total Breakdown</th>
+                            <th className="py-3 px-2 w-[12%]">Payment</th>
+                            <th className="py-3 px-2 w-[18%]">Email Delivery</th>
+                            <th className="py-3 px-3 w-[9%] text-center">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
+                          {isolatedInvoices.map((inv) => {
+                            const feesAndShipping = Math.max(0, (inv.totalINR || 0) - (inv.subtotalINR || 0));
+                            return (
+                            <tr key={inv.id} className="hover:bg-slate-50/70 transition-colors align-middle">
+                              <td className="py-3 px-3">
+                                <div className="font-mono font-bold text-[#0066FF] text-[12px] truncate" title={inv.invoiceNumber}>
+                                  {inv.invoiceNumber}
+                                </div>
+                                <div className="text-[11px] text-slate-400 truncate">Order: {inv.orderId}</div>
+                              </td>
+                              <td className="py-3 px-2 text-slate-500 leading-snug">
+                                {inv.createdAt}
+                              </td>
+                              <td className="py-3 px-2">
+                                <div className="font-medium text-slate-800 truncate" title={inv.items.map((i) => i.title).join(', ')}>
+                                  {inv.items.map((i) => i.title).join(', ')}
+                                </div>
+                                <div className="text-[11px] text-slate-400 truncate">
+                                  {inv.items.length} item{inv.items.length > 1 ? 's' : ''} &bull; {inv.destinationCountry}
+                                </div>
+                              </td>
+                              <td className="py-3 px-2">
+                                <div className="font-extrabold text-[#0B1933] whitespace-nowrap">
+                                  ₹{inv.totalINR.toLocaleString('en-IN')}
+                                </div>
+                                <div className="text-[10px] text-slate-400 truncate" title={`Items ₹${inv.subtotalINR.toLocaleString('en-IN')} + Fees/Shipping ₹${feesAndShipping.toLocaleString('en-IN')}`}>
+                                  Items ₹{inv.subtotalINR.toLocaleString('en-IN')}
+                                  {feesAndShipping > 0 ? ` + ₹${feesAndShipping.toLocaleString('en-IN')} fees` : ''}
+                                </div>
+                              </td>
+                              <td className="py-3 px-2">
+                                <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                                  {inv.paymentStatus}
+                                </span>
+                                <div className="text-[10px] text-slate-500 truncate mt-0.5" title={inv.paymentMethod}>
+                                  {inv.paymentMethod || 'Online Payment'}
+                                </div>
+                              </td>
+                              <td className="py-3 px-2">
+                                <span
+                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold max-w-full ${
+                                    inv.emailStatus === 'Sent'
+                                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                      : inv.emailStatus === 'Pending'
+                                      ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                      : 'bg-red-50 text-red-700 border border-red-200'
+                                  }`}
+                                  title={inv.emailDeliveryLog || `${inv.emailStatus} to ${inv.customerEmail}`}
+                                >
+                                  <Mail className="w-3 h-3 shrink-0" />
+                                  <span className="truncate">{inv.emailStatus}</span>
+                                </span>
+                                <div className="text-[10px] text-slate-500 truncate mt-0.5" title={inv.customerEmail}>
+                                  {inv.customerEmail}
+                                </div>
+                                {inv.emailStatus === 'Sent' && inv.emailSentAt && (
+                                  <div className="text-[10px] text-slate-400 truncate">
+                                    Delivered {inv.emailSentAt}
+                                  </div>
+                                )}
+                                {inv.emailStatus === 'Failed' && (
+                                  <div className="text-[10px] text-red-500 truncate">
+                                    Failed — click resend
+                                  </div>
+                                )}
+                              </td>
+                              <td className="py-3 px-2 text-center align-middle">
+                                <div className="flex flex-col items-center justify-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedInvoice(inv)}
+                                    className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors"
+                                    title="View Invoice Details"
+                                  >
+                                    <Eye className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => downloadInvoiceDocument(inv)}
+                                    className="p-1.5 text-[#0066FF] hover:bg-blue-50 rounded-lg cursor-pointer transition-colors"
+                                    title="Download PDF Invoice"
+                                  >
+                                    <Download className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={resendingInvoiceNum === inv.invoiceNumber}
+                                    onClick={() => handleResendInvoice(inv)}
+                                    className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg cursor-pointer transition-colors disabled:opacity-50"
+                                    title="Resend Invoice to Email"
+                                  >
+                                    <Send className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                    )}
+
+                    {/* Mobile / Small Screen Stacked Cards (No Horizontal Scroll) */}
+                    {isolatedInvoices.length > 0 && (
+                    <div className="lg:hidden space-y-3">
+                      {isolatedInvoices.map((inv) => (
+                        <div key={inv.id} className="p-4 rounded-xl border border-slate-200/80 bg-white space-y-2.5">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <div className="font-mono font-bold text-[#0066FF] text-sm">{inv.invoiceNumber}</div>
+                              <div className="text-[11px] text-slate-400">Order: {inv.orderId} &bull; {inv.createdAt}</div>
                             </div>
-                          </td>
-                        </tr>
-                      );
-                    }
-
-                    return isolatedInvoices.map((inv) => (
-                      <tr key={inv.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="p-3">
-                          <div className="font-mono font-bold text-[#0066FF]">{inv.invoiceNumber}</div>
-                          <div className="text-[11px] text-slate-400">Order: {inv.orderId}</div>
-                        </td>
-                        <td className="p-3 text-slate-500 whitespace-nowrap">{inv.createdAt}</td>
-                        <td className="p-3 max-w-xs">
-                          <div className="font-medium text-slate-800 truncate">
+                            <div className="text-right shrink-0">
+                              <div className="font-extrabold text-[#0B1933] text-sm">₹{inv.totalINR.toLocaleString('en-IN')}</div>
+                              <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 mt-0.5">
+                                {inv.paymentStatus} &bull; {inv.paymentMethod || 'Online'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-xs text-slate-700 font-medium">
                             {inv.items.map((i) => i.title).join(', ')}
-                          </div>
-                          <div className="text-[11px] text-slate-400">
-                            {inv.items.length} item{inv.items.length > 1 ? 's' : ''} &bull; {inv.destinationCountry}
-                          </div>
-                        </td>
-                        <td className="p-3 font-extrabold text-[#0B1933] whitespace-nowrap">
-                          ₹{inv.totalINR.toLocaleString('en-IN')}
-                        </td>
-                        <td className="p-3">
-                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                            {inv.paymentStatus}
-                          </span>
-                        </td>
-                        <td className="p-3">
-                          <div className="flex items-center gap-1.5">
-                            <span
-                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                                inv.emailStatus === 'Sent'
-                                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                  : inv.emailStatus === 'Pending'
-                                  ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                                  : 'bg-red-50 text-red-700 border border-red-200'
-                              }`}
-                              title={inv.emailDeliveryLog || `Status: ${inv.emailStatus}`}
-                            >
-                              <Mail className="w-3 h-3" />
-                              <span>{inv.emailStatus} to {inv.customerEmail}</span>
+                            <span className="block text-[11px] text-slate-400 mt-0.5">
+                              {inv.items.length} item{inv.items.length > 1 ? 's' : ''} &bull; {inv.destinationCountry}
                             </span>
                           </div>
-                          {inv.emailSentAt && (
-                            <div className="text-[10px] text-slate-400 mt-0.5">
-                              Delivered {inv.emailSentAt}
+                          <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                            <div className="min-w-0">
+                              <span
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                                  inv.emailStatus === 'Sent'
+                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                    : inv.emailStatus === 'Pending'
+                                    ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                    : 'bg-red-50 text-red-700 border border-red-200'
+                                }`}
+                              >
+                                <Mail className="w-3 h-3 shrink-0" />
+                                <span>{inv.emailStatus}</span>
+                              </span>
+                              <div className="text-[10px] text-slate-400 truncate mt-0.5">
+                                {inv.customerEmail}
+                                {inv.emailStatus === 'Sent' && inv.emailSentAt ? ` • ${inv.emailSentAt}` : ''}
+                              </div>
                             </div>
-                          )}
-                        </td>
-                        <td className="p-3 text-right whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setSelectedInvoice(inv)}
-                              className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors"
-                              title="View Invoice Details"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => downloadInvoiceDocument(inv)}
-                              className="p-1.5 text-[#0066FF] hover:bg-blue-50 rounded-lg cursor-pointer transition-colors"
-                              title="Download PDF Invoice"
-                            >
-                              <Download className="w-4 h-4" />
-                            </button>
-                            <button
-                              type="button"
-                              disabled={resendingInvoiceNum === inv.invoiceNumber}
-                              onClick={() => handleResendInvoice(inv)}
-                              className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg cursor-pointer transition-colors disabled:opacity-50"
-                              title="Resend Invoice to Email"
-                            >
-                              <Send className="w-4 h-4" />
-                            </button>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedInvoice(inv)}
+                                className="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer"
+                                title="View Invoice Details"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => downloadInvoiceDocument(inv)}
+                                className="p-1.5 text-[#0066FF] hover:bg-blue-50 rounded-lg cursor-pointer"
+                                title="Download PDF Invoice"
+                              >
+                                <Download className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                disabled={resendingInvoiceNum === inv.invoiceNumber}
+                                onClick={() => handleResendInvoice(inv)}
+                                className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg cursor-pointer disabled:opacity-50"
+                                title="Resend Invoice to Email"
+                              >
+                                <Send className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
-                        </td>
-                      </tr>
-                    ))
-                  })()}
-                </tbody>
-              </table>
+                        </div>
+                      ))}
+                    </div>
+                    )}
+
+                    {/* International Air Freight / Consolidation Payments */}
+                    {customerFreightPayments.length > 0 && (
+                      <div className="pt-2 space-y-2.5">
+                        <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                          International Air Freight &amp; Consolidation Payments ({customerFreightPayments.length})
+                        </h4>
+                        <div className="divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden">
+                          {customerFreightPayments.map((pay) => (
+                            <div key={pay.id} className="p-3.5 bg-white flex flex-wrap items-center justify-between gap-3 text-xs">
+                              <div>
+                                <div className="font-bold text-slate-900">
+                                  {pay.purpose} <span className="font-mono text-[#0066FF] ml-1">({pay.referenceId})</span>
+                                </div>
+                                <div className="text-[11px] text-slate-400">
+                                  Ref: {pay.id} &bull; {pay.date} &bull; {pay.method}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2.5">
+                                <span className="font-extrabold text-[#0B1933]">₹{pay.amountINR.toLocaleString('en-IN')}</span>
+                                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                                  {pay.status}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         )}
@@ -2406,109 +3206,391 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
 
         {/* TAB 10: NOTIFICATIONS */}
         {activeTab === 'notifications' && (() => {
+          type NotifCategory = 'order' | 'request' | 'warehouse' | 'shipment' | 'welcome';
+          const decodeNotifText = (text: string) =>
+            (text || '')
+              .replace(/&amp;/gi, '&')
+              .replace(/&quot;/gi, '"')
+              .replace(/&#39;|&apos;/gi, "'")
+              .replace(/\s+/g, ' ')
+              .trim();
+
           const customerNotifications: Array<{
             id: string;
+            category: NotifCategory;
+            categoryLabel: string;
+            refCode: string;
+            statusLabel: string;
             title: string;
+            subtitle?: string;
             time: string;
-            type: string;
+            targetTab: DashboardTab;
             read: boolean;
           }> = [];
 
           customerOrders.forEach((o) => {
+            const id = `notif-ord-${o.id}`;
+            const status = o.orderStatus || 'Procuring';
+            const itemCount = o.items?.length || o.itemCount || 0;
+            const stores = Array.from(
+              new Set((o.items || []).map((i) => i.store).filter(Boolean))
+            )
+              .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+              .join(', ');
+            const firstItem = o.items?.[0]?.title ? decodeNotifText(o.items[0].title) : '';
+            const totalINR = o.totalINR || (o.items || []).reduce((acc, i) => acc + (i.price || 0) * (i.qty || 1), 0);
+            const subtitleParts = [
+              itemCount > 0 ? `${itemCount} ${itemCount === 1 ? 'item' : 'items'}` : '',
+              stores || '',
+              totalINR > 0 ? `₹${totalINR.toLocaleString('en-IN')}` : '',
+              firstItem ? firstItem : '',
+            ].filter(Boolean);
+
             customerNotifications.push({
-              id: `notif-ord-${o.id}`,
-              title: `Order ${o.id} confirmed and in processing (${o.orderStatus || 'Procuring'}).`,
+              id,
+              category: 'order',
+              categoryLabel: 'Order Update',
+              refCode: o.id,
+              statusLabel: status,
+              title: `Order ${o.id} confirmed and currently in processing (${status}).`,
+              subtitle: subtitleParts.join(' • '),
               time: o.createdAt || 'Recent',
-              type: 'order',
-              read: notificationsRead,
+              targetTab: 'my-purchases',
+              read: notificationsRead || readNotificationIds.includes(id),
             });
           });
 
           customerRequests.forEach((r: any) => {
+            const id = `notif-req-${r.id}`;
+            const ref = r.requestNumber || r.id;
+            const status = r.status || 'Processing';
+            const prodCount = r.products?.length || r.itemsCount || 0;
+            const totalAmt = r.totalEstimatedINR || r.totalINR || 0;
+            const subtitleParts = [
+              prodCount > 0 ? `${prodCount} ${prodCount === 1 ? 'product' : 'products'}` : '',
+              totalAmt > 0 ? `Est. ₹${Number(totalAmt).toLocaleString('en-IN')}` : '',
+            ].filter(Boolean);
+
             customerNotifications.push({
-              id: `notif-req-${r.id}`,
-              title: `Buy For Me Request ${r.requestNumber || r.id} status updated to "${r.status}".`,
+              id,
+              category: 'request',
+              categoryLabel: 'Buy For Me',
+              refCode: ref,
+              statusLabel: status,
+              title: `Buy For Me Request ${ref} status updated to "${status}".`,
+              subtitle: subtitleParts.join(' • '),
               time: r.date || r.submittedAt || 'Recent',
-              type: 'request',
-              read: notificationsRead,
+              targetTab: 'my-requests',
+              read: notificationsRead || readNotificationIds.includes(id),
             });
           });
 
           customerPackages.forEach((pkg: any) => {
+            const id = `notif-pkg-${pkg.id}`;
+            const ref = pkg.packageNumber || pkg.id;
             customerNotifications.push({
-              id: `notif-pkg-${pkg.id}`,
-              title: `Parcel ${pkg.packageNumber || pkg.id} (${pkg.seller || 'Merchant'}) received at your Mumbai Locker.`,
+              id,
+              category: 'warehouse',
+              categoryLabel: 'Mumbai Locker',
+              refCode: ref,
+              statusLabel: 'Received',
+              title: `Parcel ${ref} (${pkg.seller || 'Merchant'}) received at your Mumbai Locker.`,
+              subtitle: pkg.description ? decodeNotifText(pkg.description) : undefined,
               time: pkg.receivedDate || 'Recent',
-              type: 'warehouse',
-              read: notificationsRead,
+              targetTab: 'my-warehouse',
+              read: notificationsRead || readNotificationIds.includes(id),
             });
           });
 
           customerShipments.forEach((shp: any) => {
+            const id = `notif-shp-${shp.id}`;
+            const ref = shp.trackingNumber || shp.id;
             customerNotifications.push({
-              id: `notif-shp-${shp.id}`,
-              title: `International Shipment ${shp.trackingNumber} is ${shp.status} via ${shp.carrier}.`,
+              id,
+              category: 'shipment',
+              categoryLabel: 'Shipment',
+              refCode: ref,
+              statusLabel: shp.status || 'In Transit',
+              title: `International Shipment ${ref} is ${shp.status} via ${shp.carrier}.`,
+              subtitle: shp.destination ? `Destination: ${shp.destination}` : undefined,
               time: shp.departureDate || 'Recent',
-              type: 'shipment',
-              read: notificationsRead,
+              targetTab: 'shipments',
+              read: notificationsRead || readNotificationIds.includes(id),
             });
           });
 
           if (customerNotifications.length === 0 && !isDemoUser) {
+            const id = `notif-welcome-${currentUser.customerId}`;
             customerNotifications.push({
-              id: `notif-welcome-${currentUser.customerId}`,
-              title: `Welcome to India2World, ${currentUser.name}! Your Mumbai Virtual Locker (${currentUser.lockerId || 'I2W-' + currentUser.customerId.replace('CUS-', '')}) is active.`,
+              id,
+              category: 'welcome',
+              categoryLabel: 'Account',
+              refCode: currentUser.lockerId || 'I2W-' + currentUser.customerId.replace('CUS-', ''),
+              statusLabel: 'Active',
+              title: `Welcome to India2World, ${currentUser.name}! Your Mumbai Virtual Locker is active and ready.`,
               time: 'Just now',
-              type: 'welcome',
-              read: notificationsRead,
+              targetTab: 'overview',
+              read: notificationsRead || readNotificationIds.includes(id),
             });
           } else if (customerNotifications.length === 0 && isDemoUser) {
+            const id = 'notif-demo-1';
             customerNotifications.push({
-              id: 'notif-demo-1',
+              id,
+              category: 'welcome',
+              categoryLabel: 'Account',
+              refCode: 'PORTAL',
+              statusLabel: 'Active',
               title: 'Welcome to your customer portal overview.',
               time: 'Today, 10:30 AM',
-              type: 'welcome',
-              read: notificationsRead,
+              targetTab: 'overview',
+              read: notificationsRead || readNotificationIds.includes(id),
             });
           }
 
+          const unreadCount = customerNotifications.filter((n) => !n.read).length;
+          const filteredNotifications = customerNotifications.filter((n) => {
+            if (notificationFilter === 'all') return true;
+            if (notificationFilter === 'unread') return !n.read;
+            return n.category === notificationFilter;
+          });
+
+          const categoryCounts = {
+            all: customerNotifications.length,
+            unread: unreadCount,
+            order: customerNotifications.filter((n) => n.category === 'order').length,
+            request: customerNotifications.filter((n) => n.category === 'request').length,
+            warehouse: customerNotifications.filter((n) => n.category === 'warehouse').length,
+            shipment: customerNotifications.filter((n) => n.category === 'shipment').length,
+          };
+
+          const getCategoryStyle = (category: NotifCategory) => {
+            switch (category) {
+              case 'order':
+                return {
+                  icon: ShoppingBag,
+                  iconBox: 'bg-blue-50 text-[#0066FF] border-blue-100',
+                  badge: 'bg-blue-50 text-[#0066FF] border-blue-100',
+                  actionLabel: 'View Order',
+                };
+              case 'request':
+                return {
+                  icon: FileText,
+                  iconBox: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+                  badge: 'bg-indigo-50 text-indigo-700 border-indigo-100',
+                  actionLabel: 'View Request',
+                };
+              case 'warehouse':
+                return {
+                  icon: Warehouse,
+                  iconBox: 'bg-amber-50 text-amber-600 border-amber-100',
+                  badge: 'bg-amber-50 text-amber-700 border-amber-100',
+                  actionLabel: 'Open Locker',
+                };
+              case 'shipment':
+                return {
+                  icon: Truck,
+                  iconBox: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                  badge: 'bg-emerald-50 text-emerald-700 border-emerald-100',
+                  actionLabel: 'Track Shipment',
+                };
+              default:
+                return {
+                  icon: Sparkles,
+                  iconBox: 'bg-cyan-50 text-cyan-600 border-cyan-100',
+                  badge: 'bg-cyan-50 text-cyan-700 border-cyan-100',
+                  actionLabel: 'Go to Overview',
+                };
+            }
+          };
+
           return (
-            <div className="bg-white rounded-2xl p-6 shadow-xs border border-slate-100 space-y-6 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                <div>
-                  <h3 className="font-extrabold text-slate-900 text-2xl">Notifications Center</h3>
-                  <p className="text-slate-500 text-xs sm:text-sm">
-                    Account updates for {currentUser.name} ({currentUser.email}).
-                  </p>
+            <div className="bg-white rounded-2xl p-5 sm:p-6 pb-24 sm:pb-10 shadow-xs border border-slate-100 space-y-5 animate-in fade-in duration-200">
+              {/* Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+                <div className="flex items-start gap-3.5 min-w-0">
+                  <div className="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 text-[#0066FF] flex items-center justify-center shrink-0">
+                    <Bell className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center flex-wrap gap-2">
+                      <h3 className="font-extrabold text-slate-900 text-xl sm:text-2xl tracking-tight">
+                        Notifications Center
+                      </h3>
+                      {unreadCount > 0 ? (
+                        <span className="px-2.5 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-[#0066FF] text-xs font-bold whitespace-nowrap">
+                          {unreadCount} Unread
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold whitespace-nowrap">
+                          All Caught Up
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-slate-500 text-xs sm:text-sm mt-0.5 truncate">
+                      Account updates for {currentUser.name} ({currentUser.email})
+                    </p>
+                  </div>
                 </div>
+
                 <button
-                  onClick={() => setNotificationsRead(true)}
-                  className="text-xs font-bold text-[#0066FF] hover:underline cursor-pointer"
+                  type="button"
+                  disabled={unreadCount === 0}
+                  onClick={() => {
+                    setNotificationsRead(true);
+                    setReadNotificationIds(customerNotifications.map((n) => n.id));
+                  }}
+                  className={`inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-colors shrink-0 whitespace-nowrap ${
+                    unreadCount === 0
+                      ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed'
+                      : 'bg-white border-blue-200 text-[#0066FF] hover:bg-blue-50 cursor-pointer'
+                  }`}
                 >
+                  <Check className="w-3.5 h-3.5" />
                   Mark all as read
                 </button>
               </div>
 
-              <div className="space-y-3">
-                {customerNotifications.map((n) => (
-                  <div
-                    key={n.id}
-                    className="flex items-start justify-between p-3.5 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-slate-50 transition-colors"
-                  >
-                    <div className="flex items-start gap-3">
-                      <span
-                        className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${
-                          n.read ? 'bg-slate-300' : 'bg-[#0066FF]'
+              {/* Filter Tabs */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                {(
+                  [
+                    { key: 'all', label: 'All', count: categoryCounts.all },
+                    { key: 'unread', label: 'Unread', count: categoryCounts.unread },
+                    { key: 'order', label: 'Orders', count: categoryCounts.order },
+                    { key: 'request', label: 'Requests', count: categoryCounts.request },
+                    { key: 'warehouse', label: 'Warehouse', count: categoryCounts.warehouse },
+                    { key: 'shipment', label: 'Shipments', count: categoryCounts.shipment },
+                  ] as const
+                )
+                  .filter((tab) => tab.key === 'all' || tab.key === 'unread' || tab.count > 0)
+                  .map((tab) => {
+                    const active = notificationFilter === tab.key;
+                    return (
+                      <button
+                        key={tab.key}
+                        type="button"
+                        onClick={() => setNotificationFilter(tab.key)}
+                        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                          active
+                            ? 'bg-[#0066FF] text-white shadow-xs'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
                         }`}
-                      />
-                      <div>
-                        <p className="text-sm font-bold text-slate-900">{n.title}</p>
-                        <span className="text-xs text-slate-400">{n.time}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                      >
+                        <span>{tab.label}</span>
+                        <span
+                          className={`px-1.5 py-0.2 rounded-full text-[10px] font-extrabold ${
+                            active ? 'bg-white/20 text-white' : 'bg-white text-slate-600'
+                          }`}
+                        >
+                          {tab.count}
+                        </span>
+                      </button>
+                    );
+                  })}
               </div>
+
+              {/* Notifications List — Uniform, consistent card styling */}
+              {filteredNotifications.length === 0 ? (
+                <div className="p-10 text-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 space-y-2">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                    <Bell className="w-5 h-5" />
+                  </div>
+                  <p className="text-sm font-bold text-slate-700">No notifications in this view</p>
+                  <p className="text-xs text-slate-500">
+                    {notificationFilter === 'unread'
+                      ? 'You have read all your account notifications.'
+                      : 'Updates about your orders, requests, and shipments will appear here.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {filteredNotifications.map((n) => {
+                    const style = getCategoryStyle(n.category);
+                    const IconComp = style.icon;
+                    return (
+                      <div
+                        key={n.id}
+                        onClick={() => {
+                          if (!n.read) {
+                            setReadNotificationIds((prev) =>
+                              prev.includes(n.id) ? prev : [...prev, n.id]
+                            );
+                          }
+                        }}
+                        className="group flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 rounded-xl border border-slate-200/90 bg-white hover:border-blue-300/80 hover:shadow-xs transition-all"
+                      >
+                        {/* Left: Icon + Content */}
+                        <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                          <div
+                            className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 mt-0.5 ${style.iconBox}`}
+                          >
+                            <IconComp className="w-4.5 h-4.5" />
+                          </div>
+
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <div className="flex items-center flex-wrap gap-1.5">
+                              <span
+                                className={`px-2 py-0.5 rounded-md border text-[10px] font-bold uppercase tracking-wide ${style.badge}`}
+                              >
+                                {n.categoryLabel}
+                              </span>
+                              <span className="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                                {n.refCode}
+                              </span>
+                              <span className="text-[11px] font-semibold text-slate-500">
+                                • {n.statusLabel}
+                              </span>
+                              {!n.read && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-blue-50 text-[#0066FF] text-[10px] font-bold">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-[#0066FF]" />
+                                  New
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="text-sm font-bold text-slate-900 leading-snug break-words">
+                              {n.title}
+                            </p>
+
+                            {n.subtitle && (
+                              <p
+                                className="text-xs text-slate-500 truncate"
+                                title={n.subtitle}
+                              >
+                                {n.subtitle}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Right: Timestamp + Quick Action */}
+                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 pl-13 sm:pl-4 sm:border-l sm:border-slate-100 shrink-0 sm:min-w-[156px]">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-400 whitespace-nowrap">
+                            <Clock className="w-3 h-3 shrink-0" />
+                            {n.time}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!n.read) {
+                                setReadNotificationIds((prev) =>
+                                  prev.includes(n.id) ? prev : [...prev, n.id]
+                                );
+                              }
+                              setActiveTab(n.targetTab);
+                            }}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-[#0066FF] text-[#0066FF] hover:text-white text-xs font-bold transition-colors cursor-pointer whitespace-nowrap"
+                          >
+                            <span>{style.actionLabel}</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })()}
@@ -2651,11 +3733,11 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                 </div>
 
                 <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Origin / Fulfillment Hub</div>
-                  <div className="font-bold text-slate-900 text-sm">India2World Central Processing Hub</div>
-                  <div className="text-slate-600">Plot 42, Udyog Vihar Phase 4</div>
-                  <div className="text-slate-600">Gurugram, Haryana - 122016, India</div>
-                  <div className="text-slate-500">GSTIN: 27AAACI1234D1Z8</div>
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Payment &amp; Fulfillment Details</div>
+                  <div className="font-bold text-slate-900 text-sm">Order: {selectedInvoice.orderId}</div>
+                  <div className="text-slate-600">Date: {selectedInvoice.createdAt}</div>
+                  <div className="text-slate-600">Method: <strong className="text-slate-800">{selectedInvoice.paymentMethod || 'Online Payment'}</strong></div>
+                  <div className="text-slate-500">Hub: Unit 4B, Sakinaka, Mumbai 400072</div>
                 </div>
               </div>
 
@@ -2710,6 +3792,12 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                   <div className="flex justify-between text-slate-600">
                     <span>Applicable Taxes:</span>
                     <span className="font-semibold text-slate-800">₹{selectedInvoice.estimatedTaxINR.toLocaleString('en-IN')}</span>
+                  </div>
+                )}
+                {selectedInvoice.discountINR > 0 && (
+                  <div className="flex justify-between text-emerald-700">
+                    <span>Discount Applied:</span>
+                    <span className="font-semibold">-₹{selectedInvoice.discountINR.toLocaleString('en-IN')}</span>
                   </div>
                 )}
                 <div className="pt-2 border-t border-slate-200 flex justify-between text-sm font-extrabold text-[#0B1933]">

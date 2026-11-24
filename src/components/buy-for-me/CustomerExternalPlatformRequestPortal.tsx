@@ -38,6 +38,58 @@ const EXTERNAL_PLATFORMS = [
   'Other External Platform',
 ];
 
+const formatProductDisplayName = (
+  rawName?: string,
+  fallbackUrl?: string
+): string => {
+  const candidate = (rawName || '').trim();
+  const isUrl = /^https?:\/\//i.test(candidate);
+
+  if (candidate && !isUrl) {
+    return candidate;
+  }
+
+  const urlToParse = isUrl ? candidate : (fallbackUrl || '').trim();
+  if (urlToParse) {
+    try {
+      const parsed = new URL(urlToParse);
+      const parts = parsed.pathname.split('/').filter(Boolean);
+      const valid = parts.filter((seg) => {
+        const clean = seg.split('?')[0].split('#')[0].toLowerCase();
+        return (
+          clean.length > 3 &&
+          !/^[0-9]+$/.test(clean) &&
+          !/^itm[a-z0-9]+$/i.test(clean) &&
+          !/^[a-z0-9]{10}$/i.test(clean) &&
+          !['p', 'dp', 'pd', 'buy', 'product', 'products', 'gp'].includes(clean)
+        );
+      });
+      if (valid.length > 0) {
+        const best = valid.reduce((a, b) => (b.length > a.length ? b : a));
+        const words = decodeURIComponent(best)
+          .replace(/^[0-9]+-/, '')
+          .replace(/-[0-9]{5,}$/, '')
+          .split(/[-_]+/)
+          .filter(Boolean)
+          .map((w) => w.charAt(0).toUpperCase() + w.slice(1));
+        if (words.length > 0) {
+          return words.join(' ');
+        }
+      }
+      return `${parsed.hostname.replace(/^www\./, '')} Product`;
+    } catch {
+      // fall through
+    }
+  }
+
+  return candidate || 'Requested Product';
+};
+
+const isDirectImageUrl = (url?: string): boolean => {
+  if (!url) return false;
+  return /\.(jpe?g|png|webp|gif|avif)(\?|$)/i.test(url) || url.includes('flixcart.com/image') || url.includes('media-amazon.com/images');
+};
+
 export const CustomerExternalPlatformRequestPortal: React.FC = () => {
   const userProfile = getCurrentUser();
 
@@ -903,46 +955,141 @@ export const CustomerExternalPlatformRequestPortal: React.FC = () => {
 
       {/* Customer's Submitted External Platform Requests (If any exist for their email) */}
       {myExternalRequests.length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
-              <Package className="w-4 h-4 text-blue-600" />
-              Your Submitted External Platform Purchase Requests (
-              {myExternalRequests.length})
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-3 overflow-hidden">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-sm font-black text-slate-900 flex items-center gap-2 min-w-0">
+              <Package className="w-4 h-4 text-blue-600 shrink-0" />
+              <span className="truncate">
+                Your Submitted External Platform Purchase Requests (
+                {myExternalRequests.length})
+              </span>
             </h3>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {myExternalRequests.map((req) => (
-              <div
-                key={req.requestId}
-                className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between gap-3 text-xs"
-              >
-                <div>
-                  <div className="font-black text-blue-600">
-                    {req.requestId}
+          <div
+            className={`grid grid-cols-1 ${
+              myExternalRequests.length > 1 ? 'md:grid-cols-2' : ''
+            } gap-3`}
+          >
+            {myExternalRequests.map((req) => {
+              const items = req.requestedProducts || [];
+              return (
+                <div
+                  key={req.requestId}
+                  className="p-4 rounded-xl border border-slate-200 bg-slate-50/80 flex flex-col gap-3 text-xs min-w-0 overflow-hidden"
+                >
+                  {/* Header Row: Request ID & Date on left, Status & Total on right */}
+                  <div className="flex flex-wrap items-start justify-between gap-2 min-w-0">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-black text-blue-600 text-sm">
+                          {req.requestId}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md bg-slate-200/80 text-slate-700 font-bold text-[10px] whitespace-nowrap">
+                          {items.length} {items.length === 1 ? 'item' : 'items'}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">
+                        Submitted: {req.createdAt}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center sm:flex-col sm:items-end gap-2 sm:gap-1 shrink-0">
+                      <span className="px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 font-bold text-[11px] whitespace-nowrap">
+                        {req.status}
+                      </span>
+                      {req.quotation?.grandTotalINR > 0 && (
+                        <div className="font-black text-slate-900 text-sm whitespace-nowrap">
+                          ₹{req.quotation.grandTotalINR.toLocaleString('en-IN')}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="font-semibold text-slate-800 mt-0.5">
-                    {req.requestedProducts.map((p) => p.productName).join(', ')}
+
+                  {/* Clean Product Items List */}
+                  <div className="space-y-1.5 border-t border-slate-200/80 pt-2.5 min-w-0">
+                    {items.map((p, idx) => {
+                      const proc = req.processedProducts?.[idx];
+                      const displayName = formatProductDisplayName(
+                        proc?.actualProductName || p.productName,
+                        proc?.verifiedProductUrl || p.productUrl
+                      );
+                      const platform = proc?.platform || p.platform;
+                      const linkUrl = proc?.verifiedProductUrl || p.productUrl;
+                      const thumbUrl = isDirectImageUrl(proc?.productImage)
+                        ? proc?.productImage
+                        : isDirectImageUrl(p.productImage)
+                        ? p.productImage
+                        : undefined;
+                      const itemSubtotal = proc?.subtotalINR;
+
+                      return (
+                        <div
+                          key={p.id || idx}
+                          className="flex items-center justify-between gap-2.5 bg-white rounded-lg border border-slate-200/80 px-2.5 py-2 min-w-0"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                            {thumbUrl ? (
+                              <img
+                                src={thumbUrl}
+                                alt={displayName}
+                                className="w-8 h-8 rounded-md object-contain bg-slate-50 border border-slate-100 shrink-0"
+                              />
+                            ) : (
+                              <span className="w-6 h-6 rounded-md bg-blue-50 text-blue-700 font-extrabold text-[11px] flex items-center justify-center shrink-0">
+                                {idx + 1}
+                              </span>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <div
+                                className="font-semibold text-slate-800 truncate"
+                                title={displayName}
+                              >
+                                {displayName}
+                              </div>
+                              <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5 flex-wrap">
+                                {platform && (
+                                  <span className="font-medium text-slate-600">
+                                    {platform}
+                                  </span>
+                                )}
+                                <span>• Qty: {p.quantity || 1}</span>
+                                {linkUrl && /^https?:\/\//i.test(linkUrl) && (
+                                  <a
+                                    href={linkUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-0.5 text-blue-600 hover:underline font-semibold"
+                                  >
+                                    View Link
+                                    <ExternalLink className="w-2.5 h-2.5" />
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {typeof itemSubtotal === 'number' && itemSubtotal > 0 && (
+                            <div className="font-bold text-slate-900 text-xs shrink-0 whitespace-nowrap">
+                              ₹{itemSubtotal.toLocaleString('en-IN')}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
-                    Submitted: {req.createdAt}
-                    {req.purchaseRecord?.trackingNumber
-                      ? ` • Tracking: ${req.purchaseRecord.trackingNumber}`
-                      : ''}
-                  </div>
-                </div>
-                <div className="text-right shrink-0">
-                  <span className="px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 font-bold text-[11px]">
-                    {req.status}
-                  </span>
-                  {req.quotation?.grandTotalINR > 0 && (
-                    <div className="font-black text-slate-900 mt-1">
-                      ₹{req.quotation.grandTotalINR.toLocaleString('en-IN')}
+
+                  {/* Tracking Info Footer */}
+                  {req.purchaseRecord?.trackingNumber && (
+                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 rounded-lg px-2.5 py-1.5">
+                      <Truck className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">
+                        Tracking: {req.purchaseRecord.trackingNumber}
+                      </span>
                     </div>
                   )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

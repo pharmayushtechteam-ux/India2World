@@ -716,21 +716,21 @@ export const AdminQuotationsModule: React.FC<{
             <span className="text-slate-400">&bull; {filtered.length} requests displayed</span>
           </div>
           <div className="text-[11px] text-slate-500 flex items-center gap-1.5">
-            <span className="bg-white px-2 py-0.5 rounded-md border border-slate-200 font-medium">Scrollable table &bull; Action buttons pinned</span>
+            <span className="bg-white px-2 py-0.5 rounded-md border border-slate-200 font-medium">Live synced</span>
           </div>
         </div>
 
-        <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300">
-          <table className="w-full text-left text-xs sm:text-sm border-collapse min-w-[900px]">
-            <thead className="bg-slate-50 text-slate-500 text-[11px] font-extrabold uppercase tracking-wider border-b border-slate-200">
+        <div className="overflow-x-auto lg:overflow-x-visible">
+          <table className="w-full min-w-[860px] lg:min-w-0 lg:table-fixed text-left text-xs sm:text-sm border-collapse">
+            <thead className="bg-slate-50 text-slate-500 text-[10.5px] font-extrabold uppercase tracking-wider border-b border-slate-200">
               <tr>
-                <th className="py-3 px-4 min-w-[130px] whitespace-nowrap">Quote & Request</th>
-                <th className="py-3 px-4 min-w-[180px]">Customer & Email</th>
-                <th className="py-3 px-4 min-w-[120px] whitespace-nowrap">Destination</th>
-                <th className="py-3 px-4 min-w-[170px]">Items Summary</th>
-                <th className="py-3 px-4 min-w-[100px] whitespace-nowrap">Total Amount</th>
-                <th className="py-3 px-4 min-w-[160px] whitespace-nowrap">Status</th>
-                <th className="py-3 px-4 text-center min-w-[130px] sticky right-0 bg-slate-50 shadow-[-6px_0_10px_rgba(0,0,0,0.05)] z-20">
+                <th className="py-3 px-3 w-[15%]">Quote &amp; Request</th>
+                <th className="py-3 px-3 w-[19%]">Customer &amp; Email</th>
+                <th className="py-3 px-2.5 w-[12%]">Destination</th>
+                <th className="py-3 px-3 w-[16%]">Items Summary</th>
+                <th className="py-3 px-2.5 w-[11%]">Total Amount</th>
+                <th className="py-3 px-2.5 w-[14%]">Status</th>
+                <th className="py-3 px-2 text-center w-[13%]">
                   Actions
                 </th>
               </tr>
@@ -747,128 +747,121 @@ export const AdminQuotationsModule: React.FC<{
               ) : (
                 filtered.map((q) => (
                   <tr key={q.id} className="hover:bg-slate-50/70 transition-colors group">
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      <div className="font-extrabold text-[#0066FF] text-xs sm:text-sm">{q.id}</div>
-                      <div className="text-[11px] text-slate-500 font-mono">Ref: {q.requestId}</div>
-                      <div className="text-[10px] text-slate-400 mt-0.5">{q.createdAt}</div>
+                    <td className="py-3.5 px-3 align-middle">
+                      <div className="font-extrabold text-[#0066FF] text-xs sm:text-[13px] truncate" title={q.id}>{q.id}</div>
+                      <div className="text-[11px] text-slate-500 font-mono truncate" title={`Ref: ${q.requestId}`}>Ref: {q.requestId}</div>
+                      <div className="text-[10px] text-slate-400 mt-0.5 truncate">{q.createdAt}</div>
                     </td>
 
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2.5">
+                    <td className="py-3.5 px-3 align-middle">
+                      <div className="flex items-center gap-2 min-w-0">
                         <img
                           src={q.customerAvatar}
                           alt=""
                           className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0"
                         />
                         <div className="min-w-0">
-                          <div className="font-bold text-slate-800 text-xs sm:text-sm truncate">{q.customerName}</div>
-                          <div className="text-[11px] text-slate-400 font-mono">Locker #{q.customerId}</div>
-                          <div className="text-[11px] text-blue-600 font-semibold flex items-center gap-1 mt-0.5 truncate">
+                          <div className="font-bold text-slate-800 text-xs sm:text-[13px] truncate" title={q.customerName}>{q.customerName}</div>
+                          <div className="text-[11px] text-slate-400 font-mono truncate">Locker #{q.customerId}</div>
+                          <div className="text-[11px] text-blue-600 font-semibold flex items-center gap-1 mt-0.5 min-w-0" title={q.customerEmail}>
                             <Mail className="w-3 h-3 shrink-0" />
-                            <span className="truncate max-w-[150px]">{q.customerEmail}</span>
+                            <span className="truncate">{q.customerEmail}</span>
                           </div>
                         </div>
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      <div className="flex items-center gap-1.5 font-bold text-slate-700 text-xs">
-                        <span>{q.destinationFlag}</span>
-                        <span>{q.destination}</span>
+                    <td className="py-3.5 px-2.5 align-middle">
+                      <div className="flex items-center gap-1 font-bold text-slate-700 text-xs min-w-0" title={q.destination}>
+                        <span className="shrink-0">{q.destinationFlag}</span>
+                        <span className="truncate">{q.destination}</span>
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4">
-                      <div className="text-xs text-slate-700 font-medium truncate max-w-[190px]" title={q.itemsSummary}>
+                    <td className="py-3.5 px-3 align-middle">
+                      <div className="text-xs text-slate-700 font-medium truncate" title={q.itemsSummary}>
                         {q.itemsSummary}
                       </div>
                       <div className="text-[11px] text-slate-400 font-semibold">{q.productCount} items</div>
                     </td>
 
-                    <td className="py-3.5 px-4 whitespace-nowrap font-extrabold text-[#0B1933] text-sm">
+                    <td className="py-3.5 px-2.5 align-middle whitespace-nowrap font-extrabold text-[#0B1933] text-xs sm:text-sm">
                       ₹{q.totalINR.toLocaleString('en-IN')}
                     </td>
 
-                    <td className="py-3.5 px-4 whitespace-nowrap">
+                    <td className="py-3.5 px-2.5 align-middle">
                       {q.status === 'Accepted' ? (
                         <div>
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg border bg-emerald-100 text-emerald-800 border-emerald-200">
-                            <Check className="w-3 h-3" />
-                            <span>Confirmed & Invoiced</span>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold rounded-lg border bg-emerald-100 text-emerald-800 border-emerald-200 leading-tight">
+                            <Check className="w-3 h-3 shrink-0" />
+                            <span>Confirmed &amp; Invoiced</span>
                           </span>
-                          <div className="text-[10px] text-emerald-700 font-semibold mt-0.5 flex items-center gap-1">
+                          <div className="text-[10px] text-emerald-700 font-semibold mt-0.5 flex items-center gap-1 min-w-0" title={q.customerEmail}>
                             <Mail className="w-3 h-3 shrink-0" />
-                            <span className="truncate max-w-[140px]">{q.customerEmail}</span>
+                            <span className="truncate">{q.customerEmail}</span>
                           </div>
                         </div>
                       ) : q.status === 'Pending Approval' ? (
                         <div>
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg border bg-amber-100 text-amber-800 border-amber-200">
-                            <Clock className="w-3 h-3" />
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold rounded-lg border bg-amber-100 text-amber-800 border-amber-200 leading-tight">
+                            <Clock className="w-3 h-3 shrink-0" />
                             <span>Awaiting Payment</span>
                           </span>
                           <div className="text-[10px] text-slate-400 mt-0.5">Quote Dispatched</div>
                         </div>
                       ) : q.status === 'Pending Quotation' ? (
                         <div>
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg border bg-blue-100 text-blue-800 border-blue-200">
-                            <Clock className="w-3 h-3" />
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold rounded-lg border bg-blue-100 text-blue-800 border-blue-200 leading-tight">
+                            <Clock className="w-3 h-3 shrink-0" />
                             <span>Pending Quotation</span>
                           </span>
                           <div className="text-[10px] text-blue-600 font-medium mt-0.5">Review Required</div>
                         </div>
                       ) : (
-                        <span className="px-2.5 py-1 text-xs font-bold rounded-lg border bg-slate-100 text-slate-600 border-slate-200">
+                        <span className="inline-block px-2 py-0.5 text-[11px] font-bold rounded-lg border bg-slate-100 text-slate-600 border-slate-200">
                           {q.status}
                         </span>
                       )}
                     </td>
 
-                    <td className="py-3 px-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50/90 shadow-[-6px_0_10px_rgba(0,0,0,0.06)] z-10 align-middle">
-                      <div className="flex flex-col items-center justify-center gap-1.5 py-0.5">
-                        {/* Top Tier: Invoice Actions */}
-                        <div className="flex items-center justify-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleResendInvoiceEmail(q)}
-                            title={`Send/Resend Invoice Email to ${q.customerEmail}`}
-                            aria-label="Send/Resend Invoice Email"
-                            className="w-7.5 h-7.5 rounded-lg bg-blue-50 hover:bg-[#0066FF] text-[#0066FF] hover:text-white border border-blue-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                          >
-                            <Mail className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDownloadInvoice(q)}
-                            title="Download Official Invoice PDF"
-                            aria-label="Download Official Invoice PDF"
-                            className="w-7.5 h-7.5 rounded-lg bg-slate-50 hover:bg-slate-800 text-slate-600 hover:text-white border border-slate-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-
-                        {/* Bottom Tier: Quote Breakdown & Remove Action */}
-                        <div className="flex items-center justify-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenQuoteModal(q)}
-                            title="View Full Quote & Product Breakdown"
-                            aria-label="View Full Quote & Product Breakdown"
-                            className="w-7.5 h-7.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteQuote(q)}
-                            title="Remove Quotation"
-                            aria-label="Remove Quotation"
-                            className="w-7.5 h-7.5 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-500 hover:text-white border border-rose-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                    <td className="py-3 px-2 text-center align-middle">
+                      <div className="flex items-center justify-center gap-1.5 flex-nowrap">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenQuoteModal(q)}
+                          title="View Full Quote & Product Breakdown"
+                          aria-label="View Full Quote & Product Breakdown"
+                          className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadInvoice(q)}
+                          title="Download Official Invoice PDF"
+                          aria-label="Download Official Invoice PDF"
+                          className="p-1.5 rounded-lg text-[#0066FF] hover:bg-blue-50 flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleResendInvoiceEmail(q)}
+                          title={`Send/Resend Invoice Email to ${q.customerEmail}`}
+                          aria-label="Send/Resend Invoice Email"
+                          className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0"
+                        >
+                          <Mail className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteQuote(q)}
+                          title="Remove Quotation"
+                          aria-label="Remove Quotation"
+                          className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </td>
                   </tr>

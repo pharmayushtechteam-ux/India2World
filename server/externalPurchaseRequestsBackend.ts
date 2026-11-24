@@ -1126,9 +1126,37 @@ export async function updateAdminExternalPurchaseRequest(
     };
   }
 
+  // If admin updated requestedProducts without explicitly passing processedProducts,
+  // sync quantity and fallback unit price (expectedBudgetINR) into processedProducts so totals stay accurate
+  let effectiveProcessedInput = updates.processedProducts || current.processedProducts;
+  if (!updates.processedProducts && updates.requestedProducts && updates.requestedProducts.length > 0) {
+    effectiveProcessedInput = updates.requestedProducts.map((rp, i) => {
+      const existingProc = current.processedProducts[i];
+      const existingPrice = Number(existingProc?.actualPriceINR || 0);
+      const nextPrice = existingPrice > 0 ? existingPrice : Number(rp.expectedBudgetINR || 0);
+      const nextQty = Math.max(1, Math.round(Number(rp.quantity) || 1));
+      const ship = Number(existingProc?.shippingChargesINR || 0);
+      const extra = Number(existingProc?.additionalChargesINR || 0);
+      return {
+        id: existingProc?.id || `proc-prod-${i + 1}-${Date.now()}`,
+        actualProductName: rp.productName || existingProc?.actualProductName || `Product #${i + 1}`,
+        platform: rp.platform || existingProc?.platform || 'Amazon',
+        verifiedProductUrl: rp.productUrl || existingProc?.verifiedProductUrl || '',
+        productImage: rp.productImage || existingProc?.productImage,
+        quantity: nextQty,
+        actualPriceINR: nextPrice,
+        shippingChargesINR: ship,
+        additionalChargesINR: extra,
+        estimatedDeliveryTime: existingProc?.estimatedDeliveryTime || '5-7 Business Days',
+        productNotes: rp.description || existingProc?.productNotes || '',
+        subtotalINR: nextPrice * nextQty + ship + extra,
+      };
+    });
+  }
+
   const { items: recalculatedProcessed, quotation: recalculatedQuotation } =
     recalculateQuotationTotals(
-      updates.processedProducts || current.processedProducts,
+      effectiveProcessedInput,
       {
         ...current.quotation,
         quotationReference:

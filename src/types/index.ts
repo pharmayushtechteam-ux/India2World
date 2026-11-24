@@ -1,6 +1,8 @@
 export type Page =
   | 'home'
   | 'auth'
+  | 'login'
+  | 'signup'
   | 'buy-for-me'
   | 'request-external-purchase'
   | 'dashboard'

@@ -284,6 +284,98 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
     return filteredRequests.slice(start, start + pageSize);
   }, [filteredRequests, currentPage, pageSize]);
 
+  // Helper: auto-resolve live prices & clean titles for any ₹0 items that have a product URL
+  const autoResolveZeroPricedItems = async (
+    record: ExternalPurchaseRequestRecord
+  ): Promise<ExternalPurchaseRequestRecord> => {
+    const items = record.processedProducts || [];
+    const needsResolve = items.some((item, idx) => {
+      const url =
+        item.verifiedProductUrl ||
+        record.requestedProducts?.[idx]?.productUrl ||
+        (/^https?:\/\//i.test(item.actualProductName || '') ? item.actualProductName : '');
+      return Boolean(url) && Number(item.actualPriceINR || 0) === 0;
+    });
+    if (!needsResolve) return record;
+
+    let changed = false;
+    const resolvedItems = await Promise.all(
+      items.map(async (item, idx) => {
+        const reqItem = record.requestedProducts?.[idx];
+        const url =
+          item.verifiedProductUrl ||
+          reqItem?.productUrl ||
+          (/^https?:\/\//i.test(item.actualProductName || '') ? item.actualProductName : '');
+        if (!url || Number(item.actualPriceINR || 0) > 0) return item;
+
+        try {
+          const res = await fetch(`/api/fetch-product-meta?url=${encodeURIComponent(url)}`);
+          if (!res.ok) return item;
+          const meta = await res.json();
+          const fetchedPrice = meta.price && Number(meta.price) > 0 ? Math.round(Number(meta.price)) : 0;
+          if (fetchedPrice <= 0) return item;
+
+          changed = true;
+          const lower = url.toLowerCase();
+          let detectedPlatform = item.platform;
+          if (lower.includes('flipkart.')) detectedPlatform = 'Flipkart';
+          else if (lower.includes('amazon.')) detectedPlatform = 'Amazon';
+          else if (lower.includes('myntra.')) detectedPlatform = 'Myntra';
+          else if (lower.includes('nykaa.')) detectedPlatform = 'Nykaa';
+          else if (lower.includes('ajio.')) detectedPlatform = 'AJIO';
+          else if (lower.includes('tatacliq.')) detectedPlatform = 'Tata CLiQ';
+
+          let cleanName = item.actualProductName;
+          if (meta.title) {
+            cleanName = meta.title;
+          } else if (/^https?:\/\//i.test(cleanName)) {
+            try {
+              const parsed = new URL(url);
+              const slug = parsed.pathname
+                .split('/')
+                .filter((s) => s && !['p', 'dp', 'pd', 'product', 'buy'].includes(s.toLowerCase()) && !/^itm[a-z0-9]+$/i.test(s))
+                .sort((a, b) => b.length - a.length)[0];
+              if (slug) {
+                cleanName = decodeURIComponent(slug)
+                  .replace(/[-_]+/g, ' ')
+                  .replace(/\b\w/g, (ch) => ch.toUpperCase());
+              }
+            } catch {
+              // keep
+            }
+          }
+
+          const qty = Math.max(1, Number(item.quantity) || 1);
+          const ship = Math.max(0, Number(item.shippingChargesINR) || 0);
+          const extra = Math.max(0, Number(item.additionalChargesINR) || 0);
+          return {
+            ...item,
+            actualProductName: cleanName,
+            platform: detectedPlatform,
+            verifiedProductUrl: url,
+            productImage: meta.imageUrl || item.productImage,
+            actualPriceINR: fetchedPrice,
+            subtotalINR: fetchedPrice * qty + ship + extra,
+          };
+        } catch {
+          return item;
+        }
+      })
+    );
+
+    if (!changed) return record;
+
+    const updateRes = await updateExternalPurchaseRequestByAdmin(record.requestId, {
+      processedProducts: resolvedItems,
+      sendNotificationEmail: false,
+      actionNote: 'Auto-fetched live retailer prices from product links',
+    });
+    if (updateRes.success && updateRes.record) {
+      return updateRes.record;
+    }
+    return record;
+  };
+
   // Open View Details
   const handleOpenViewDetails = async (
     record: ExternalPurchaseRequestRecord,
@@ -297,6 +389,10 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
         sendNotificationEmail: false,
         actionNote: 'Admin viewed purchase request details',
       });
+    }
+    const hydrated = await autoResolveZeroPricedItems(record);
+    if (hydrated !== record) {
+      setDetailsModalRecord(hydrated);
     }
   };
 
@@ -950,7 +1046,7 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Status Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+          <div className="flex flex-wrap items-center gap-1.5">
             {FILTER_STATUSES.map((st) => {
               const active = statusFilter === st;
               const count =
@@ -1022,18 +1118,18 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+            <div className="overflow-x-auto lg:overflow-x-visible">
+              <table className="w-full min-w-[860px] lg:min-w-0 lg:table-fixed text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200/80 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    <th className="py-3.5 px-4 whitespace-nowrap">Request ID</th>
-                    <th className="py-3.5 px-4 whitespace-nowrap">Customer</th>
-                    <th className="py-3.5 px-4 whitespace-nowrap">Requested Products</th>
-                    <th className="py-3.5 px-4 whitespace-nowrap">Platform</th>
-                    <th className="py-3.5 px-4 whitespace-nowrap">Quotation / Total</th>
-                    <th className="py-3.5 px-4 whitespace-nowrap">Request Date</th>
-                    <th className="py-3.5 px-4 text-center whitespace-nowrap">Status</th>
-                    <th className="py-3.5 px-4 text-center w-28 whitespace-nowrap">Actions</th>
+                  <tr className="border-b border-slate-200/80 bg-slate-50/80 text-[10.5px] font-bold text-slate-500 uppercase tracking-wider">
+                    <th className="py-3.5 px-2.5 w-[12%]">Request ID</th>
+                    <th className="py-3.5 px-2.5 w-[17%]">Customer</th>
+                    <th className="py-3.5 px-2.5 w-[19%]">Requested Products</th>
+                    <th className="py-3.5 px-2 w-[10%]">Platform</th>
+                    <th className="py-3.5 px-2.5 w-[12%]">Quotation / Total</th>
+                    <th className="py-3.5 px-2 w-[9%]">Request Date</th>
+                    <th className="py-3.5 px-2 text-center w-[12%]">Status</th>
+                    <th className="py-3.5 px-2 text-center w-[9%]">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
@@ -1055,37 +1151,52 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
                         }`}
                       >
                         {/* Request ID */}
-                        <td className="py-3.5 px-4 align-middle whitespace-nowrap">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-extrabold text-[#0066FF] text-xs sm:text-sm">
+                        <td className="py-3.5 px-2.5 align-middle">
+                          <div className="flex flex-wrap items-center gap-1">
+                            <span
+                              className="font-extrabold text-[#0066FF] text-xs break-all"
+                              title={req.requestId}
+                            >
                               {req.requestId}
                             </span>
                             {req.unreadAdminAlert && (
                               <span
                                 title="New / Unread Customer Activity"
-                                className="px-1.5 py-0.5 text-[9px] font-extrabold bg-rose-500 text-white rounded-full"
+                                className="px-1.5 py-0.5 text-[9px] font-extrabold bg-rose-500 text-white rounded-full shrink-0"
                               >
                                 NEW
                               </span>
                             )}
                           </div>
                           {req.purchaseRecord?.externalOrderId && (
-                            <div className="mt-1 text-[10px] font-mono font-bold text-teal-700 bg-teal-50 border border-teal-200/70 rounded px-1.5 py-0.5 inline-block">
+                            <div
+                              className="mt-1 text-[10px] font-mono font-bold text-teal-700 bg-teal-50 border border-teal-200/70 rounded px-1.5 py-0.5 inline-block max-w-full truncate"
+                              title={`Ext ID: ${req.purchaseRecord.externalOrderId}`}
+                            >
                               Ext ID: {req.purchaseRecord.externalOrderId}
                             </div>
                           )}
                         </td>
 
                         {/* Customer */}
-                        <td className="py-3.5 px-4 align-middle">
-                          <div className="font-bold text-slate-900 text-xs sm:text-sm">
+                        <td className="py-3.5 px-2.5 align-middle">
+                          <div
+                            className="font-bold text-slate-900 text-xs sm:text-[13px] truncate"
+                            title={req.customerName}
+                          >
                             {req.customerName}
                           </div>
-                          <div className="text-[11px] text-slate-400 mt-0.5">
+                          <div
+                            className="text-[11px] text-slate-400 mt-0.5 truncate"
+                            title={req.customerEmail}
+                          >
                             {req.customerEmail}
                           </div>
-                          <div className="text-[11px] text-slate-600 font-semibold flex items-center gap-1 mt-0.5">
-                            <span>{req.destinationFlag}</span>
+                          <div
+                            className="text-[11px] text-slate-600 font-semibold flex items-center gap-1 mt-0.5 min-w-0"
+                            title={`${req.city}${req.city && req.country ? ', ' : ''}${req.country}`}
+                          >
+                            <span className="shrink-0">{req.destinationFlag}</span>
                             <span className="truncate">
                               {req.city}
                               {req.city && req.country ? ', ' : ''}
@@ -1095,14 +1206,17 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
                         </td>
 
                         {/* Requested Products */}
-                        <td className="py-3.5 px-4 align-middle max-w-[220px]">
-                          <div className="space-y-1">
+                        <td className="py-3.5 px-2.5 align-middle">
+                          <div className="space-y-1 min-w-0">
                             {req.requestedProducts.slice(0, 2).map((prod) => (
                               <div
                                 key={prod.id}
-                                className="flex items-center justify-between gap-2 text-xs"
+                                className="flex items-center justify-between gap-1.5 text-xs min-w-0"
                               >
-                                <span className="font-semibold text-slate-800 truncate" title={prod.productName}>
+                                <span
+                                  className="font-semibold text-slate-800 truncate"
+                                  title={prod.productName}
+                                >
                                   {prod.productName}
                                 </span>
                                 <span className="text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200/60 px-1 py-0.2 rounded-md shrink-0">
@@ -1119,12 +1233,13 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
                         </td>
 
                         {/* Shopping Platform */}
-                        <td className="py-3.5 px-4 align-middle whitespace-nowrap">
-                          <div className="flex items-center gap-1 flex-wrap max-w-[140px]">
+                        <td className="py-3.5 px-2 align-middle">
+                          <div className="flex items-center gap-1 flex-wrap">
                             {platforms.slice(0, 2).map((pf) => (
                               <span
                                 key={pf}
-                                className="px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 font-semibold text-[10px]"
+                                className="px-1.5 py-0.5 rounded-md bg-slate-100 border border-slate-200 text-slate-700 font-semibold text-[10px] max-w-full truncate"
+                                title={pf}
                               >
                                 {pf}
                               </span>
@@ -1141,35 +1256,41 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
                         </td>
 
                         {/* Quotation / Total */}
-                        <td className="py-3.5 px-4 align-middle whitespace-nowrap">
-                          <div className="font-extrabold text-[#0B1933] text-sm">
+                        <td className="py-3.5 px-2.5 align-middle">
+                          <div className="font-extrabold text-[#0B1933] text-xs sm:text-sm whitespace-nowrap">
                             ₹
                             {Number(
                               req.quotation?.grandTotalINR || 0
                             ).toLocaleString('en-IN')}
                           </div>
-                          <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                          <div
+                            className="text-[10px] text-slate-400 font-mono mt-0.5 truncate"
+                            title={`Ref: ${req.quotation?.quotationReference || 'N/A'}`}
+                          >
                             Ref: {req.quotation?.quotationReference || 'N/A'}
                           </div>
                           {req.purchaseRecord?.trackingNumber && (
-                            <div className="text-[10px] font-bold text-sky-700 mt-0.5">
+                            <div
+                              className="text-[10px] font-bold text-sky-700 mt-0.5 truncate"
+                              title={`AWB: ${req.purchaseRecord.trackingNumber}`}
+                            >
                               AWB: {req.purchaseRecord.trackingNumber}
                             </div>
                           )}
                         </td>
 
                         {/* Request Date */}
-                        <td className="py-3.5 px-4 align-middle text-slate-600 whitespace-nowrap text-xs">
-                          <div>{req.createdAt.split(',')[0]}</div>
+                        <td className="py-3.5 px-2 align-middle text-slate-600 text-[11px]">
+                          <div className="leading-snug">{req.createdAt.split(',')[0]}</div>
                           <div className="text-[10px] text-slate-400 mt-0.5">
                             {req.createdAt.split(',')[1] || ''}
                           </div>
                         </td>
 
                         {/* Request Status */}
-                        <td className="py-3.5 px-4 align-middle text-center whitespace-nowrap">
+                        <td className="py-3.5 px-2 align-middle text-center">
                           <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold border ${getStatusBadgeStyle(
+                            className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-[10.5px] leading-tight font-bold border text-center break-words max-w-full ${getStatusBadgeStyle(
                               req.status
                             )}`}
                           >
@@ -1177,58 +1298,52 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
                           </span>
                         </td>
 
-                        {/* Actions (Neat 2x2 Square Grid) */}
-                        <td className="py-3.5 px-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50/90 shadow-[-6px_0_10px_rgba(0,0,0,0.06)] z-10 align-middle">
-                          <div className="flex flex-col items-center justify-center gap-1.5 py-0.5">
-                            {/* Top Tier: View Details & Process Quote */}
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleOpenViewDetails(req, 'overview')
-                                }
-                                title="View Request Details, Items & Logs"
-                                aria-label="View Request Details"
-                                className="w-7.5 h-7.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                              >
-                                <Eye className="w-3.5 h-3.5" />
-                              </button>
+                        {/* Actions (2x2 Grid: 2 Buttons on Top, 2 Buttons Below) */}
+                        <td className="py-2.5 px-2 text-center align-middle">
+                          <div className="grid grid-cols-2 gap-1.5 w-fit mx-auto">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleOpenViewDetails(req, 'overview')
+                              }
+                              title="View Request Details, Items & Logs"
+                              aria-label="View Request Details"
+                              className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 flex items-center justify-center cursor-pointer transition-colors active:scale-95"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
 
-                              <button
-                                type="button"
-                                onClick={() => handleOpenProcessRequest(req)}
-                                title="Process Request & Send Quotation"
-                                aria-label="Process Request"
-                                className="w-7.5 h-7.5 rounded-lg bg-blue-50 hover:bg-[#0066FF] text-[#0066FF] hover:text-white border border-blue-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                              >
-                                <Send className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenProcessRequest(req)}
+                              title="Process Request & Send Quotation"
+                              aria-label="Process Request"
+                              className="p-1.5 rounded-lg text-[#0066FF] hover:bg-blue-50 flex items-center justify-center cursor-pointer transition-colors active:scale-95"
+                            >
+                              <Send className="w-4 h-4" />
+                            </button>
 
-                            {/* Bottom Tier: Status / Track & Edit Request */}
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleOpenPurchaseAndTrackingModal(req)
-                                }
-                                title="Purchase Status, External Order ID & Tracking"
-                                aria-label="Status & Tracking"
-                                className="w-7.5 h-7.5 rounded-lg bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white border border-emerald-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                              >
-                                <Truck className="w-3.5 h-3.5" />
-                              </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleOpenPurchaseAndTrackingModal(req)
+                              }
+                              title="Purchase Status, External Order ID & Tracking"
+                              aria-label="Status & Tracking"
+                              className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 flex items-center justify-center cursor-pointer transition-colors active:scale-95"
+                            >
+                              <Truck className="w-4 h-4" />
+                            </button>
 
-                              <button
-                                type="button"
-                                onClick={() => handleOpenEditRequest(req)}
-                                title="Edit Request"
-                                aria-label="Edit Request"
-                                className="w-7.5 h-7.5 rounded-lg bg-slate-50 hover:bg-slate-800 text-slate-600 hover:text-white border border-slate-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                              >
-                                <Edit3 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditRequest(req)}
+                              title="Edit Request"
+                              aria-label="Edit Request"
+                              className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 flex items-center justify-center cursor-pointer transition-colors active:scale-95"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -1285,11 +1400,11 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
             </div>
 
             {/* Sub-navigation Tabs */}
-            <div className="px-6 pt-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-2">
+            <div className="px-5 sm:px-6 pt-2.5 border-b border-slate-200 bg-slate-50 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2.5">
+              <div className="flex items-center gap-1 overflow-x-auto">
                 <button
                   onClick={() => setDetailsActiveTab('overview')}
-                  className={`px-4 py-2 text-xs font-bold border-b-2 transition cursor-pointer ${
+                  className={`px-3 py-2 text-xs font-bold border-b-2 transition cursor-pointer whitespace-nowrap ${
                     detailsActiveTab === 'overview'
                       ? 'border-blue-600 text-blue-600'
                       : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -1299,7 +1414,7 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setDetailsActiveTab('activity')}
-                  className={`px-4 py-2 text-xs font-bold border-b-2 transition cursor-pointer ${
+                  className={`px-3 py-2 text-xs font-bold border-b-2 transition cursor-pointer whitespace-nowrap ${
                     detailsActiveTab === 'activity'
                       ? 'border-blue-600 text-blue-600'
                       : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -1310,7 +1425,7 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
                 </button>
                 <button
                   onClick={() => setDetailsActiveTab('emails')}
-                  className={`px-4 py-2 text-xs font-bold border-b-2 transition cursor-pointer ${
+                  className={`px-3 py-2 text-xs font-bold border-b-2 transition cursor-pointer whitespace-nowrap ${
                     detailsActiveTab === 'emails'
                       ? 'border-blue-600 text-blue-600'
                       : 'border-transparent text-slate-600 hover:text-slate-900'
@@ -1320,14 +1435,14 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
                 </button>
               </div>
 
-              <div className="flex items-center gap-2 pb-2">
+              <div className="flex flex-wrap items-center gap-2 pb-2.5 lg:pb-2 shrink-0">
                 <button
                   onClick={() => {
                     const rec = detailsModalRecord;
                     setDetailsModalRecord(null);
                     handleOpenProcessRequest(rec);
                   }}
-                  className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap shadow-2xs"
                 >
                   <Send className="w-3.5 h-3.5" />
                   Process / Send Quotation
@@ -1338,7 +1453,7 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
                     setDetailsModalRecord(null);
                     handleOpenPurchaseAndTrackingModal(rec);
                   }}
-                  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold inline-flex items-center gap-1.5 cursor-pointer whitespace-nowrap shadow-2xs"
                 >
                   <Truck className="w-3.5 h-3.5" />
                   Record Purchase / Tracking
@@ -1347,7 +1462,7 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
             </div>
 
             {/* Body */}
-            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+            <div className="p-5 sm:p-6 overflow-y-auto overflow-x-hidden space-y-6 flex-1">
               {detailsActiveTab === 'overview' && (
                 <>
                   {/* Customer & Delivery Info */}
@@ -1397,61 +1512,109 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
                       {detailsModalRecord.requestedProducts.length})
                     </h3>
                     <div className="space-y-3">
-                      {detailsModalRecord.requestedProducts.map((item, idx) => (
-                        <div
-                          key={item.id || idx}
-                          className="p-4 rounded-2xl border border-slate-200 bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                        >
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2">
-                              <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-bold text-[11px]">
-                                {item.platform}
-                              </span>
-                              <span className="font-bold text-slate-900 text-sm">
-                                {item.productName}
-                              </span>
+                      {detailsModalRecord.requestedProducts.map((item, idx) => {
+                        const rawName = (item.productName || '').trim();
+                        const isUrlAsName = /^https?:\/\//i.test(rawName);
+                        let displayTitle = rawName;
+                        let linkHost = '';
+                        const effectiveUrl = item.productUrl || (isUrlAsName ? rawName : '');
+
+                        if (effectiveUrl) {
+                          try {
+                            const parsed = new URL(effectiveUrl);
+                            linkHost = parsed.hostname.replace(/^www\./, '');
+                            if (isUrlAsName) {
+                              const slugSegment = parsed.pathname
+                                .split('/')
+                                .filter((seg) => seg && !['p', 'dp', 'pd', 'product', 'buy'].includes(seg.toLowerCase()) && !/^itm[a-z0-9]+$/i.test(seg))
+                                .sort((a, b) => b.length - a.length)[0];
+                              if (slugSegment) {
+                                displayTitle = decodeURIComponent(slugSegment)
+                                  .replace(/[-_]+/g, ' ')
+                                  .replace(/\b\w/g, (ch) => ch.toUpperCase());
+                              }
+                            }
+                          } catch {
+                            // keep rawName if URL parsing fails
+                          }
+                        }
+
+                        return (
+                          <div
+                            key={item.id || idx}
+                            className="p-4 rounded-2xl border border-slate-200 bg-white space-y-2.5 overflow-hidden"
+                          >
+                            {/* Top Row: Item # + Platform Badge | Qty + Expected Budget */}
+                            <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                              <div className="flex items-center gap-2">
+                                <span className="w-5 h-5 rounded-md bg-slate-100 text-slate-600 font-bold text-[11px] inline-flex items-center justify-center shrink-0">
+                                  {idx + 1}
+                                </span>
+                                <span className="px-2.5 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-100 font-bold text-[11px] shrink-0">
+                                  {item.platform}
+                                </span>
+                                {linkHost && (
+                                  <span className="text-[11px] text-slate-400 font-medium truncate">
+                                    {linkHost}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-800 font-bold text-[11px]">
+                                  Qty: {item.quantity}
+                                </span>
+                                {item.expectedBudgetINR ? (
+                                  <span className="px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100 font-bold text-[11px]">
+                                    Budget: ₹{item.expectedBudgetINR.toLocaleString('en-IN')}
+                                  </span>
+                                ) : (
+                                  <span className="text-[11px] text-slate-400 font-medium">
+                                    No budget specified
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                            {item.description && (
-                              <p className="text-xs text-slate-600">
-                                <strong>Specs / Description:</strong>{' '}
-                                {item.description}
-                              </p>
-                            )}
-                            {item.additionalRequirements && (
-                              <p className="text-xs text-slate-500">
-                                <strong>Additional Requirements:</strong>{' '}
-                                {item.additionalRequirements}
-                              </p>
-                            )}
-                            {item.productUrl && (
-                              <a
-                                href={item.productUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline mt-1"
+
+                            {/* Product Title & Details */}
+                            <div className="min-w-0 space-y-1.5">
+                              <div
+                                className="font-bold text-slate-900 text-sm leading-snug break-words"
+                                title={rawName}
                               >
-                                <ExternalLink className="w-3.5 h-3.5" />
-                                Open Customer Provided Link
-                              </a>
-                            )}
-                          </div>
-                          <div className="text-right shrink-0">
-                            <div className="text-xs font-bold text-slate-700">
-                              Requested Qty: {item.quantity}
+                                {displayTitle}
+                              </div>
+
+                              {item.description && (
+                                <p className="text-xs text-slate-600 break-words">
+                                  <strong>Specs / Description:</strong>{' '}
+                                  {item.description}
+                                </p>
+                              )}
+                              {item.additionalRequirements && (
+                                <p className="text-xs text-slate-500 break-words">
+                                  <strong>Additional Requirements:</strong>{' '}
+                                  {item.additionalRequirements}
+                                </p>
+                              )}
+
+                              {effectiveUrl && (
+                                <div className="pt-1">
+                                  <a
+                                    href={effectiveUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50/70 hover:bg-blue-100 text-xs font-bold text-blue-600 transition-colors"
+                                  >
+                                    <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                                    <span>Open Customer Provided Link</span>
+                                  </a>
+                                </div>
+                              )}
                             </div>
-                            {item.expectedBudgetINR ? (
-                              <div className="text-xs text-slate-500">
-                                Expected Budget: ₹
-                                {item.expectedBudgetINR.toLocaleString('en-IN')}
-                              </div>
-                            ) : (
-                              <div className="text-[11px] text-slate-400">
-                                No budget specified
-                              </div>
-                            )}
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -1479,108 +1642,186 @@ export const AdminExternalPurchaseRequestsModule: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="border border-slate-200 rounded-2xl overflow-hidden">
-                      <table className="w-full text-left border-collapse text-xs">
-                        <thead>
-                          <tr className="bg-slate-100 text-slate-600 font-bold">
-                            <th className="p-3">Verified Product</th>
-                            <th className="p-3">Platform</th>
-                            <th className="p-3 text-center">Qty</th>
-                            <th className="p-3 text-right">Actual Price</th>
-                            <th className="p-3 text-right">Shipping + Extra</th>
-                            <th className="p-3 text-right">Subtotal</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200">
-                          {detailsModalRecord.processedProducts.map((p) => (
-                            <tr key={p.id}>
-                              <td className="p-3">
-                                <div className="font-bold text-slate-900">
-                                  {p.actualProductName}
-                                </div>
-                                <div className="text-[11px] text-slate-500">
-                                  ETA: {p.estimatedDeliveryTime}
-                                </div>
-                                {p.verifiedProductUrl && (
-                                  <a
-                                    href={p.verifiedProductUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-[11px] text-blue-600 font-semibold hover:underline"
+                    {(() => {
+                      const computedRows = detailsModalRecord.processedProducts.map((p, idx) => {
+                        const rawName = (p.actualProductName || '').trim();
+                        const isUrlAsName = /^https?:\/\//i.test(rawName);
+                        const effectiveUrl = p.verifiedProductUrl || (isUrlAsName ? rawName : '');
+                        let displayTitle = rawName;
+                        if (isUrlAsName && effectiveUrl) {
+                          try {
+                            const parsed = new URL(effectiveUrl);
+                            const slugSegment = parsed.pathname
+                              .split('/')
+                              .filter(
+                                (seg) =>
+                                  seg &&
+                                  !['p', 'dp', 'pd', 'product', 'buy'].includes(seg.toLowerCase()) &&
+                                  !/^itm[a-z0-9]+$/i.test(seg)
+                              )
+                              .sort((a, b) => b.length - a.length)[0];
+                            if (slugSegment) {
+                              displayTitle = decodeURIComponent(slugSegment)
+                                .replace(/[-_]+/g, ' ')
+                                .replace(/\b\w/g, (ch) => ch.toUpperCase());
+                            }
+                          } catch {
+                            // keep rawName
+                          }
+                        }
+
+                        const matchedRequested = detailsModalRecord.requestedProducts[idx];
+                        const qty = Math.max(1, Number(p.quantity) || 1);
+                        const unitPrice = Math.max(
+                          0,
+                          Number(p.actualPriceINR) || Number(matchedRequested?.expectedBudgetINR) || 0
+                        );
+                        const shipping = Math.max(0, Number(p.shippingChargesINR) || 0);
+                        const extra = Math.max(0, Number(p.additionalChargesINR) || 0);
+                        const subtotal = unitPrice * qty + shipping + extra;
+
+                        return {
+                          ...p,
+                          displayTitle,
+                          effectiveUrl,
+                          qty,
+                          unitPrice,
+                          shipping,
+                          extra,
+                          subtotal,
+                        };
+                      });
+
+                      const calcProductsTotal = computedRows.reduce(
+                        (sum, row) => sum + row.unitPrice * row.qty,
+                        0
+                      );
+                      const calcShippingTotal = computedRows.reduce(
+                        (sum, row) => sum + row.shipping,
+                        0
+                      );
+                      const calcExtraTotal = computedRows.reduce(
+                        (sum, row) => sum + row.extra,
+                        0
+                      );
+                      const calcGrandTotal =
+                        calcProductsTotal + calcShippingTotal + calcExtraTotal;
+
+                      return (
+                        <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                          <div className="overflow-x-auto lg:overflow-x-visible">
+                            <table className="w-full min-w-[640px] lg:min-w-0 lg:table-fixed text-left border-collapse text-xs">
+                              <thead>
+                                <tr className="bg-slate-100 text-slate-600 font-bold">
+                                  <th className="p-3 w-[38%]">Verified Product</th>
+                                  <th className="p-3 w-[13%]">Platform</th>
+                                  <th className="p-3 w-[8%] text-center">Qty</th>
+                                  <th className="p-3 w-[13%] text-right">Actual Price</th>
+                                  <th className="p-3 w-[14%] text-right">Shipping + Extra</th>
+                                  <th className="p-3 w-[14%] text-right">Subtotal</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-200">
+                                {computedRows.map((row) => (
+                                  <tr key={row.id}>
+                                    <td className="p-3 align-middle">
+                                      <div
+                                        className="font-bold text-slate-900 line-clamp-2 break-words leading-snug"
+                                        title={row.actualProductName}
+                                      >
+                                        {row.displayTitle}
+                                      </div>
+                                      <div className="text-[11px] text-slate-500 mt-0.5">
+                                        ETA: {row.estimatedDeliveryTime}
+                                      </div>
+                                      {row.effectiveUrl && (
+                                        <a
+                                          href={row.effectiveUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-[11px] text-blue-600 font-semibold hover:underline inline-block mt-0.5"
+                                        >
+                                          Verified Link &rarr;
+                                        </a>
+                                      )}
+                                    </td>
+                                    <td className="p-3 align-middle font-medium truncate">
+                                      {row.platform}
+                                    </td>
+                                    <td className="p-3 align-middle text-center font-bold">
+                                      {row.qty}
+                                    </td>
+                                    <td className="p-3 align-middle text-right whitespace-nowrap">
+                                      ₹{row.unitPrice.toLocaleString('en-IN')}
+                                    </td>
+                                    <td className="p-3 align-middle text-right whitespace-nowrap">
+                                      ₹{(row.shipping + row.extra).toLocaleString('en-IN')}
+                                    </td>
+                                    <td className="p-3 align-middle text-right font-bold text-slate-900 whitespace-nowrap">
+                                      ₹{row.subtotal.toLocaleString('en-IN')}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          <div className="bg-slate-50 p-4 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="space-y-1 text-xs">
+                              {calcGrandTotal === 0 && (
+                                <div className="flex flex-wrap items-center gap-2 text-amber-800 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg">
+                                  <span className="font-semibold">
+                                    Item prices not set yet.
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const rec = detailsModalRecord;
+                                      setDetailsModalRecord(null);
+                                      handleOpenProcessRequest(rec);
+                                    }}
+                                    className="font-extrabold text-blue-700 hover:underline cursor-pointer"
                                   >
-                                    Verified Link &rarr;
-                                  </a>
-                                )}
-                              </td>
-                              <td className="p-3 font-medium">{p.platform}</td>
-                              <td className="p-3 text-center font-bold">
-                                {p.quantity}
-                              </td>
-                              <td className="p-3 text-right">
-                                ₹{p.actualPriceINR.toLocaleString('en-IN')}
-                              </td>
-                              <td className="p-3 text-right">
-                                ₹
-                                {(
-                                  p.shippingChargesINR + p.additionalChargesINR
-                                ).toLocaleString('en-IN')}
-                              </td>
-                              <td className="p-3 text-right font-bold text-slate-900">
-                                ₹{p.subtotalINR.toLocaleString('en-IN')}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      <div className="bg-slate-50 p-4 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="space-y-1 text-xs">
-                          {detailsModalRecord.quotation
-                            ?.customerFacingMessage && (
-                            <div>
-                              <span className="font-bold text-slate-700">
-                                Customer Message:{' '}
-                              </span>
-                              <span className="text-slate-600">
-                                {
-                                  detailsModalRecord.quotation
-                                    .customerFacingMessage
-                                }
-                              </span>
+                                    Enter Prices &amp; Calculate Quotation &rarr;
+                                  </button>
+                                </div>
+                              )}
+                              {detailsModalRecord.quotation
+                                ?.customerFacingMessage && (
+                                <div>
+                                  <span className="font-bold text-slate-700">
+                                    Customer Message:{' '}
+                                  </span>
+                                  <span className="text-slate-600">
+                                    {
+                                      detailsModalRecord.quotation
+                                        .customerFacingMessage
+                                    }
+                                  </span>
+                                </div>
+                              )}
+                              {detailsModalRecord.quotation?.internalAdminNotes && (
+                                <div className="text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg inline-block">
+                                  <strong>
+                                    Internal Admin Note (Hidden from Customer):
+                                  </strong>{' '}
+                                  {detailsModalRecord.quotation.internalAdminNotes}
+                                </div>
+                              )}
                             </div>
-                          )}
-                          {detailsModalRecord.quotation?.internalAdminNotes && (
-                            <div className="text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-lg inline-block">
-                              <strong>
-                                Internal Admin Note (Hidden from Customer):
-                              </strong>{' '}
-                              {detailsModalRecord.quotation.internalAdminNotes}
+                            <div className="text-right space-y-1 shrink-0">
+                              <div className="text-xs text-slate-500">
+                                Products: ₹{calcProductsTotal.toLocaleString('en-IN')}{' '}
+                                | Shipping: ₹{calcShippingTotal.toLocaleString('en-IN')}{' '}
+                                | Extra: ₹{calcExtraTotal.toLocaleString('en-IN')}
+                              </div>
+                              <div className="text-base font-black text-blue-600">
+                                Grand Total: ₹{calcGrandTotal.toLocaleString('en-IN')}
+                              </div>
                             </div>
-                          )}
-                        </div>
-                        <div className="text-right space-y-1 shrink-0">
-                          <div className="text-xs text-slate-500">
-                            Products: ₹
-                            {detailsModalRecord.quotation.productsTotalINR.toLocaleString(
-                              'en-IN'
-                            )}{' '}
-                            | Shipping: ₹
-                            {detailsModalRecord.quotation.shippingTotalINR.toLocaleString(
-                              'en-IN'
-                            )}{' '}
-                            | Extra: ₹
-                            {detailsModalRecord.quotation.additionalChargesTotalINR.toLocaleString(
-                              'en-IN'
-                            )}
-                          </div>
-                          <div className="text-base font-black text-blue-600">
-                            Grand Total: ₹
-                            {detailsModalRecord.quotation.grandTotalINR.toLocaleString(
-                              'en-IN'
-                            )}
                           </div>
                         </div>
-                      </div>
-                    </div>
+                      );
+                    })()}
                   </div>
 
                   {/* External Purchase & Tracking Record */}

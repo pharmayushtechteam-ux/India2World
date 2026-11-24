@@ -205,22 +205,69 @@ function syncRegisteredUsersToCustomers(customers: AdminCustomer[]): AdminCustom
 
     const processProfile = (profile: any) => {
       if (!profile || !profile.email) return;
-      const emailLower = profile.email.toLowerCase();
+      const emailLower = profile.email.trim().toLowerCase();
+      if (!emailLower || emailLower.startsWith('test_customer_') || emailLower.includes('nonexistentdomain')) {
+        return;
+      }
       const customerId = profile.customerId || deriveCustomerIdFromEmail(profile.email);
+      const resolvedCity =
+        profile.city ||
+        (profile.countryCode === 'AE' || (profile.country || '').toLowerCase().includes('emirates')
+          ? 'Dubai'
+          : 'International City');
 
-      // Do not duplicate if email or ID already exists
-      if (!existingEmails.has(emailLower) && !existingIds.has(customerId)) {
+      const existingIdx = result.findIndex(
+        (c) => (c.email || '').trim().toLowerCase() === emailLower || c.id === customerId
+      );
+
+      if (existingIdx >= 0) {
+        // Update existing customer record with latest signup/login profile details
+        const prev = result[existingIdx];
+        const nextName = profile.name && profile.name.trim() ? profile.name.trim() : prev.name;
+        const nextPhone = profile.phone && profile.phone.trim() ? profile.phone.trim() : prev.phone;
+        const nextCountry = profile.country && profile.country.trim() ? profile.country.trim() : prev.country;
+        const nextCity = profile.city && profile.city.trim() ? profile.city.trim() : prev.city || resolvedCity;
+        const nextId = profile.customerId || prev.id;
+        const nextAvatar =
+          profile.avatar && !profile.avatar.includes('seed=rohith')
+            ? profile.avatar
+            : `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(nextName)}&backgroundColor=0066FF`;
+
+        if (
+          prev.id !== nextId ||
+          prev.name !== nextName ||
+          prev.phone !== nextPhone ||
+          prev.country !== nextCountry ||
+          prev.city !== nextCity ||
+          prev.avatar !== nextAvatar
+        ) {
+          result[existingIdx] = {
+            ...prev,
+            id: nextId,
+            name: nextName,
+            email: profile.email.trim(),
+            phone: nextPhone,
+            country: nextCountry,
+            city: nextCity,
+            avatar: nextAvatar,
+          };
+          modified = true;
+        }
+      } else {
+        const displayName = (profile.name || 'Customer').trim();
         result.unshift({
           id: customerId,
-          name: profile.name || 'Customer',
-          email: profile.email,
+          name: displayName,
+          email: profile.email.trim(),
           phone: profile.phone || '+91 98765 43210',
           country: profile.country || 'United Arab Emirates',
-          city: profile.countryCode === 'AE' ? 'Dubai' : 'International City',
+          city: resolvedCity,
           totalOrders: 0,
           totalSpentINR: 0,
           status: 'Active',
-          avatar: profile.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(profile.name || 'Customer')}`,
+          avatar:
+            profile.avatar ||
+            `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(displayName)}&backgroundColor=0066FF`,
           joinedDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
         });
         existingIds.add(customerId);
@@ -229,16 +276,17 @@ function syncRegisteredUsersToCustomers(customers: AdminCustomer[]): AdminCustom
       }
     };
 
-    if (currentUserRaw) {
-      try {
-        processProfile(JSON.parse(currentUserRaw));
-      } catch {}
-    }
-
+    // Process older registered users first, then active current user LAST so current user always takes priority
     if (regUsersRaw) {
       try {
         const parsed = JSON.parse(regUsersRaw);
         Object.values(parsed).forEach(processProfile);
+      } catch {}
+    }
+
+    if (currentUserRaw) {
+      try {
+        processProfile(JSON.parse(currentUserRaw));
       } catch {}
     }
 
@@ -290,6 +338,100 @@ export function saveCustomers(customers: AdminCustomer[]): void {
     emitDataSync('customers', deduped);
   } catch (e) {
     console.error('Error saving customers', e);
+  }
+}
+
+/**
+ * Sync newly signed-up and logged-in customers from backend registered_customers.json into Admin Customers
+ */
+export async function syncCustomersFromServer(): Promise<AdminCustomer[]> {
+  const current = getAllCustomers();
+  if (typeof window === 'undefined') return current;
+  try {
+    const res = await fetch('/api/customer/registered-list');
+    if (!res.ok) return current;
+    const data = await res.json();
+    if (!data?.success || !Array.isArray(data.customers)) return current;
+
+    const merged = [...current];
+    let changed = false;
+
+    for (const srv of data.customers) {
+      if (!srv || !srv.email) continue;
+      const emailLower = String(srv.email).trim().toLowerCase();
+      const srvId = srv.customerId || deriveCustomerIdFromEmail(emailLower);
+      const displayName = (srv.name || 'Customer').trim();
+      const resolvedCity =
+        srv.city ||
+        ((srv.country || '').toLowerCase().includes('emirates') ? 'Dubai' : 'International City');
+      const safeAvatar =
+        srv.avatar && !String(srv.avatar).includes('seed=rohith')
+          ? srv.avatar
+          : `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(displayName)}&backgroundColor=0066FF`;
+
+      const existingIdx = merged.findIndex(
+        (c) => (c.email || '').trim().toLowerCase() === emailLower || c.id === srvId
+      );
+
+      if (existingIdx >= 0) {
+        const prev = merged[existingIdx];
+        const nextName = displayName || prev.name;
+        const nextPhone = srv.phone || prev.phone;
+        const nextCountry = srv.country || prev.country;
+        const nextCity = srv.city || prev.city || resolvedCity;
+        const nextId = srv.customerId || prev.id;
+
+        if (
+          prev.id !== nextId ||
+          prev.name !== nextName ||
+          prev.phone !== nextPhone ||
+          prev.country !== nextCountry ||
+          prev.city !== nextCity ||
+          prev.avatar !== safeAvatar
+        ) {
+          merged[existingIdx] = {
+            ...prev,
+            id: nextId,
+            name: nextName,
+            email: String(srv.email).trim(),
+            phone: nextPhone,
+            country: nextCountry,
+            city: nextCity,
+            avatar: safeAvatar,
+          };
+          changed = true;
+        }
+      } else {
+        merged.unshift({
+          id: srvId,
+          name: displayName,
+          email: String(srv.email).trim(),
+          phone: srv.phone || '+91 98765 43210',
+          country: srv.country || 'United Arab Emirates',
+          city: resolvedCity,
+          totalOrders: 0,
+          totalSpentINR: 0,
+          status: 'Active',
+          avatar: safeAvatar,
+          joinedDate: srv.passwordUpdatedAt
+            ? new Date(srv.passwordUpdatedAt).toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+              })
+            : new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        });
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      saveCustomers(merged);
+      return getAllCustomers();
+    }
+    return current;
+  } catch {
+    return current;
   }
 }
 
@@ -666,6 +808,7 @@ export function getAllOrders(): IntegratedOrderRecord[] {
                 title: linkedInv.items[idx]?.title || item.title,
                 price: linkedInv.items[idx]?.price ?? item.price,
                 qty: linkedInv.items[idx]?.qty ?? item.qty,
+                imageUrl: item.imageUrl || (linkedInv.items[idx] as any)?.imageUrl,
               }));
             }
             const nextCostSummary = {
@@ -725,6 +868,102 @@ export function saveOrders(orders: IntegratedOrderRecord[]): void {
     emitDataSync('orders', orders);
   } catch (e) {
     console.error('Error saving orders', e);
+  }
+}
+
+/**
+ * Sync all real customer orders from backend server/data/orders_db.json into Admin & Customer state
+ */
+export async function syncOrdersFromServer(): Promise<IntegratedOrderRecord[]> {
+  const current = getAllOrders();
+  if (typeof window === 'undefined') return current;
+  try {
+    const res = await fetch('/api/customer/orders-sync');
+    if (!res.ok) return current;
+    const data = await res.json();
+    if (!data?.success || !Array.isArray(data.orders)) return current;
+
+    const orderMap = new Map<string, IntegratedOrderRecord>();
+    current.forEach((o) => orderMap.set(o.id, o));
+
+    let changed = false;
+    for (const srv of data.orders) {
+      const orderId = String(srv.orderId || srv.id || '').trim();
+      if (!orderId) continue;
+
+      const rawItems = Array.isArray(srv.products) && srv.products.length > 0
+        ? srv.products
+        : Array.isArray(srv.items) && srv.items.length > 0
+        ? srv.items
+        : Array.isArray(srv.invoice?.items)
+        ? srv.invoice.items
+        : [];
+
+      const mappedItems = rawItems.map((it: any) => ({
+        title: it.title || it.name || 'Product Item',
+        store: it.store || it.storeName || 'Indian Store',
+        price: Math.round(Number(it.price ?? it.priceINR ?? 0)),
+        qty: Math.max(1, Math.round(Number(it.qty ?? it.quantity ?? 1))),
+        imageUrl: it.imageUrl,
+      }));
+
+      const itemCount = mappedItems.reduce((acc: number, it: any) => acc + it.qty, 0);
+      const totalINR = Math.round(
+        Number(
+          srv.costSummary?.total ??
+            srv.invoice?.totalINR ??
+            srv.totalINR ??
+            mappedItems.reduce((acc: number, it: any) => acc + it.price * it.qty, 0)
+        )
+      );
+      const destination =
+        typeof srv.deliveryAddress === 'object' && srv.deliveryAddress
+          ? [srv.deliveryAddress.city, srv.deliveryAddress.country].filter(Boolean).join(', ')
+          : srv.destination || srv.invoice?.destinationCountry || 'United Arab Emirates';
+
+      const existing = orderMap.get(orderId);
+      const normalized: IntegratedOrderRecord = {
+        id: orderId,
+        requestId: srv.requestId || existing?.requestId,
+        customerId: srv.customerId || existing?.customerId || deriveCustomerIdFromEmail(srv.customerEmail || ''),
+        customerName: srv.customerName || existing?.customerName || 'Customer',
+        customerEmail: srv.customerEmail || existing?.customerEmail || '',
+        customerAvatar:
+          existing?.customerAvatar ||
+          `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(srv.customerName || 'Customer')}&backgroundColor=0066FF`,
+        destination: destination || 'United Arab Emirates',
+        destinationFlag: existing?.destinationFlag || '🌍',
+        orderType: srv.orderType || existing?.orderType || 'Assisted Purchase (Buy For Me)',
+        stores:
+          Array.isArray(srv.stores) && srv.stores.length > 0
+            ? srv.stores
+            : Array.from(new Set(mappedItems.map((i: any) => i.store))),
+        itemCount: itemCount || existing?.itemCount || 1,
+        totalINR: totalINR || existing?.totalINR || 0,
+        paymentStatus: (srv.paymentStatus as any) || existing?.paymentStatus || 'Paid',
+        orderStatus: (srv.orderStatus as any) || existing?.orderStatus || 'Procuring',
+        createdAt: srv.orderDate || existing?.createdAt || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        trackingAwb: srv.trackingAwb || existing?.trackingAwb,
+        items: mappedItems.length > 0 ? mappedItems : existing?.items || [],
+        costSummary: srv.costSummary || existing?.costSummary,
+        confirmationEmailStatus: srv.confirmationEmailStatus || existing?.confirmationEmailStatus,
+        confirmationEmailSentAt: srv.confirmationEmailSentAt || existing?.confirmationEmailSentAt,
+      };
+
+      if (!existing || existing.items.length < normalized.items.length || existing.totalINR !== normalized.totalINR || existing.customerId !== normalized.customerId) {
+        orderMap.set(orderId, normalized);
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      const mergedList = Array.from(orderMap.values());
+      saveOrders(mergedList);
+      return mergedList;
+    }
+    return current;
+  } catch {
+    return current;
   }
 }
 
@@ -908,6 +1147,13 @@ export function confirmPurchaseOrderAndEmailInvoice(requestId: string): {
     destinationCountry: req.destinationCountry,
     existingOrderId: orderId,
   });
+
+  // 2b. Automatically dispatch the official PDF invoice email to the customer via backend SMTP
+  if (invoice && invoice.emailStatus !== 'Sent') {
+    resendInvoiceEmail(invoice.invoiceNumber, recipientEmail).catch((err) => {
+      console.warn('[Auto Invoice Dispatch] Failed to email invoice:', err);
+    });
+  }
 
   // 3. Update request status to 'Purchasing'
   updatePurchaseRequestStatus(req.id, 'Purchasing');
@@ -2085,6 +2331,7 @@ if (typeof window !== 'undefined') {
               store: i.store,
               price: i.price,
               qty: i.qty,
+              imageUrl: (i as any).imageUrl,
             })),
           };
           orderMap.set(newOrder.id, newOrder);

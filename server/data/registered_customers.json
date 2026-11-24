@@ -1,13 +1,15 @@
 [
   {
     "customerId": "CUS-20261",
-    "name": "Rohith Kumar",
+    "name": "Pharmayushtechteam",
     "email": "pharmayushtechteam@gmail.com",
-    "phone": "+971 50 987 6543",
-    "country": "United Arab Emirates",
+    "phone": "+91 9989884578",
+    "country": "india",
     "city": "Dubai",
     "lockerId": "I2W-CUS-31026",
-    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=rohith&backgroundColor=0066FF"
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=rohith&backgroundColor=0066FF",
+    "passwordHash": "scrypt:0957e37ba66160bb4bac8a57cdc2f471:eefbeabdc122b5137cfe9d70379e5ac793a2372c53f9ec1e705dd1c8ae44bb62e43f31dc4f9f2857e2ecb569546df1aeb93e67b44619feab3c170721f5c67b84",
+    "passwordUpdatedAt": "2026-11-23T07:34:42.320Z"
   },
   {
     "customerId": "CUS-10028",
@@ -170,5 +172,16 @@
     "city": "Dubai",
     "lockerId": "I2W-10286",
     "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Durgaluckshmi&backgroundColor=0066FF"
+  },
+  {
+    "customerId": "CUS-99006",
+    "name": "Pharmayustechteam",
+    "email": "pharmayustechteam@gmail.com",
+    "phone": "+91 98765 43210",
+    "country": "United Arab Emirates",
+    "city": "Dubai",
+    "lockerId": "I2W-99006",
+    "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Pharmayustechteam&backgroundColor=0066FF",
+    "passwordHash": "scrypt:35e79ff75ac4906b7a022fef3e0a80ef:c90d5843d0f2454a42506db32316c40ff78c64a016f79a2bc542a7c909df6199e9d2a8816ece6a2dbeb4d73e2b163db7fb4c8176ffcbe743cbb57211d56bda00"
   }
 ]

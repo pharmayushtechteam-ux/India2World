@@ -1215,17 +1215,17 @@ export const AdminOrdersModule: React.FC<{
 
       {/* Orders Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm">
-            <thead className="bg-slate-50/80 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-200/80">
+        <div className="overflow-x-auto lg:overflow-x-visible">
+          <table className="w-full min-w-[860px] lg:min-w-0 lg:table-fixed text-left text-xs sm:text-sm">
+            <thead className="bg-slate-50/80 text-slate-500 text-[10.5px] font-bold uppercase tracking-wider border-b border-slate-200/80">
               <tr>
-                <th className="py-3.5 px-4 whitespace-nowrap">Order ID &amp; Source</th>
-                <th className="py-3.5 px-4 whitespace-nowrap">Customer</th>
-                <th className="py-3.5 px-4 whitespace-nowrap">Order Type &amp; Retailers</th>
-                <th className="py-3.5 px-4 whitespace-nowrap">Amount</th>
-                <th className="py-3.5 px-4 whitespace-nowrap">Status</th>
-                <th className="py-3.5 px-4 whitespace-nowrap">Invoice &amp; Email</th>
-                <th className="py-3.5 px-4 text-center w-28 whitespace-nowrap">Actions</th>
+                <th className="py-3.5 px-3 w-[15%]">Order ID &amp; Source</th>
+                <th className="py-3.5 px-3 w-[17%]">Customer</th>
+                <th className="py-3.5 px-3 w-[17%]">Order Type &amp; Retailers</th>
+                <th className="py-3.5 px-2.5 w-[10%]">Amount</th>
+                <th className="py-3.5 px-2.5 w-[14%]">Status</th>
+                <th className="py-3.5 px-3 w-[14%]">Invoice &amp; Email</th>
+                <th className="py-3.5 px-2 text-center w-[13%]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
@@ -1236,45 +1236,45 @@ export const AdminOrdersModule: React.FC<{
 
                 return (
                   <tr key={ord.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4 align-middle whitespace-nowrap">
-                      <div className="font-bold text-[#0066FF] text-xs sm:text-sm">{ord.id}</div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">{ord.createdAt}</div>
+                    <td className="py-3.5 px-3 align-middle">
+                      <div className="font-bold text-[#0066FF] text-xs sm:text-[13px] truncate" title={ord.id}>{ord.id}</div>
+                      <div className="text-[11px] text-slate-400 mt-0.5 truncate">{ord.createdAt}</div>
                       <div className="mt-1">
                         {isManual ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80">
-                            <ShoppingBag className="w-2.5 h-2.5" />
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/80 whitespace-nowrap">
+                            <ShoppingBag className="w-2.5 h-2.5 shrink-0" />
                             <span>Manual Request</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
-                            <Globe className="w-2.5 h-2.5" />
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap">
+                            <Globe className="w-2.5 h-2.5 shrink-0" />
                             <span>Website Order</span>
                           </span>
                         )}
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 align-middle">
-                      <div className="flex items-center gap-2.5">
+                    <td className="py-3.5 px-3 align-middle">
+                      <div className="flex items-center gap-2 min-w-0">
                         <img src={ord.customerAvatar} alt="" className="w-8 h-8 rounded-full object-cover border border-slate-200 shrink-0" />
                         <div className="min-w-0">
-                          <div className="font-bold text-slate-900 text-xs sm:text-sm truncate">{ord.customerName}</div>
+                          <div className="font-bold text-slate-900 text-xs sm:text-[13px] truncate" title={ord.customerName}>{ord.customerName}</div>
                           {ord.customerEmail && (
-                            <div className="text-[11px] text-slate-400 truncate">{ord.customerEmail}</div>
+                            <div className="text-[11px] text-slate-400 truncate" title={ord.customerEmail}>{ord.customerEmail}</div>
                           )}
-                          <div className="text-[11px] text-slate-600 font-semibold flex items-center gap-1 mt-0.5">
-                            <span>{ord.destinationFlag}</span>
+                          <div className="text-[11px] text-slate-600 font-semibold flex items-center gap-1 mt-0.5 min-w-0" title={ord.destination}>
+                            <span className="shrink-0">{ord.destinationFlag}</span>
                             <span className="truncate">{ord.destination}</span>
                           </div>
                         </div>
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 align-middle">
-                      <div className="text-xs font-bold text-slate-800 truncate max-w-[200px]">{ord.orderType}</div>
-                      <div className="flex items-center gap-1 mt-1 flex-wrap max-w-[240px]">
+                    <td className="py-3.5 px-3 align-middle">
+                      <div className="text-xs font-bold text-slate-800 truncate" title={ord.orderType}>{ord.orderType}</div>
+                      <div className="flex items-center gap-1 mt-1 flex-wrap">
                         {ord.stores.slice(0, 2).map((s, idx) => (
-                          <span key={idx} className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded-md">
+                          <span key={idx} className="text-[10px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded-md max-w-full truncate">
                             {s}
                           </span>
                         ))}
@@ -1283,14 +1283,14 @@ export const AdminOrdersModule: React.FC<{
                             +{ord.stores.length - 2} more
                           </span>
                         )}
-                        <span className="text-[11px] text-slate-400 font-medium">({ord.itemCount} items)</span>
+                        <span className="text-[11px] text-slate-400 font-medium whitespace-nowrap">({ord.itemCount} items)</span>
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 align-middle whitespace-nowrap">
-                      <div className="font-extrabold text-[#0B1933] text-sm">₹{ord.totalINR.toLocaleString('en-IN')}</div>
+                    <td className="py-3.5 px-2.5 align-middle">
+                      <div className="font-extrabold text-[#0B1933] text-xs sm:text-sm whitespace-nowrap">₹{ord.totalINR.toLocaleString('en-IN')}</div>
                       <span
-                        className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 ${
+                        className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 whitespace-nowrap ${
                           ord.paymentStatus === 'Paid'
                             ? 'bg-emerald-100 text-emerald-800 border border-emerald-200/80'
                             : 'bg-amber-100 text-amber-800 border border-amber-200/80'
@@ -1300,7 +1300,7 @@ export const AdminOrdersModule: React.FC<{
                       </span>
                     </td>
 
-                    <td className="py-3.5 px-4 align-middle whitespace-nowrap">
+                    <td className="py-3.5 px-2.5 align-middle">
                       {isManual && mpr ? (
                         <div className="space-y-1">
                           <select
@@ -1313,7 +1313,7 @@ export const AdminOrdersModule: React.FC<{
                                 `Status for ${mpr.requestId} updated to "${e.target.value}"`
                               )
                             }
-                            className={`px-2.5 py-1 text-xs font-bold rounded-lg border cursor-pointer focus:outline-none ${
+                            className={`w-full max-w-full px-2 py-1 text-[11px] font-bold rounded-lg border cursor-pointer focus:outline-none ${
                               mpr.purchaseStatus === 'Delivered' || mpr.purchaseStatus === 'Purchased'
                                 ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
                                 : mpr.purchaseStatus === 'Cancelled'
@@ -1330,12 +1330,12 @@ export const AdminOrdersModule: React.FC<{
                             ))}
                           </select>
                           {mpr.externalOrderId && (
-                            <div className="text-[10px] font-mono text-slate-500">
+                            <div className="text-[10px] font-mono text-slate-500 truncate" title={`Ext Order: ${mpr.externalOrderId}`}>
                               Ext Order: {mpr.externalOrderId}
                             </div>
                           )}
                           {mpr.trackingNumber && (
-                            <div className="text-[10px] font-mono text-slate-400">
+                            <div className="text-[10px] font-mono text-slate-400 truncate" title={`AWB: ${mpr.trackingNumber}`}>
                               AWB: {mpr.trackingNumber}
                             </div>
                           )}
@@ -1343,7 +1343,7 @@ export const AdminOrdersModule: React.FC<{
                       ) : (
                         <>
                           <span
-                            className={`px-2.5 py-1 text-xs font-bold rounded-lg border ${
+                            className={`inline-block px-2 py-1 text-[11px] font-bold rounded-lg border leading-tight ${
                               ord.orderStatus === 'Delivered'
                                 ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
                                 : ord.orderStatus === 'Dispatched'
@@ -1356,7 +1356,7 @@ export const AdminOrdersModule: React.FC<{
                             {ord.orderStatus}
                           </span>
                           {ord.trackingAwb && (
-                            <div className="text-[10px] font-mono text-slate-400 mt-0.5">
+                            <div className="text-[10px] font-mono text-slate-400 mt-0.5 truncate" title={`AWB: ${ord.trackingAwb}`}>
                               AWB: {ord.trackingAwb}
                             </div>
                           )}
@@ -1365,29 +1365,29 @@ export const AdminOrdersModule: React.FC<{
                     </td>
 
                     {/* Invoice & Automated Email Delivery Tracking */}
-                    <td className="py-3.5 px-4 align-middle whitespace-nowrap">
+                    <td className="py-3.5 px-3 align-middle">
                       {isManual && mpr ? (
                         <div className="space-y-1">
-                          <div className="font-mono text-xs font-bold text-indigo-600">{mpr.requestId}</div>
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                          <div className="font-mono text-xs font-bold text-indigo-600 truncate" title={mpr.requestId}>{mpr.requestId}</div>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold whitespace-nowrap ${
                             mpr.emailStatus === 'Sent'
                               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                               : mpr.emailStatus === 'Failed'
                               ? 'bg-rose-50 text-rose-700 border border-rose-200'
                               : 'bg-slate-100 text-slate-600'
                           }`}>
-                            <Mail className="w-3 h-3" />
+                            <Mail className="w-3 h-3 shrink-0" />
                             <span>{mpr.emailStatus}</span>
                           </span>
                         </div>
                       ) : linkedInv ? (
                         <div className="space-y-1">
-                          <div className="font-mono text-xs font-bold text-[#0066FF]">
+                          <div className="font-mono text-xs font-bold text-[#0066FF] truncate" title={linkedInv.invoiceNumber}>
                             {linkedInv.invoiceNumber}
                           </div>
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex flex-wrap items-center gap-1">
                             <span
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold whitespace-nowrap ${
                                 linkedInv.emailStatus === 'Sent'
                                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                   : linkedInv.emailStatus === 'Pending'
@@ -1396,12 +1396,12 @@ export const AdminOrdersModule: React.FC<{
                               }`}
                               title={linkedInv.emailDeliveryLog || `Status: ${linkedInv.emailStatus}`}
                             >
-                              <Mail className="w-3 h-3" />
+                              <Mail className="w-3 h-3 shrink-0" />
                               <span>{linkedInv.emailStatus}</span>
                             </span>
                             {ord.confirmationEmailStatus === 'Sent' && (
-                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200" title="Order confirmation email delivered">
-                                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600" />
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 whitespace-nowrap" title="Order confirmation email delivered">
+                                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600 shrink-0" />
                                 <span>Confirmed</span>
                               </span>
                             )}
@@ -1412,141 +1412,125 @@ export const AdminOrdersModule: React.FC<{
                       )}
                     </td>
 
-                    <td className="py-3 px-4 text-center whitespace-nowrap sticky right-0 bg-white group-hover:bg-slate-50/90 shadow-[-6px_0_10px_rgba(0,0,0,0.06)] z-10 align-middle">
-                      <div className="flex flex-col items-center justify-center gap-1.5 py-0.5">
+                    <td className="py-3 px-2 text-center align-middle">
+                      <div className="flex items-center justify-center gap-1.5 flex-nowrap">
                         {isManual && mpr ? (
                           <>
-                            {/* Top Tier */}
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => handleOpenManualDetailsModal(mpr)}
-                                className="w-7.5 h-7.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                                title="View Request Details"
-                                aria-label="View Request Details"
-                              >
-                                <Eye className="w-3.5 h-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleOpenEditManualModal(mpr)}
-                                className="w-7.5 h-7.5 rounded-lg bg-blue-50 hover:bg-[#0066FF] text-[#0066FF] hover:text-white border border-blue-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                                title="Edit Manual Request"
-                                aria-label="Edit Manual Request"
-                              >
-                                <Edit2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                            {/* Bottom Tier */}
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button
-                                type="button"
-                                disabled={resendingManualId === mpr.requestId}
-                                onClick={() => handleResendManualEmail(mpr)}
-                                className="w-7.5 h-7.5 rounded-lg bg-slate-50 hover:bg-slate-800 text-slate-600 hover:text-white border border-slate-200/80 flex items-center justify-center cursor-pointer disabled:opacity-50 shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                                title={`Send Email to ${mpr.customerEmail}`}
-                                aria-label="Send Email"
-                              >
-                                {resendingManualId === mpr.requestId ? (
-                                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                ) : (
-                                  <Send className="w-3.5 h-3.5" />
-                                )}
-                              </button>
-                              {mpr.purchaseStatus !== 'Cancelled' ? (
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleQuickUpdateManualField(
-                                      mpr,
-                                      { purchaseStatus: 'Cancelled' },
-                                      `Request ${mpr.requestId} has been cancelled.`
-                                    )
-                                  }
-                                  className="w-7.5 h-7.5 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-500 hover:text-white border border-rose-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                                  title="Cancel Request"
-                                  aria-label="Cancel Request"
-                                >
-                                  <Ban className="w-3.5 h-3.5" />
-                                </button>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenManualDetailsModal(mpr)}
+                              className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0"
+                              title="View Request Details"
+                              aria-label="View Request Details"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditManualModal(mpr)}
+                              className="p-1.5 rounded-lg text-[#0066FF] hover:bg-blue-50 flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0"
+                              title="Edit Manual Request"
+                              aria-label="Edit Manual Request"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={resendingManualId === mpr.requestId}
+                              onClick={() => handleResendManualEmail(mpr)}
+                              className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 flex items-center justify-center cursor-pointer disabled:opacity-50 transition-colors active:scale-95 shrink-0"
+                              title={`Send Email to ${mpr.customerEmail}`}
+                              aria-label="Send Email"
+                            >
+                              {resendingManualId === mpr.requestId ? (
+                                <RefreshCw className="w-4 h-4 animate-spin" />
                               ) : (
-                                <div className="w-7.5 h-7.5" />
+                                <Send className="w-4 h-4" />
                               )}
-                            </div>
+                            </button>
+                            {mpr.purchaseStatus !== 'Cancelled' && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleQuickUpdateManualField(
+                                    mpr,
+                                    { purchaseStatus: 'Cancelled' },
+                                    `Request ${mpr.requestId} has been cancelled.`
+                                  )
+                                }
+                                className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0"
+                                title="Cancel Request"
+                                aria-label="Cancel Request"
+                              >
+                                <Ban className="w-4 h-4" />
+                              </button>
+                            )}
                           </>
                         ) : (
                           <>
-                            {/* Top Tier: View Order Items & View Tax Invoice */}
-                            <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedOrder(ord)}
+                              className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0"
+                              title="View Order Items & Summary"
+                              aria-label="View Order Items"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            {linkedInv ? (
                               <button
                                 type="button"
-                                onClick={() => setSelectedOrder(ord)}
-                                className="w-7.5 h-7.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white border border-indigo-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                                title="View Order Items & Summary"
-                                aria-label="View Order Items"
+                                onClick={() => handleOpenInvoiceModal(linkedInv)}
+                                className="p-1.5 rounded-lg text-[#0066FF] hover:bg-blue-50 flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0"
+                                title="View Tax Invoice"
+                                aria-label="View Tax Invoice"
                               >
-                                <Eye className="w-3.5 h-3.5" />
+                                <FileText className="w-4 h-4" />
                               </button>
-                              {linkedInv ? (
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenInvoiceModal(linkedInv)}
-                                  className="w-7.5 h-7.5 rounded-lg bg-blue-50 hover:bg-[#0066FF] text-[#0066FF] hover:text-white border border-blue-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                                  title="View Tax Invoice"
-                                  aria-label="View Tax Invoice"
-                                >
-                                  <FileText className="w-3.5 h-3.5" />
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  disabled
-                                  className="w-7.5 h-7.5 rounded-lg bg-slate-50 text-slate-300 border border-slate-100 flex items-center justify-center opacity-40 cursor-not-allowed"
-                                  title="Invoice Not Generated"
-                                >
-                                  <FileText className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                            </div>
-
-                            {/* Bottom Tier: Download Invoice PDF & Email Invoice */}
-                            <div className="flex items-center justify-center gap-1.5">
-                              {linkedInv ? (
-                                <button
-                                  type="button"
-                                  onClick={() => downloadInvoiceDocument(linkedInv)}
-                                  className="w-7.5 h-7.5 rounded-lg bg-slate-50 hover:bg-slate-800 text-slate-600 hover:text-white border border-slate-200/80 flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                                  title={`Download Invoice PDF (${linkedInv.invoiceNumber})`}
-                                  aria-label="Download Invoice PDF"
-                                >
-                                  <Download className="w-3.5 h-3.5" />
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  disabled
-                                  className="w-7.5 h-7.5 rounded-lg bg-slate-50 text-slate-300 border border-slate-100 flex items-center justify-center opacity-40 cursor-not-allowed"
-                                  title="Invoice Not Generated"
-                                >
-                                  <Download className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-
+                            ) : (
                               <button
                                 type="button"
-                                disabled={resendingInvoiceNum === (linkedInv?.invoiceNumber || ord.id)}
-                                onClick={() => handleSendInvoice(ord, linkedInv)}
-                                className="w-7.5 h-7.5 rounded-lg bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white border border-emerald-200/80 flex items-center justify-center cursor-pointer disabled:opacity-50 shadow-2xs hover:shadow-xs transition-all active:scale-95"
-                                title={`Email Invoice to ${linkedInv?.customerEmail || (ord as any).customerEmail || ord.customerName}`}
-                                aria-label="Email Invoice"
+                                disabled
+                                className="p-1.5 rounded-lg text-slate-300 flex items-center justify-center opacity-50 cursor-not-allowed shrink-0"
+                                title="Invoice Not Generated"
                               >
-                                {resendingInvoiceNum === (linkedInv?.invoiceNumber || ord.id) ? (
-                                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                ) : (
-                                  <Mail className="w-3.5 h-3.5" />
-                                )}
+                                <FileText className="w-4 h-4" />
                               </button>
-                            </div>
+                            )}
+                            {linkedInv ? (
+                              <button
+                                type="button"
+                                onClick={() => downloadInvoiceDocument(linkedInv)}
+                                className="p-1.5 rounded-lg text-[#0066FF] hover:bg-blue-50 flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0"
+                                title={`Download Invoice PDF (${linkedInv.invoiceNumber})`}
+                                aria-label="Download Invoice PDF"
+                              >
+                                <Download className="w-4 h-4" />
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled
+                                className="p-1.5 rounded-lg text-slate-300 flex items-center justify-center opacity-50 cursor-not-allowed shrink-0"
+                                title="Invoice Not Generated"
+                              >
+                                <Download className="w-4 h-4" />
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              disabled={resendingInvoiceNum === (linkedInv?.invoiceNumber || ord.id)}
+                              onClick={() => handleSendInvoice(ord, linkedInv)}
+                              className="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50 flex items-center justify-center cursor-pointer disabled:opacity-50 transition-colors active:scale-95 shrink-0"
+                              title={`Email Invoice to ${linkedInv?.customerEmail || (ord as any).customerEmail || ord.customerName}`}
+                              aria-label="Email Invoice"
+                            >
+                              {resendingInvoiceNum === (linkedInv?.invoiceNumber || ord.id) ? (
+                                <RefreshCw className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Send className="w-4 h-4" />
+                              )}
+                            </button>
                           </>
                         )}
                       </div>

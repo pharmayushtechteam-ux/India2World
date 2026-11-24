@@ -9,11 +9,12 @@ interface FooterProps {
   onNavigate: (page: Page, dashTab?: DashboardTab) => void;
   onOpenTrackModal?: () => void;
   onOpenCurrencyModal?: () => void;
+  noTopMargin?: boolean;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal, noTopMargin = false }) => {
   return (
-    <footer className="w-full bg-[#0B1933] text-slate-300 text-sm mt-10 sm:mt-16 relative overflow-hidden font-['Plus_Jakarta_Sans',sans-serif]">
+    <footer className={`w-full bg-[#0B1933] text-slate-300 text-sm ${noTopMargin ? 'mt-0' : 'mt-10 sm:mt-16'} relative overflow-hidden font-['Plus_Jakarta_Sans',sans-serif]`}>
       {/* Brand Top Accent Gradient Bar (Royal Blue + Saffron + Green logo theme) */}
       <div className="h-1 w-full bg-gradient-to-r from-[#0066FF] via-[#FF9933] to-[#22C55E]" />
 
@@ -74,15 +75,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal }) 
               <li>
                 <button
                   type="button"
-                  onClick={() => onNavigate('request-external-purchase')}
-                  className="text-blue-300 hover:text-white font-bold transition-colors cursor-pointer text-left"
-                >
-                  Request a Product from Another Platform
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
                   onClick={() => onNavigate('home')}
                   className="hover:text-white transition-colors cursor-pointer text-left"
                 >
@@ -138,15 +130,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal }) 
               <li>
                 <button
                   type="button"
-                  onClick={() => onNavigate('request-external-purchase')}
-                  className="text-blue-300 hover:text-white font-bold transition-colors cursor-pointer text-left"
-                >
-                  Request a Product from Another Platform
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
                   onClick={() => onNavigate('buy-for-me')}
                   className="hover:text-white transition-colors cursor-pointer text-left"
                 >
@@ -194,15 +177,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal }) 
               <li>
                 <button
                   type="button"
-                  onClick={() => onNavigate('request-external-purchase')}
-                  className="text-blue-300 hover:text-white font-bold transition-colors cursor-pointer text-left"
-                >
-                  Request a Product from Another Platform
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
                   onClick={() => onNavigate('help')}
                   className="hover:text-white transition-colors cursor-pointer text-left"
                 >
@@ -221,7 +195,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onOpenTrackModal }) 
               <li>
                 <button
                   type="button"
-                  onClick={() => onNavigate('auth')}
+                  onClick={() => onNavigate('login')}
                   className="hover:text-white transition-colors cursor-pointer text-left text-blue-400 font-semibold"
                 >
                   Sign In / Create Account

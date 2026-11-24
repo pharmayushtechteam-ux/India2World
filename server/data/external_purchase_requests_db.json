@@ -1,5 +1,134 @@
 [
   {
+    "requestId": "EPR-2026-50096",
+    "customerId": "CUS-20261",
+    "customerName": "Pharmayushtechteam",
+    "customerEmail": "pharmayushtechteam@gmail.com",
+    "customerPhone": "+91 9989884578",
+    "deliveryAddress": "ran987 yamuna nagar bngalore",
+    "city": "bangalore",
+    "state": "karnataka",
+    "country": "india",
+    "postalCode": "789034",
+    "destinationFlag": "🇮🇳",
+    "requestedProducts": [
+      {
+        "id": "item-1-1795509395150",
+        "productName": "https://www.flipkart.com/pond-s-bright-beauty-spot-less-glow-pure-detox-anti-pollution-purity-face-wash/p/itm7508c86feedfd?pid=FCWG68J5DPYYFH8D&lid=LSTFCWG68J5DPYYFH8DKAE7ET&marketplace=FLIPKART&store=g9b&srno=b_1_3&otracker=browse&fm=organic&iid=a8d2cff2-df26-4d62-9ffa-17fae789d6a6.FCWG68J5DPYYFH8D.SEARCH&ppt=browse&ppn=browse&ssid=gnzvdqvddc0000001795509686828&ov_redirect=true&ov_redirect=true",
+        "platform": "Amazon",
+        "productUrl": "https://www.flipkart.com/pond-s-bright-beauty-spot-less-glow-pure-detox-anti-pollution-purity-face-wash/p/itm7508c86feedfd?pid=FCWG68J5DPYYFH8D&lid=LSTFCWG68J5DPYYFH8DKAE7ET&marketplace=FLIPKART&store=g9b&srno=b_1_3&otracker=browse&fm=organic&iid=a8d2cff2-df26-4d62-9ffa-17fae789d6a6.FCWG68J5DPYYFH8D.SEARCH&ppt=browse&ppn=browse&ssid=gnzvdqvddc0000001795509686828&ov_redirect=true&ov_redirect=true",
+        "productImage": "https://www.flipkart.com/pond-s-bright-beauty-spot-less-glow-pure-detox-anti-pollution-purity-face-wash/p/itm7508c86feedfd?pid=FCWG68J5DPYYFH8D&lid=LSTFCWG68J5DPYYFH8DKAE7ET&marketplace=FLIPKART&store=g9b&srno=b_1_3&otracker=browse&fm=organic&iid=a8d2cff2-df26-4d62-9ffa-17fae789d6a6.FCWG68J5DPYYFH8D.SEARCH&ppt=browse&ppn=browse&ssid=gnzvdqvddc0000001795509686828&ov_redirect=true&ov_redirect=true",
+        "quantity": 1
+      },
+      {
+        "id": "item-2-1795509667178",
+        "productName": "https://www.flipkart.com/campus-fiji-sneakers-men/p/itm7daf2b1909460?pid=SHOHF7GVGBPQYFHC&lid=LSTSHOHF7GVGBPQYFHCON8FDU&marketplace=FLIPKART&store=osp%2Fcil&srno=b_1_2&otracker=browse&fm=organic&iid=b2f32866-b997-4e04-b1ed-eadcd3177c7c.SHOHF7GVGBPQYFHC.SEARCH&ppt=browse&ppn=browse&ssid=gsta8t8pf40000001795509729362&ov_redirect=true",
+        "platform": "Amazon",
+        "productUrl": "https://www.flipkart.com/campus-fiji-sneakers-men/p/itm7daf2b1909460?pid=SHOHF7GVGBPQYFHC&lid=LSTSHOHF7GVGBPQYFHCON8FDU&marketplace=FLIPKART&store=osp%2Fcil&srno=b_1_2&otracker=browse&fm=organic&iid=b2f32866-b997-4e04-b1ed-eadcd3177c7c.SHOHF7GVGBPQYFHC.SEARCH&ppt=browse&ppn=browse&ssid=gsta8t8pf40000001795509729362&ov_redirect=true",
+        "productImage": "https://www.flipkart.com/campus-fiji-sneakers-men/p/itm7daf2b1909460?pid=SHOHF7GVGBPQYFHC&lid=LSTSHOHF7GVGBPQYFHCON8FDU&marketplace=FLIPKART&store=osp%2Fcil&srno=b_1_2&otracker=browse&fm=organic&iid=b2f32866-b997-4e04-b1ed-eadcd3177c7c.SHOHF7GVGBPQYFHC.SEARCH&ppt=browse&ppn=browse&ssid=gsta8t8pf40000001795509729362&ov_redirect=true",
+        "quantity": 1
+      },
+      {
+        "id": "item-3-1795509752410",
+        "productName": "https://www.flipkart.com/campus-vibgyor-walking-shoes-men/p/itmb3d46da612d81?pid=SHOG4TKZGYMXYSNP&lid=LSTSHOG4TKZGYMXYSNPCEYXD9&marketplace=FLIPKART&store=osp%2Fcil&srno=b_1_15&otracker=browse&fm=organic&iid=b2f32866-b997-4e04-b1ed-eadcd3177c7c.SHOG4TKZGYMXYSNP.SEARCH&ppt=browse&ppn=browse&ov_redirect=true",
+        "platform": "Amazon",
+        "productUrl": "https://www.flipkart.com/campus-vibgyor-walking-shoes-men/p/itmb3d46da612d81?pid=SHOG4TKZGYMXYSNP&lid=LSTSHOG4TKZGYMXYSNPCEYXD9&marketplace=FLIPKART&store=osp%2Fcil&srno=b_1_15&otracker=browse&fm=organic&iid=b2f32866-b997-4e04-b1ed-eadcd3177c7c.SHOG4TKZGYMXYSNP.SEARCH&ppt=browse&ppn=browse&ov_redirect=true",
+        "quantity": 1
+      }
+    ],
+    "processedProducts": [
+      {
+        "id": "proc-prod-1-1795509776226",
+        "verifiedProductUrl": "https://www.flipkart.com/pond-s-bright-beauty-spot-less-glow-pure-detox-anti-pollution-purity-face-wash/p/itm7508c86feedfd?pid=FCWG68J5DPYYFH8D",
+        "platform": "Flipkart",
+        "actualPriceINR": 384,
+        "shippingChargesINR": 0,
+        "estimatedDeliveryTime": "5-7 Business Days",
+        "actualProductName": "Pond's Bright Beauty Spot-Less Glow Pure Detox Anti-Pollution Purity Face Wash",
+        "productImage": "https://rukminim2.flixcart.com/image/300/300/xif0q/face-wash/z/9/4/-resized-original-imah39cw2pcvpsgs.jpeg",
+        "additionalChargesINR": 0,
+        "quantity": 1,
+        "subtotalINR": 384
+      },
+      {
+        "id": "proc-prod-2-1795509776226",
+        "verifiedProductUrl": "https://www.flipkart.com/campus-fiji-sneakers-men/p/itm7daf2b1909460?pid=SHOHF7GVGBPQYFHC",
+        "platform": "Flipkart",
+        "actualPriceINR": 1199,
+        "shippingChargesINR": 0,
+        "estimatedDeliveryTime": "5-7 Business Days",
+        "actualProductName": "Campus Fiji Sneakers Men",
+        "productImage": "https://rukminim2.flixcart.com/image/300/300/xif0q/shoe/e/p/f/-original-imahmgphgkbt5tqg.jpeg",
+        "additionalChargesINR": 0,
+        "quantity": 1,
+        "subtotalINR": 1199
+      },
+      {
+        "id": "proc-prod-3-1795509776226",
+        "verifiedProductUrl": "https://www.flipkart.com/campus-vibgyor-walking-shoes-men/p/itmb3d46da612d81?pid=SHOG4TKZGYMXYSNP",
+        "platform": "Flipkart",
+        "actualPriceINR": 685,
+        "shippingChargesINR": 0,
+        "estimatedDeliveryTime": "5-7 Business Days",
+        "actualProductName": "Campus Vibgyor Walking Shoes Men",
+        "productImage": "https://rukminim2.flixcart.com/image/300/300/xif0q/shoe/l/t/f/-watermarked-original-imahmd3xzgpzkmv6.jpeg",
+        "additionalChargesINR": 0,
+        "quantity": 1,
+        "subtotalINR": 685
+      }
+    ],
+    "quotation": {
+      "quotationReference": "QTN-2026-50096",
+      "productsTotalINR": 2268,
+      "shippingTotalINR": 0,
+      "additionalChargesTotalINR": 0,
+      "grandTotalINR": 2268
+    },
+    "status": "New Requests",
+    "unreadAdminAlert": false,
+    "createdAt": "24 Nov 2026, 02:12 pm",
+    "updatedAt": "24 Nov 2026, 02:38 pm",
+    "activityHistory": [
+      {
+        "id": "act-1795511315286",
+        "timestamp": "24 Nov 2026, 02:38 pm",
+        "action": "Auto-fetched exact live Flipkart prices (?384 + ?1,199 + ?685 = ?2,268)",
+        "fromStatus": "New Requests",
+        "toStatus": "New Requests",
+        "actor": "Super Admin",
+        "details": "Auto-fetched exact live Flipkart prices (?384 + ?1,199 + ?685 = ?2,268)"
+      },
+      {
+        "id": "act-1795510623485",
+        "timestamp": "24 Nov 2026, 02:27 pm",
+        "action": "Admin viewed purchase request details",
+        "fromStatus": "New Requests",
+        "toStatus": "New Requests",
+        "actor": "Super Admin",
+        "details": "Admin viewed purchase request details"
+      },
+      {
+        "id": "act-1795509776227",
+        "timestamp": "24 Nov 2026, 02:12 pm",
+        "action": "Customer Submitted External Purchase Request",
+        "toStatus": "New Requests",
+        "actor": "Pharmayushtechteam (Customer)",
+        "details": "Submitted 3 product(s) from Amazon."
+      }
+    ],
+    "emailHistory": [
+      {
+        "id": "eml-1795509781898-575",
+        "timestamp": "24 Nov 2026, 02:12 pm",
+        "stage": "Request Received",
+        "recipient": "pharmayushtechteam@gmail.com",
+        "subject": "[PHARMAYUSH / India2World] We Have Received Your Purchase Request (EPR-2026-50096)",
+        "status": "Sent",
+        "messageId": "<feffb190-4bed-fdd6-6a9c-cd15244f6e21@gmail.com>"
+      }
+    ]
+  },
+  {
     "requestId": "EPR-2026-37209",
     "customerId": "CUST-1472",
     "customerName": "Aarav Mehta",

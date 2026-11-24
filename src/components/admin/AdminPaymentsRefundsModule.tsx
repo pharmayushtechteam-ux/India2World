@@ -335,29 +335,29 @@ export const AdminPaymentsRefundsModule: React.FC<{
                     </td>
 
                     <td className="py-3 px-4 text-center align-middle whitespace-nowrap">
-                      <div className="flex flex-col items-center justify-center gap-1.5 py-0.5">
+                      <div className="flex items-center justify-center gap-2 flex-nowrap">
                         <button
                           type="button"
                           onClick={() => handleViewReceipt(p)}
-                          className="w-full max-w-[96px] px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200/80 rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-1.5 font-bold text-xs shadow-2xs active:scale-95"
+                          className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 cursor-pointer transition-colors flex items-center justify-center active:scale-95 shrink-0"
                           title="View Tax Receipt"
+                          aria-label="View Tax Receipt"
                         >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>View</span>
+                          <Eye className="w-4 h-4" />
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDownloadReceipt(p)}
                           disabled={downloadingId === `REC-${p.id.replace('PAY-', '')}` || downloadingId === p.id}
-                          className="w-full max-w-[96px] px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg cursor-pointer transition-colors flex items-center justify-center gap-1.5 font-bold text-xs disabled:opacity-50 active:scale-95 shadow-2xs"
+                          className="p-1.5 rounded-lg text-[#0066FF] hover:bg-blue-50 cursor-pointer transition-colors flex items-center justify-center disabled:opacity-50 active:scale-95 shrink-0"
                           title="Download Tax Receipt PDF"
+                          aria-label="Download Tax Receipt PDF"
                         >
                           {downloadingId === `REC-${p.id.replace('PAY-', '')}` || downloadingId === p.id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0066FF]" />
+                            <Loader2 className="w-4 h-4 animate-spin text-[#0066FF]" />
                           ) : (
-                            <Download className="w-3.5 h-3.5 text-slate-600" />
+                            <Download className="w-4 h-4" />
                           )}
-                          <span>Download</span>
                         </button>
                       </div>
                     </td>

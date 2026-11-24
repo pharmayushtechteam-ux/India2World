@@ -10,7 +10,6 @@ import { CountriesPage } from './components/pages/CountriesPage';
 import { StoresDirectoryPage } from './components/pages/StoresDirectoryPage';
 import { HowItWorksPage } from './components/pages/HowItWorksPage';
 import { HelpCenterPage } from './components/pages/HelpCenterPage';
-import { RequestExternalPurchasePage } from './components/pages/RequestExternalPurchasePage';
 import { Footer } from './components/common/Footer';
 import { TrackingModal } from './components/common/TrackingModal';
 import { CurrencyModal } from './components/common/CurrencyModal';
@@ -23,6 +22,8 @@ import { isUserAuthenticated, USER_CHANGED_EVENT } from './utils/userAuth';
 export const VALID_PAGES: Page[] = [
   'home',
   'auth',
+  'login',
+  'signup',
   'buy-for-me',
   'request-external-purchase',
   'dashboard',
@@ -144,9 +145,24 @@ export const resolveRouteFromUrl = (): ParsedRoute => {
     return { page: 'buy-for-me', dashboardTab: 'buy-for-me', adminTab: 'dashboard' };
   }
 
+  // 4b. External Purchase Request (Customer Dashboard tab only — requires customer login)
+  if (
+    primary === 'request-external-purchase' ||
+    params.get('externalRequestId') ||
+    params.get('externalRequestForm')
+  ) {
+    return { page: 'dashboard', dashboardTab: 'request-external-purchase', adminTab: 'dashboard' };
+  }
+
   // 5. Auth: /auth, /login, /signup
-  if (primary === 'auth' || primary === 'login' || primary === 'signup') {
-    return { page: 'auth', dashboardTab: 'overview', adminTab: 'dashboard' };
+  if (primary === 'login') {
+    return { page: 'login', dashboardTab: 'overview', adminTab: 'dashboard' };
+  }
+  if (primary === 'signup') {
+    return { page: 'signup', dashboardTab: 'overview', adminTab: 'dashboard' };
+  }
+  if (primary === 'auth') {
+    return { page: 'login', dashboardTab: 'overview', adminTab: 'dashboard' };
   }
 
   // 6. Track modal: /track
@@ -201,16 +217,28 @@ function AppContent() {
   const { isAuthenticated } = useAdminAuth();
   const initialRoute = resolveRouteFromUrl();
 
-  const [authRedirectIntent, setAuthRedirectIntent] = useState<Page | null>(null);
-
-  const getInitialPage = (): Page => {
-    if (typeof window !== 'undefined') {
-      const qs = new URLSearchParams(window.location.search);
-      if ((qs.get('externalRequestId') || qs.get('externalRequestForm')) && !isUserAuthenticated()) {
+  const [authRedirectIntent, setAuthRedirectIntent] = useState<Page | null>(() => {
+    if (!isUserAuthenticated()) {
+      if (
+        initialRoute.dashboardTab === 'request-external-purchase' ||
+        initialRoute.page === 'request-external-purchase'
+      ) {
         return 'request-external-purchase';
       }
+      if (initialRoute.page === 'buy-for-me' || initialRoute.page === 'dashboard') {
+        return initialRoute.page;
+      }
     }
-    if ((initialRoute.page === 'buy-for-me' || initialRoute.page === 'dashboard') && !isUserAuthenticated()) {
+    return null;
+  });
+
+  const getInitialPage = (): Page => {
+    if (
+      (initialRoute.page === 'buy-for-me' ||
+        initialRoute.page === 'dashboard' ||
+        initialRoute.page === 'request-external-purchase') &&
+      !isUserAuthenticated()
+    ) {
       return 'auth';
     }
     return initialRoute.page;
@@ -263,7 +291,11 @@ function AppContent() {
   useEffect(() => {
     const handleAuthChange = () => {
       if (!isUserAuthenticated()) {
-        if (currentPage === 'buy-for-me' || currentPage === 'dashboard') {
+        if (
+          currentPage === 'buy-for-me' ||
+          currentPage === 'dashboard' ||
+          currentPage === 'request-external-purchase'
+        ) {
           setAuthRedirectIntent(currentPage);
           setCurrentPage('auth');
         }
@@ -277,8 +309,17 @@ function AppContent() {
   useEffect(() => {
     const handlePopState = () => {
       const route = resolveRouteFromUrl();
-      if ((route.page === 'buy-for-me' || route.page === 'dashboard') && !isUserAuthenticated()) {
-        setAuthRedirectIntent(route.page);
+      if (
+        (route.page === 'buy-for-me' ||
+          route.page === 'dashboard' ||
+          route.page === 'request-external-purchase') &&
+        !isUserAuthenticated()
+      ) {
+        setAuthRedirectIntent(
+          route.dashboardTab === 'request-external-purchase'
+            ? 'request-external-purchase'
+            : route.page
+        );
         setCurrentPage('auth');
       } else {
         setCurrentPage(route.page);
@@ -321,6 +362,13 @@ function AppContent() {
       setAuthRedirectIntent(null);
       setDashboardTab('buy-for-me');
       setCurrentPage('buy-for-me');
+    } else if (authRedirectIntent === 'request-external-purchase') {
+      setAuthRedirectIntent(null);
+      setDashboardTab('request-external-purchase');
+      setCurrentPage('dashboard');
+    } else if (authRedirectIntent === 'dashboard') {
+      setAuthRedirectIntent(null);
+      setCurrentPage('dashboard');
     } else {
       setCurrentPage('dashboard');
       setDashboardTab('overview');
@@ -348,10 +396,24 @@ function AppContent() {
       setTrackingModalOpen(true);
       return;
     }
-    if ((page === 'buy-for-me' || page === 'dashboard') && !isUserAuthenticated()) {
+    if (
+      (page === 'buy-for-me' ||
+        page === 'dashboard' ||
+        page === 'request-external-purchase') &&
+      !isUserAuthenticated()
+    ) {
       setAuthRedirectIntent(page);
-      if (dashTab) setDashboardTab(dashTab);
+      if (dashTab) {
+        setDashboardTab(dashTab);
+      } else if (page === 'request-external-purchase') {
+        setDashboardTab('request-external-purchase');
+      }
       setCurrentPage('auth');
+      return;
+    }
+    if (page === 'request-external-purchase') {
+      setDashboardTab('request-external-purchase');
+      setCurrentPage('dashboard');
       return;
     }
     if (dashTab) {
@@ -365,13 +427,20 @@ function AppContent() {
     setCurrentPage(page);
   };
 
-  const isPublicPageWithNavbar = !['dashboard', 'auth', 'home', 'buy-for-me', 'admin', 'admin-login'].includes(
-    currentPage
-  );
-  const showFooter = !['auth', 'admin', 'admin-login'].includes(currentPage);
+  const isPublicPageWithNavbar = ![
+    'dashboard',
+    'auth',
+    'login',
+    'signup',
+    'home',
+    'buy-for-me',
+    'admin',
+    'admin-login',
+  ].includes(currentPage);
+  const showFooter = !['auth', 'login', 'signup', 'admin', 'admin-login'].includes(currentPage);
 
   return (
-    <div className="min-h-screen bg-white text-slate-800 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] w-full max-w-none m-0 p-0 overflow-x-hidden">
+    <div className="min-h-screen bg-white text-slate-800 flex flex-col font-['Plus_Jakarta_Sans',sans-serif] w-full max-w-none m-0 p-0 overflow-x-clip">
         {/* Modals */}
         <TrackingModal
           isOpen={trackingModalOpen}
@@ -412,8 +481,10 @@ function AppContent() {
             />
           )}
 
-          {currentPage === 'auth' && (
+          {(currentPage === 'auth' || currentPage === 'login' || currentPage === 'signup') && (
             <AuthPage
+              initialMode={currentPage === 'signup' ? 'signup' : 'login'}
+              onModeChange={(newMode) => setCurrentPage(newMode)}
               onSuccess={handleAuthSuccess}
               onNavigate={handleNavigate}
             />
@@ -462,10 +533,6 @@ function AppContent() {
             <HelpCenterPage onNavigate={handleNavigate} />
           )}
 
-          {currentPage === 'request-external-purchase' && (
-            <RequestExternalPurchasePage onNavigate={handleNavigate} />
-          )}
-
           {currentPage === 'admin-login' && (
             <AdminLoginPage
               onSuccess={() => setCurrentPage('admin')}
@@ -494,6 +561,7 @@ function AppContent() {
             onNavigate={handleNavigate}
             onOpenTrackModal={() => setTrackingModalOpen(true)}
             onOpenCurrencyModal={() => setCurrencyModalOpen(true)}
+            noTopMargin={currentPage === 'dashboard' || currentPage === 'buy-for-me'}
           />
         )}
 

@@ -1,5 +1,749 @@
 [
   {
+    "orderId": "ORD-18546",
+    "orderDate": "24 Nov 2026",
+    "customerId": "CUS-20261",
+    "customerName": "Pharmayushtechteam",
+    "customerEmail": "pharmayushtechteam@gmail.com",
+    "customerPhone": "+91 9989884578",
+    "deliveryAddress": {
+      "street": "I2W-CUS-20261, Central Hub",
+      "city": "Dubai",
+      "country": "United Arab Emirates"
+    },
+    "products": [
+      {
+        "name": "Buy RANDOM Unisex White & Silver Toned Solid Contemporary Premium Wall Round Clock - - Home for Unisex",
+        "store": "Myntra",
+        "price": 1499,
+        "qty": 1,
+        "imageUrl": "https://assets.myntassets.com/h_200,w_200,c_fill,g_auto/h_1440,q_75,w_1080/v1/assets/images/2026/MARCH/14/rAPD7bwU_c8cc84e461ba45fd8dce4b347cc05b77.jpg"
+      }
+    ],
+    "costSummary": {
+      "subtotal": 1499,
+      "domesticShipping": 350,
+      "serviceFee": 350,
+      "tax": 0,
+      "discount": 0,
+      "total": 2199
+    },
+    "paymentStatus": "Paid",
+    "orderStatus": "Procuring",
+    "orderType": "Assisted Purchase (Buy For Me)",
+    "stores": [
+      "Myntra"
+    ],
+    "invoice": {
+      "id": "INV-2026-18546",
+      "orderId": "ORD-18546",
+      "invoiceNumber": "INV-2026-18546",
+      "createdAt": "24 Nov 2026, 12:58 pm",
+      "customerId": "CUS-20261",
+      "customerName": "Pharmayushtechteam",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "customerPhone": "+91 9989884578",
+      "destinationCity": "Dubai",
+      "destinationCountry": "United Arab Emirates",
+      "destinationFlag": "📍",
+      "shippingAddress": {
+        "street": "I2W-CUS-20261, Central Hub",
+        "city": "Dubai",
+        "state": "Dubai",
+        "postalCode": "00000",
+        "country": "United Arab Emirates"
+      },
+      "billingAddress": {
+        "name": "Pharmayushtechteam",
+        "email": "pharmayushtechteam@gmail.com",
+        "country": "United Arab Emirates"
+      },
+      "items": [
+        {
+          "id": "item-1",
+          "title": "Buy RANDOM Unisex White & Silver Toned Solid Contemporary Premium Wall Round Clock - - Home for Unisex",
+          "store": "Myntra",
+          "price": 1499,
+          "qty": 1,
+          "total": 1499
+        }
+      ],
+      "subtotalINR": 1499,
+      "domesticShippingINR": 350,
+      "serviceFeeINR": 350,
+      "estimatedTaxINR": 0,
+      "discountINR": 0,
+      "totalINR": 2199,
+      "paymentMethod": "Pre-Approved Account / Instant Wire",
+      "paymentStatus": "Paid",
+      "emailStatus": "Sent",
+      "emailDeliveryLog": "Invoice generated for order ORD-18546. Ready for electronic email dispatch to pharmayushtechteam@gmail.com.",
+      "emailAttemptCount": 0,
+      "emailSentAt": "24 Nov 2026, 12:58 pm"
+    },
+    "attachInvoicePdf": true,
+    "isRetry": false,
+    "savedAt": "2026-11-24T07:28:51.157Z",
+    "updatedAt": "2026-11-24T07:28:56.192Z",
+    "confirmationEmailStatus": "Sent",
+    "confirmationEmailAttempts": 1,
+    "confirmationEmailSentAt": "24 Nov 2026, 12:58 pm",
+    "confirmationMessageId": "<fb52f1f5-bb40-cc21-a11e-a988a319a320@gmail.com>"
+  },
+  {
+    "orderId": "ORD-58171",
+    "orderDate": "24 Nov 2026",
+    "customerId": "CUS-20261",
+    "customerName": "Pharmayushtechteam",
+    "customerEmail": "pharmayushtechteam@gmail.com",
+    "customerPhone": "+91 9989884578",
+    "deliveryAddress": {
+      "street": "I2W-CUS-20261, Central Hub",
+      "city": "Dubai",
+      "country": "United Arab Emirates"
+    },
+    "products": [
+      {
+        "name": "Id Fresho Malabar 350 G Pouch",
+        "store": "bigbasket",
+        "price": 1499,
+        "qty": 1,
+        "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1080-1080,pr-true,f-auto,q-40,dpr-2/cms/product_variant/b76cc70e-4cb0-40bf-9107-1195224a6b04/iD-Fresh-Malabar-Parota.jpg"
+      },
+      {
+        "name": "True Elements Seeds Berries Breakfast Muesli 1 KG",
+        "store": "bigbasket",
+        "price": 1499,
+        "qty": 1,
+        "imageUrl": "https://5.imimg.com/data5/SELLER/Default/2022/7/BE/YP/WW/57700226/true-elements-berries-mix-muesli-1000x1000.jpg"
+      },
+      {
+        "name": "Muscleblaze Muscleblaze Peanut Butter With Added Omega Creamy 1 Kg 1 Kg",
+        "store": "bigbasket",
+        "price": 60,
+        "qty": 1,
+        "imageUrl": "https://www.bbassets.com/media/uploads/p/l/40254376_1-muscleblaze-muscleblaze-peanut-butter-with-added-omega-creamy-1-kg-1-kg.jpg"
+      }
+    ],
+    "costSummary": {
+      "subtotal": 3058,
+      "domesticShipping": 0,
+      "serviceFee": 350,
+      "tax": 0,
+      "discount": 0,
+      "total": 3408
+    },
+    "paymentStatus": "Paid",
+    "orderStatus": "Procuring",
+    "orderType": "Assisted Purchase (Buy For Me)",
+    "stores": [
+      "bigbasket"
+    ],
+    "invoice": {
+      "id": "INV-2026-58171",
+      "orderId": "ORD-58171",
+      "invoiceNumber": "INV-2026-58171",
+      "createdAt": "24 Nov 2026, 12:11 pm",
+      "customerId": "CUS-20261",
+      "customerName": "Pharmayushtechteam",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "customerPhone": "+91 9989884578",
+      "destinationCity": "Dubai",
+      "destinationCountry": "United Arab Emirates",
+      "destinationFlag": "📍",
+      "shippingAddress": {
+        "street": "I2W-CUS-20261, Central Hub",
+        "city": "Dubai",
+        "state": "Dubai",
+        "postalCode": "00000",
+        "country": "United Arab Emirates"
+      },
+      "billingAddress": {
+        "name": "Pharmayushtechteam",
+        "email": "pharmayushtechteam@gmail.com",
+        "country": "United Arab Emirates"
+      },
+      "items": [
+        {
+          "id": "item-1",
+          "title": "Id Fresho Malabar 350 G Pouch",
+          "store": "bigbasket",
+          "price": 1499,
+          "qty": 1,
+          "total": 1499
+        },
+        {
+          "id": "item-2",
+          "title": "True Elements Seeds Berries Breakfast Muesli 1 KG",
+          "store": "bigbasket",
+          "price": 1499,
+          "qty": 1,
+          "total": 1499
+        },
+        {
+          "id": "item-3",
+          "title": "Muscleblaze Muscleblaze Peanut Butter With Added Omega Creamy 1 Kg 1 Kg",
+          "store": "bigbasket",
+          "price": 60,
+          "qty": 1,
+          "total": 60
+        }
+      ],
+      "subtotalINR": 3058,
+      "domesticShippingINR": 0,
+      "serviceFeeINR": 350,
+      "estimatedTaxINR": 0,
+      "discountINR": 0,
+      "totalINR": 3408,
+      "paymentMethod": "Pre-Approved Account / Instant Wire",
+      "paymentStatus": "Paid",
+      "emailStatus": "Sent",
+      "emailDeliveryLog": "Invoice generated for order ORD-58171. Ready for electronic email dispatch to pharmayushtechteam@gmail.com.",
+      "emailAttemptCount": 0,
+      "emailSentAt": "24 Nov 2026, 12:11 pm"
+    },
+    "attachInvoicePdf": true,
+    "isRetry": false,
+    "savedAt": "2026-11-24T06:41:41.911Z",
+    "updatedAt": "2026-11-24T06:41:51.746Z",
+    "confirmationEmailStatus": "Sent",
+    "confirmationEmailAttempts": 1,
+    "confirmationEmailSentAt": "24 Nov 2026, 12:11 pm",
+    "confirmationMessageId": "<7690c958-86e8-576f-9ef3-1af6dd547930@gmail.com>"
+  },
+  {
+    "orderId": "ORD-21253",
+    "orderDate": "24 Nov 2026",
+    "customerId": "CUS-20261",
+    "customerName": "Pharmayushtechteam",
+    "customerEmail": "pharmayushtechteam@gmail.com",
+    "customerPhone": "+91 9989884578",
+    "deliveryAddress": {
+      "street": "I2W-CUS-20261, Central Hub",
+      "city": "Dubai",
+      "country": "United Arab Emirates"
+    },
+    "products": [
+      {
+        "name": "Lifelong Stainless Steel Heavy Bottom Saucepan | 1.5liter, 17cm Saucepan with Handle | Milk &amp; Tea Boiling Pot for Kitchen | Induction &amp; Gas Stove Compatible | Durable and Easy to Clean (LLSSP17)",
+        "store": "Amazon India",
+        "price": 299,
+        "qty": 1,
+        "imageUrl": "https://m.media-amazon.com/images/I/61Mq8-H4I3L._SL1500_.jpg"
+      }
+    ],
+    "costSummary": {
+      "subtotal": 299,
+      "domesticShipping": 350,
+      "serviceFee": 350,
+      "tax": 0,
+      "discount": 0,
+      "total": 999
+    },
+    "paymentStatus": "Paid",
+    "orderStatus": "Procuring",
+    "orderType": "Assisted Purchase (Buy For Me)",
+    "stores": [
+      "Amazon India"
+    ],
+    "invoice": {
+      "id": "INV-2026-21253",
+      "orderId": "ORD-21253",
+      "invoiceNumber": "INV-2026-21253",
+      "createdAt": "24 Nov 2026, 11:46 am",
+      "customerId": "CUS-20261",
+      "customerName": "Pharmayushtechteam",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "customerPhone": "+91 9989884578",
+      "destinationCity": "Dubai",
+      "destinationCountry": "United Arab Emirates",
+      "destinationFlag": "📍",
+      "shippingAddress": {
+        "street": "I2W-CUS-20261, Central Hub",
+        "city": "Dubai",
+        "state": "Dubai",
+        "postalCode": "00000",
+        "country": "United Arab Emirates"
+      },
+      "billingAddress": {
+        "name": "Pharmayushtechteam",
+        "email": "pharmayushtechteam@gmail.com",
+        "country": "United Arab Emirates"
+      },
+      "items": [
+        {
+          "id": "item-1",
+          "title": "Lifelong Stainless Steel Heavy Bottom Saucepan | 1.5liter, 17cm Saucepan with Handle | Milk &amp; Tea Boiling Pot for Kitchen | Induction &amp; Gas Stove Compatible | Durable and Easy to Clean (LLSSP17)",
+          "store": "Amazon India",
+          "price": 299,
+          "qty": 1,
+          "total": 299
+        }
+      ],
+      "subtotalINR": 299,
+      "domesticShippingINR": 350,
+      "serviceFeeINR": 350,
+      "estimatedTaxINR": 0,
+      "discountINR": 0,
+      "totalINR": 999,
+      "paymentMethod": "Pre-Approved Account / Instant Wire",
+      "paymentStatus": "Paid",
+      "emailStatus": "Sent",
+      "emailDeliveryLog": "Invoice generated for order ORD-21253. Ready for electronic email dispatch to pharmayushtechteam@gmail.com.",
+      "emailAttemptCount": 0,
+      "emailSentAt": "24 Nov 2026, 11:46 am"
+    },
+    "attachInvoicePdf": true,
+    "isRetry": false,
+    "savedAt": "2026-11-24T06:16:46.741Z",
+    "updatedAt": "2026-11-24T06:16:56.174Z",
+    "confirmationEmailStatus": "Sent",
+    "confirmationEmailAttempts": 1,
+    "confirmationEmailSentAt": "24 Nov 2026, 11:46 am",
+    "confirmationMessageId": "<f80c8111-4ff4-1224-2690-a52fa9cde010@gmail.com>"
+  },
+  {
+    "orderId": "ORD-94384",
+    "orderDate": "24 Nov 2026",
+    "customerId": "CUS-20261",
+    "customerName": "Pharmayushtechteam",
+    "customerEmail": "pharmayushtechteam@gmail.com",
+    "customerPhone": "+91 9989884578",
+    "deliveryAddress": {
+      "street": "I2W-CUS-20261, Central Hub",
+      "city": "Dubai",
+      "country": "United Arab Emirates"
+    },
+    "products": [
+      {
+        "name": "Arayna Women’s Cotton Printed Kurta Set with Palazzo Pants and Dupatta | Ethnic Straight Kurta",
+        "store": "Amazon India",
+        "price": 998,
+        "qty": 1,
+        "imageUrl": "https://m.media-amazon.com/images/I/81otXBoExEL._SL1500_.jpg"
+      },
+      {
+        "name": "Arayna Printed Dupatta Comfortable 3x Large",
+        "store": "Amazon India",
+        "price": 1499,
+        "qty": 1,
+        "imageUrl": "https://m.media-amazon.com/images/I/81aQQd6Y3oL._SL1500_.jpg"
+      }
+    ],
+    "costSummary": {
+      "subtotal": 2497,
+      "domesticShipping": 0,
+      "serviceFee": 350,
+      "tax": 0,
+      "discount": 0,
+      "total": 2847
+    },
+    "paymentStatus": "Paid",
+    "orderStatus": "Procuring",
+    "orderType": "Assisted Purchase (Buy For Me)",
+    "stores": [
+      "Amazon India"
+    ],
+    "invoice": {
+      "id": "INV-2026-94384",
+      "orderId": "ORD-94384",
+      "invoiceNumber": "INV-2026-94384",
+      "createdAt": "24 Nov 2026, 11:27 am",
+      "customerId": "CUS-20261",
+      "customerName": "Pharmayushtechteam",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "customerPhone": "+91 9989884578",
+      "destinationCity": "Dubai",
+      "destinationCountry": "United Arab Emirates",
+      "destinationFlag": "📍",
+      "shippingAddress": {
+        "street": "I2W-CUS-20261, Central Hub",
+        "city": "Dubai",
+        "state": "Dubai",
+        "postalCode": "00000",
+        "country": "United Arab Emirates"
+      },
+      "billingAddress": {
+        "name": "Pharmayushtechteam",
+        "email": "pharmayushtechteam@gmail.com",
+        "country": "United Arab Emirates"
+      },
+      "items": [
+        {
+          "id": "item-1",
+          "title": "Arayna Women’s Cotton Printed Kurta Set with Palazzo Pants and Dupatta | Ethnic Straight Kurta",
+          "store": "Amazon India",
+          "price": 998,
+          "qty": 1,
+          "total": 998
+        },
+        {
+          "id": "item-2",
+          "title": "Arayna Printed Dupatta Comfortable 3x Large",
+          "store": "Amazon India",
+          "price": 1499,
+          "qty": 1,
+          "total": 1499
+        }
+      ],
+      "subtotalINR": 2497,
+      "domesticShippingINR": 0,
+      "serviceFeeINR": 350,
+      "estimatedTaxINR": 0,
+      "discountINR": 0,
+      "totalINR": 2847,
+      "paymentMethod": "Pre-Approved Account / Instant Wire",
+      "paymentStatus": "Paid",
+      "emailStatus": "Sent",
+      "emailDeliveryLog": "Invoice generated for order ORD-94384. Ready for electronic email dispatch to pharmayushtechteam@gmail.com.",
+      "emailAttemptCount": 0,
+      "emailSentAt": "24 Nov 2026, 11:36 am"
+    },
+    "attachInvoicePdf": true,
+    "isRetry": false,
+    "savedAt": "2026-11-24T05:57:21.531Z",
+    "updatedAt": "2026-11-24T05:57:30.411Z",
+    "confirmationEmailStatus": "Sent",
+    "confirmationEmailAttempts": 1,
+    "confirmationEmailSentAt": "24 Nov 2026, 11:36 am",
+    "confirmationMessageId": "<6a7e2e2d-177b-68c2-3963-ed326a6a2998@gmail.com>"
+  },
+  {
+    "orderId": "ORD-84106",
+    "orderDate": "23 Nov 2026",
+    "customerId": "CUS-20261",
+    "customerName": "sahara",
+    "customerEmail": "pharmayushtechteam@gmail.com",
+    "customerPhone": "+91 7896894578",
+    "deliveryAddress": {
+      "street": "I2W-CUS-20261, Central Hub",
+      "city": "International City",
+      "country": "United Arab Emirates"
+    },
+    "products": [
+      {
+        "name": "Myxes M19 True Wireless Earbuds Powerful Bass Smart Touch Control LED Display M64 Bluetooth",
+        "store": "Flipkart",
+        "price": 355,
+        "qty": 1,
+        "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/headphone/6/y/w/m19-true-wireless-earbuds-powerful-bass-smart-touch-control-led-original-imahhugfsasnjtnf.jpeg"
+      },
+      {
+        "name": "Bullstorm Exclusive Tws T2 Wireless Earbuds 1500mah Powerbank Asap Charge ANC B32 Bluetooth",
+        "store": "Flipkart",
+        "price": 1799,
+        "qty": 1,
+        "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/headphone/3/s/h/bs-ultrapood-best-sound-bullstorm-original-imahfzffqe498yy5.jpeg"
+      }
+    ],
+    "costSummary": {
+      "subtotal": 2154,
+      "domesticShipping": 0,
+      "serviceFee": 350,
+      "tax": 0,
+      "discount": 0,
+      "total": 2504
+    },
+    "paymentStatus": "Paid",
+    "orderStatus": "Procuring",
+    "orderType": "Assisted Purchase (Buy For Me)",
+    "stores": [
+      "Flipkart"
+    ],
+    "invoice": {
+      "id": "INV-2026-84106",
+      "orderId": "ORD-84106",
+      "invoiceNumber": "INV-2026-84106",
+      "createdAt": "23 Nov 2026, 11:00 am",
+      "customerId": "CUS-20261",
+      "customerName": "sahara",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "customerPhone": "+91 7896894578",
+      "destinationCity": "International City",
+      "destinationCountry": "United Arab Emirates",
+      "destinationFlag": "📍",
+      "shippingAddress": {
+        "street": "I2W-CUS-20261, Central Hub",
+        "city": "International City",
+        "state": "International City",
+        "postalCode": "00000",
+        "country": "United Arab Emirates"
+      },
+      "billingAddress": {
+        "name": "sahara",
+        "email": "pharmayushtechteam@gmail.com",
+        "country": "United Arab Emirates"
+      },
+      "items": [
+        {
+          "id": "item-1",
+          "title": "Myxes M19 True Wireless Earbuds Powerful Bass Smart Touch Control LED Display M64 Bluetooth",
+          "store": "Flipkart",
+          "price": 355,
+          "qty": 1,
+          "total": 355
+        },
+        {
+          "id": "item-2",
+          "title": "Bullstorm Exclusive Tws T2 Wireless Earbuds 1500mah Powerbank Asap Charge ANC B32 Bluetooth",
+          "store": "Flipkart",
+          "price": 1799,
+          "qty": 1,
+          "total": 1799
+        }
+      ],
+      "subtotalINR": 2154,
+      "domesticShippingINR": 0,
+      "serviceFeeINR": 350,
+      "estimatedTaxINR": 0,
+      "discountINR": 0,
+      "totalINR": 2504,
+      "paymentMethod": "Pre-Approved Account / Instant Wire",
+      "paymentStatus": "Paid",
+      "emailStatus": "Sent",
+      "emailDeliveryLog": "Delivered via Google SMTP to pharmayushtechteam@gmail.com.",
+      "emailAttemptCount": 0,
+      "emailSentAt": "23 Nov 2026, 02:58 pm"
+    },
+    "attachInvoicePdf": true,
+    "isRetry": false,
+    "savedAt": "2026-11-23T05:30:59.383Z",
+    "updatedAt": "2026-11-23T09:28:47.780Z",
+    "confirmationEmailStatus": "Sent",
+    "confirmationEmailAttempts": 1,
+    "confirmationEmailSentAt": "23 Nov 2026, 02:58 pm",
+    "confirmationMessageId": "<4b4804da-4554-fb6d-1d0d-7a1250b3dfd0@gmail.com>"
+  },
+  {
+    "orderId": "ORD-20482",
+    "orderDate": "23 Nov 2026",
+    "customerId": "CUS-10028",
+    "customerName": "Priya Sharma",
+    "customerEmail": "priya.sharma@example.com",
+    "customerPhone": "+971 50 123 4567",
+    "deliveryAddress": {
+      "street": "I2W-CUS-10028, Central Hub",
+      "city": "Dubai",
+      "country": "UAE"
+    },
+    "products": [
+      {
+        "name": "Nike Running Shoes",
+        "store": "amazon.in",
+        "price": 3999,
+        "qty": 1,
+        "imageUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=160&auto=format&fit=crop&q=80"
+      },
+      {
+        "name": "Women's Kurta Set",
+        "store": "myntra",
+        "price": 1299,
+        "qty": 1,
+        "imageUrl": "https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=160&auto=format&fit=crop&q=80"
+      },
+      {
+        "name": "Atomic Habits Book",
+        "store": "amazon.in",
+        "price": 499,
+        "qty": 1,
+        "imageUrl": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=160&auto=format&fit=crop&q=80"
+      },
+      {
+        "name": "Stainless Steel Water Bottle",
+        "store": "flipkart",
+        "price": 799,
+        "qty": 2,
+        "imageUrl": "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=160&auto=format&fit=crop&q=80"
+      }
+    ],
+    "costSummary": {
+      "subtotal": 7395,
+      "domesticShipping": 350,
+      "serviceFee": 500,
+      "tax": 0,
+      "discount": 0,
+      "total": 8245
+    },
+    "paymentStatus": "Paid",
+    "orderStatus": "Procuring",
+    "orderType": "Assisted Purchase (Buy For Me)",
+    "stores": [
+      "amazon.in",
+      "myntra",
+      "flipkart"
+    ],
+    "invoice": {
+      "id": "INV-2026-20482",
+      "orderId": "ORD-20482",
+      "invoiceNumber": "INV-2026-20482",
+      "createdAt": "23 Nov 2026, 10:43 am",
+      "customerId": "CUS-10028",
+      "customerName": "Priya Sharma",
+      "customerEmail": "priya.sharma@example.com",
+      "customerPhone": "+971 50 123 4567",
+      "destinationCity": "Dubai",
+      "destinationCountry": "UAE",
+      "destinationFlag": "📍",
+      "shippingAddress": {
+        "street": "I2W-CUS-10028, Central Hub",
+        "city": "Dubai",
+        "state": "Dubai",
+        "postalCode": "00000",
+        "country": "UAE"
+      },
+      "billingAddress": {
+        "name": "Priya Sharma",
+        "email": "priya.sharma@example.com",
+        "country": "UAE"
+      },
+      "items": [
+        {
+          "id": "item-1",
+          "title": "Nike Running Shoes",
+          "store": "amazon.in",
+          "price": 3999,
+          "qty": 1,
+          "total": 3999
+        },
+        {
+          "id": "item-2",
+          "title": "Women's Kurta Set",
+          "store": "myntra",
+          "price": 1299,
+          "qty": 1,
+          "total": 1299
+        },
+        {
+          "id": "item-3",
+          "title": "Atomic Habits Book",
+          "store": "amazon.in",
+          "price": 499,
+          "qty": 1,
+          "total": 499
+        },
+        {
+          "id": "item-4",
+          "title": "Stainless Steel Water Bottle",
+          "store": "flipkart",
+          "price": 799,
+          "qty": 2,
+          "total": 1598
+        }
+      ],
+      "subtotalINR": 7395,
+      "domesticShippingINR": 350,
+      "serviceFeeINR": 500,
+      "estimatedTaxINR": 0,
+      "discountINR": 0,
+      "totalINR": 8245,
+      "paymentMethod": "Pre-Approved Account / Instant Wire",
+      "paymentStatus": "Paid",
+      "emailStatus": "Sent",
+      "emailDeliveryLog": "Invoice generated for order ORD-20482. Ready for electronic email dispatch to priya.sharma@example.com.",
+      "emailAttemptCount": 0,
+      "emailSentAt": "23 Nov 2026, 11:01 am"
+    },
+    "attachInvoicePdf": true,
+    "isRetry": false,
+    "savedAt": "2026-11-23T05:13:01.381Z",
+    "updatedAt": "2026-11-23T05:31:06.328Z",
+    "confirmationEmailStatus": "Sent",
+    "confirmationEmailAttempts": 1,
+    "confirmationEmailSentAt": "23 Nov 2026, 11:01 am",
+    "confirmationMessageId": "<1a594100-3b56-636c-d41e-8f0842361f89@gmail.com>"
+  },
+  {
+    "orderId": "ORD-50618",
+    "orderDate": "23 Nov 2026",
+    "customerId": "CUS-10001",
+    "customerName": "John Doe",
+    "customerEmail": "john@example.com",
+    "customerPhone": "+91 98765 43210",
+    "deliveryAddress": {
+      "street": "I2W-CUS-10001, Central Hub",
+      "city": "Dubai",
+      "country": "United Arab Emirates"
+    },
+    "products": [
+      {
+        "name": "Triggr Trinity 2 Dual Pairing Enc Fast Charge 50h Battery Rubber Finish V5 3 Bluetooth",
+        "store": "Flipkart",
+        "price": 799,
+        "qty": 1,
+        "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/headphone/r/p/z/-original-imahr4a9rddghzd3.jpeg"
+      }
+    ],
+    "costSummary": {
+      "subtotal": 799,
+      "domesticShipping": 350,
+      "serviceFee": 350,
+      "tax": 0,
+      "discount": 0,
+      "total": 1499
+    },
+    "paymentStatus": "Paid",
+    "orderStatus": "Procuring",
+    "orderType": "Assisted Purchase (Buy For Me)",
+    "stores": [
+      "Flipkart"
+    ],
+    "invoice": {
+      "id": "INV-2026-50618",
+      "orderId": "ORD-50618",
+      "invoiceNumber": "INV-2026-50618",
+      "createdAt": "23 Nov 2026, 10:42 am",
+      "customerId": "CUS-10001",
+      "customerName": "John Doe",
+      "customerEmail": "john@example.com",
+      "customerPhone": "+91 98765 43210",
+      "destinationCity": "Dubai",
+      "destinationCountry": "United Arab Emirates",
+      "destinationFlag": "📍",
+      "shippingAddress": {
+        "street": "I2W-CUS-10001, Central Hub",
+        "city": "Dubai",
+        "state": "Dubai",
+        "postalCode": "00000",
+        "country": "United Arab Emirates"
+      },
+      "billingAddress": {
+        "name": "John Doe",
+        "email": "john@example.com",
+        "country": "United Arab Emirates"
+      },
+      "items": [
+        {
+          "id": "item-1",
+          "title": "Triggr Trinity 2 Dual Pairing Enc Fast Charge 50h Battery Rubber Finish V5 3 Bluetooth",
+          "store": "Flipkart",
+          "price": 799,
+          "qty": 1,
+          "total": 799
+        }
+      ],
+      "subtotalINR": 799,
+      "domesticShippingINR": 350,
+      "serviceFeeINR": 350,
+      "estimatedTaxINR": 0,
+      "discountINR": 0,
+      "totalINR": 1499,
+      "paymentMethod": "Pre-Approved Account / Instant Wire",
+      "paymentStatus": "Paid",
+      "emailStatus": "Sent",
+      "emailDeliveryLog": "Invoice generated for order ORD-50618. Ready for electronic email dispatch to john@example.com.",
+      "emailAttemptCount": 0,
+      "emailSentAt": "23 Nov 2026, 10:42 am"
+    },
+    "attachInvoicePdf": true,
+    "isRetry": false,
+    "savedAt": "2026-11-23T05:12:57.279Z",
+    "updatedAt": "2026-11-23T05:13:08.691Z",
+    "confirmationEmailStatus": "Sent",
+    "confirmationEmailAttempts": 1,
+    "confirmationEmailSentAt": "23 Nov 2026, 10:42 am",
+    "confirmationMessageId": "<37da9ff9-4e3b-5c03-def7-f04d838b7f96@gmail.com>"
+  },
+  {
     "orderId": "ORD-48897",
     "orderDate": "13 Oct 2026",
     "customerId": "CUS-10286",

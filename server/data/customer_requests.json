@@ -57,5 +57,390 @@
         }
       ]
     }
+  ],
+  "CUS-10001": [
+    {
+      "id": "REQ-65671",
+      "requestNumber": "REQ-65671",
+      "customerId": "CUS-10001",
+      "customerName": "John Doe",
+      "customerEmail": "john@example.com",
+      "date": "23 Nov 2026",
+      "status": "Under Review",
+      "totalItems": 1,
+      "totalAmountINR": 799,
+      "products": [
+        {
+          "id": "prod-1795410533639",
+          "name": "Triggr Trinity 2 Dual Pairing Enc Fast Charge 50h Battery Rubber Finish V5 3 Bluetooth",
+          "store": "flipkart",
+          "storeName": "Flipkart",
+          "url": "https://www.flipkart.com/triggr-trinity-2-dual-pairing-enc-fast-charge-50h-battery-rubber-finish-v5-3-bluetooth/p/itm03c651cfe2be4?pid=ACCH8Q2VGN7MHYHS&lid=LSTACCH8Q2VGN7MHYHSQSLI2G&marketplace=FLIPKART&store=0pm%2Ffcn&srno=b_1_2&otracker=browse&fm=organic&iid=en_jf2xV9cJX6A8v2EdKGrv9hVpdWe2JFlPcWoBZUP8WZAOUTqJNHGl22OBB-EM6V_R_cDBR_ikz4FWWGQYV2R1_g6a8pXmhFkiBzagxTWhRdNiYYEsN3O6eL2caypAEnb4&ppt=browse&ppn=browse&ssid=wu9ol2v09s0000001795410508937&ov_redirect=true&ov_redirect=true",
+          "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/headphone/r/p/z/-original-imahr4a9rddghzd3.jpeg",
+          "quantity": 1,
+          "size": "2G",
+          "colour": "Default",
+          "priceINR": 799
+        }
+      ],
+      "destinationCountry": "United Arab Emirates",
+      "notes": ""
+    },
+    {
+      "id": "REQ-14889",
+      "requestNumber": "REQ-14889",
+      "customerId": "CUS-10001",
+      "customerName": "John Doe",
+      "customerEmail": "john@example.com",
+      "date": "23 Nov 2026",
+      "status": "Under Review",
+      "totalItems": 1,
+      "totalAmountINR": 799,
+      "products": [
+        {
+          "id": "prod-1795410533639",
+          "name": "Triggr Trinity 2 Dual Pairing Enc Fast Charge 50h Battery Rubber Finish V5 3 Bluetooth",
+          "store": "flipkart",
+          "storeName": "Flipkart",
+          "url": "https://www.flipkart.com/triggr-trinity-2-dual-pairing-enc-fast-charge-50h-battery-rubber-finish-v5-3-bluetooth/p/itm03c651cfe2be4?pid=ACCH8Q2VGN7MHYHS&lid=LSTACCH8Q2VGN7MHYHSQSLI2G&marketplace=FLIPKART&store=0pm%2Ffcn&srno=b_1_2&otracker=browse&fm=organic&iid=en_jf2xV9cJX6A8v2EdKGrv9hVpdWe2JFlPcWoBZUP8WZAOUTqJNHGl22OBB-EM6V_R_cDBR_ikz4FWWGQYV2R1_g6a8pXmhFkiBzagxTWhRdNiYYEsN3O6eL2caypAEnb4&ppt=browse&ppn=browse&ssid=wu9ol2v09s0000001795410508937&ov_redirect=true&ov_redirect=true",
+          "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/headphone/r/p/z/-original-imahr4a9rddghzd3.jpeg",
+          "quantity": 1,
+          "size": "2G",
+          "colour": "Default",
+          "priceINR": 799
+        }
+      ],
+      "destinationCountry": "United Arab Emirates",
+      "notes": ""
+    }
+  ],
+  "CUS-20261": [
+    {
+      "id": "REQ-98421",
+      "requestNumber": "REQ-98421",
+      "customerId": "CUS-20261",
+      "customerName": "Pharmayushtechteam",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "date": "24 Nov 2026",
+      "status": "Under Review",
+      "totalItems": 1,
+      "totalAmountINR": 1499,
+      "products": [
+        {
+          "id": "prod-1795505312683",
+          "name": "Buy RANDOM Unisex White & Silver Toned Solid Contemporary Premium Wall Round Clock - - Home for Unisex",
+          "store": "myntra",
+          "storeName": "Myntra",
+          "url": "https://www.myntra.com/clocks/random/random-unisex-white--silver-toned-solid-contemporary-premium-wall-round-clock/36676051/buy",
+          "imageUrl": "https://assets.myntassets.com/h_200,w_200,c_fill,g_auto/h_1440,q_75,w_1080/v1/assets/images/2026/MARCH/14/rAPD7bwU_c8cc84e461ba45fd8dce4b347cc05b77.jpg",
+          "quantity": 1,
+          "size": "Standard",
+          "colour": "White",
+          "priceINR": 1499
+        }
+      ],
+      "destinationCountry": "United Arab Emirates",
+      "notes": ""
+    },
+    {
+      "id": "REQ-17691",
+      "requestNumber": "REQ-17691",
+      "customerId": "CUS-20261",
+      "customerName": "Pharmayushtechteam",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "date": "24 Nov 2026",
+      "status": "Under Review",
+      "totalItems": 3,
+      "totalAmountINR": 3058,
+      "products": [
+        {
+          "id": "prod-1795502426186",
+          "name": "Id Fresho Malabar 350 G Pouch",
+          "store": "other",
+          "storeName": "bigbasket",
+          "url": "https://www.bigbasket.com/pd/30003294/id-fresho-malabar-parotaparatha-350-g-pouch/?nc=sis-prod-list&t_pos_sec=1&t_pos_item=15&t_s=Malabar+Parota",
+          "imageUrl": "https://cdn.zeptonow.com/production/ik-seo/tr:w-403,ar-1080-1080,pr-true,f-auto,q-40,dpr-2/cms/product_variant/b76cc70e-4cb0-40bf-9107-1195224a6b04/iD-Fresh-Malabar-Parota.jpg",
+          "quantity": 1,
+          "size": "Standard",
+          "colour": "Default",
+          "priceINR": 1499
+        },
+        {
+          "id": "prod-1795502389618",
+          "name": "True Elements Seeds Berries Breakfast Muesli 1 KG",
+          "store": "other",
+          "storeName": "bigbasket",
+          "url": "https://www.bigbasket.com/pd/40136337/true-elements-seeds-berries-breakfast-muesli-1-kg/?nc=sis-prod-list&t_pos_sec=1&t_pos_item=5&t_s=Seeds+%2526+Berries+Muesli+-+High+Fibre+%2526+Protein%252C+Ready+To+Eat+Healthy+Breakfast",
+          "imageUrl": "https://5.imimg.com/data5/SELLER/Default/2022/7/BE/YP/WW/57700226/true-elements-berries-mix-muesli-1000x1000.jpg",
+          "quantity": 1,
+          "size": "Standard",
+          "colour": "Default",
+          "priceINR": 1499
+        },
+        {
+          "id": "prod-1795502369098",
+          "name": "Muscleblaze Muscleblaze Peanut Butter With Added Omega Creamy 1 Kg 1 Kg",
+          "store": "other",
+          "storeName": "bigbasket",
+          "url": "https://www.bigbasket.com/pd/40254376/muscleblaze-muscleblaze-peanut-butter-with-added-omega-creamy-1-kg-1-kg/?nc=sis-prod-list&t_pos_sec=1&t_pos_item=1&t_s=Classic+American+Recipe+Flavour+Creamy+Peanut+Butter",
+          "imageUrl": "https://www.bbassets.com/media/uploads/p/l/40254376_1-muscleblaze-muscleblaze-peanut-butter-with-added-omega-creamy-1-kg-1-kg.jpg",
+          "quantity": 1,
+          "size": "Standard",
+          "colour": "Default",
+          "priceINR": 60
+        }
+      ],
+      "destinationCountry": "United Arab Emirates",
+      "notes": ""
+    },
+    {
+      "id": "REQ-30181",
+      "requestNumber": "REQ-30181",
+      "customerId": "CUS-20261",
+      "customerName": "Pharmayushtechteam",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "date": "24 Nov 2026",
+      "status": "Under Review",
+      "totalItems": 1,
+      "totalAmountINR": 299,
+      "products": [
+        {
+          "id": "prod-1795500904945",
+          "name": "Lifelong Stainless Steel Heavy Bottom Saucepan | 1.5liter, 17cm Saucepan with Handle | Milk &amp; Tea Boiling Pot for Kitchen | Induction &amp; Gas Stove Compatible | Durable and Easy to Clean (LLSSP17)",
+          "store": "amazon",
+          "storeName": "Amazon India",
+          "url": "https://www.amazon.in/Lifelong-Stainless-Induction-Compatible-LLSSP17/dp/B0FJMGWF5K/ref=sr_1_4?_encoding=UTF8&content-id=amzn1.sym.ecc8d703-cfc9-49d3-86e4-c186669ee9b4&dib=eyJ2IjoiMSJ9.VC-DJn8-TCLgTRx3tNAotEaE6KoS-lA_KF0P12ddLW6Pd3b2SEU9D92hIl2j9SCxibgPw-SG9wZYKVnsRjYAx82QD70It3BFQE0S5hasQnpvpQPK5IfSch2CkgHA7TBnwW0hdatMME0UM_IfXyl7qC-fjkFlMxJ9hz7W1PmkikuxYbwMBy56RH2zk1AeiaH69ZBc0HADcrsrUf4wDqo84v28ZDGErpJoeSWERV1kXVmG6TWVMAGSFxjzevB8ygqV43a5mRiGPnnAOIz6nzJmdoCzOFWjwRFWoIm9mcuu-Vk.4c6uHijpUTf1p32BZZyRPSCerY-ECe-3zh2nxxBEbIE&dib_tag=se&pd_rd_r=70adc281-d787-4ba9-98dd-81bf49d18e39&pd_rd_w=Z9lIb&pd_rd_wg=gUFkf&qid=1795500886&refinements=p_85%3A10440599031%2Cp_36%3A-100000&rnid=3444809031&rps=1&s=kitchen&sr=1-4",
+          "imageUrl": "https://m.media-amazon.com/images/I/61Mq8-H4I3L._SL1500_.jpg",
+          "quantity": 1,
+          "size": "7TB",
+          "colour": "Default",
+          "priceINR": 299
+        }
+      ],
+      "destinationCountry": "United Arab Emirates",
+      "notes": ""
+    },
+    {
+      "id": "REQ-82364",
+      "requestNumber": "REQ-82364",
+      "customerId": "CUS-20261",
+      "customerName": "Pharmayushtechteam",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "date": "24 Nov 2026",
+      "status": "Under Review",
+      "totalItems": 2,
+      "totalAmountINR": 2497,
+      "products": [
+        {
+          "id": "prod-1795499732737",
+          "name": "Arayna Women’s Cotton Printed Kurta Set with Palazzo Pants and Dupatta | Ethnic Straight Kurta",
+          "store": "amazon",
+          "storeName": "Amazon India",
+          "url": "https://www.amazon.in/Arayna-Printed-Palazzo-Straight-3X-Large/dp/B0G4DHL9HS?pd_rd_w=IK67f&content-id=amzn1.sym.1af5cc27-ede7-43a9-9102-1ad65b68843e&pf_rd_p=1af5cc27-ede7-43a9-9102-1ad65b68843e&pf_rd_r=Y30SGNDHRF1K1N7GV4YP&pd_rd_wg=ScWwG&pd_rd_r=4b13f865-a9f0-4cc4-9eb6-2447f8dfff29&ref_=sspa_dk_detail_sbb_img_0&sp_csd=d2lkZ2V0TmFtZT1zcF9kZXRhaWxfdGhlbWF0aWM&aref=TSq12OSQni&th=1&psc=1",
+          "imageUrl": "https://m.media-amazon.com/images/I/81otXBoExEL._SL1500_.jpg",
+          "quantity": 1,
+          "size": "Large",
+          "colour": "Default",
+          "priceINR": 998
+        },
+        {
+          "id": "prod-1795499687289",
+          "name": "Arayna Printed Dupatta Comfortable 3x Large",
+          "store": "amazon",
+          "storeName": "Amazon India",
+          "url": "https://www.amazon.in/Arayna-Printed-Dupatta-Comfortable-3X-Large/dp/B0G1SDQYY5/?_encoding=UTF8&pd_rd_w=Rx3KQ&content-id=amzn1.sym.b919c641-8e33-49fa-a820-0b6961c2556f&pf_rd_p=b919c641-8e33-49fa-a820-0b6961c2556f&pf_rd_r=HNNZZGYQNQD5J821CVCJ&pd_rd_wg=pBbMz&pd_rd_r=d97b8f6d-a09d-4266-a864-be521e344afa&ref_=pd_hp_d_r_btf_a2i_gw_cml&th=1&psc=1",
+          "imageUrl": "https://m.media-amazon.com/images/I/81aQQd6Y3oL._SL1500_.jpg",
+          "quantity": 1,
+          "size": "Large",
+          "colour": "Default",
+          "priceINR": 1499
+        }
+      ],
+      "destinationCountry": "United Arab Emirates",
+      "notes": ""
+    },
+    {
+      "id": "REQ-23515",
+      "requestNumber": "REQ-23515",
+      "customerId": "CUS-20261",
+      "customerName": "Pharmayushtechteam",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "date": "23 Nov 2026",
+      "status": "Under Review",
+      "totalItems": 4,
+      "totalAmountINR": 2602,
+      "products": [
+        {
+          "id": "prod-1795430806038",
+          "name": "https://www.flipkart.com/swiss-beauty-pure-matte-lipstick/p/itmca82044f5f352?pid=LSKFC44GHYZFTGCE&lid=LSTLSKFC44GHYZFTGCE46H2ZL&marketplace=FLIPKART&q=lipstick&store=g9b%2Fffi%2Ftv5%2Funa&srno=s_1_40&otracker=AS_QueryStore_OrganicAutoSuggest_1_3_na_na_na&otracker1=AS_QueryStore_OrganicAutoSuggest_1_3_na_na_na&fm=search-autosuggest&iid=d3d0a570-7ced-499d-b3e5-ea01b0040bb0.LSKFC44GHYZFTGCE.SEARCH&ppt=sp&ppn=sp&qH=0f97737ad54537c5&ov_redirect=true&ov_redirect=true",
+          "store": "amazon",
+          "storeName": "Amazon India",
+          "url": "https://www.flipkart.com/swiss-beauty-pure-matte-lipstick/p/itmca82044f5f352?pid=LSKFC44GHYZFTGCE&lid=LSTLSKFC44GHYZFTGCE46H2ZL&marketplace=FLIPKART&q=lipstick&store=g9b%2Fffi%2Ftv5%2Funa&srno=s_1_40&otracker=AS_QueryStore_OrganicAutoSuggest_1_3_na_na_na&otracker1=AS_QueryStore_OrganicAutoSuggest_1_3_na_na_na&fm=search-autosuggest&iid=d3d0a570-7ced-499d-b3e5-ea01b0040bb0.LSKFC44GHYZFTGCE.SEARCH&ppt=sp&ppn=sp&qH=0f97737ad54537c5&ov_redirect=true&ov_redirect=true",
+          "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/lipstick/5/g/1/-original-imah2jx7md2de8ur.jpeg",
+          "quantity": 1,
+          "size": "M",
+          "colour": "Black",
+          "priceINR": 206
+        },
+        {
+          "id": "prod-1795430753230",
+          "name": "https://www.flipkart.com/rastic-assure-red-edittion-liquid-matte-lipstick-pack-4-fsn-77/p/itma257f05de9e5b?pid=LSKHNQGQTKKDZHFH&lid=LSTLSKHNQGQTKKDZHFHCIVLIB&marketplace=FLIPKART&q=lipstick&store=g9b%2Fffi%2Ftv5%2Funa&srno=s_1_4&otracker=AS_QueryStore_OrganicAutoSuggest_1_3_na_na_na&otracker1=AS_QueryStore_OrganicAutoSuggest_1_3_na_na_na&fm=search-autosuggest&iid=d3d0a570-7ced-499d-b3e5-ea01b0040bb0.LSKHNQGQTKKDZHFH.SEARCH&ppt=sp&ppn=sp&ssid=88aev0me2o0000001795430724013&qH=0f97737ad54537c5&ov_redirect=true&ov_redirect=true",
+          "store": "amazon",
+          "storeName": "Amazon India",
+          "url": "https://www.flipkart.com/rastic-assure-red-edittion-liquid-matte-lipstick-pack-4-fsn-77/p/itma257f05de9e5b?pid=LSKHNQGQTKKDZHFH&lid=LSTLSKHNQGQTKKDZHFHCIVLIB&marketplace=FLIPKART&q=lipstick&store=g9b%2Fffi%2Ftv5%2Funa&srno=s_1_4&otracker=AS_QueryStore_OrganicAutoSuggest_1_3_na_na_na&otracker1=AS_QueryStore_OrganicAutoSuggest_1_3_na_na_na&fm=search-autosuggest&iid=d3d0a570-7ced-499d-b3e5-ea01b0040bb0.LSKHNQGQTKKDZHFH.SEARCH&ppt=sp&ppn=sp&ssid=88aev0me2o0000001795430724013&qH=0f97737ad54537c5&ov_redirect=true&ov_redirect=true",
+          "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/lipstick/x/z/i/8-red-edittion-liquid-matte-lipstick-pack-of-4-fsn-77-rastic-original-imahnqhpkfhxffvx.jpeg",
+          "quantity": 1,
+          "size": "M",
+          "colour": "Black",
+          "priceINR": 98
+        },
+        {
+          "id": "prod-1795430694687",
+          "name": "https://www.flipkart.com/mivi-duopods-i6-55hrs-pt-hd-call-fast-charging-3d-sound-9eq-modes-app-supp-ipx4-bluetooth/p/itmea59eac5e1c2c?pid=ACCH238YMBHRNHHE&lid=LSTACCH238YMBHRNHHELZWUN0&hl_lid=&marketplace=FLIPKART&fm=eyJ3dHAiOiJyZWNvIiwicHJwdCI6InBwIiwibWlkIjoicHJvZHVjdFJlY29tbWVuZGF0aW9uL3NpbWlsYXIifQ%3D%3D&ctx=eyJkZWxpdmVyZWRCeSI6IiIsImRpc3BsYXlQcmljZSI6Ijc5OSJ9&pageUID=1795430663759",
+          "store": "amazon",
+          "storeName": "Amazon India",
+          "url": "https://www.flipkart.com/mivi-duopods-i6-55hrs-pt-hd-call-fast-charging-3d-sound-9eq-modes-app-supp-ipx4-bluetooth/p/itmea59eac5e1c2c?pid=ACCH238YMBHRNHHE&lid=LSTACCH238YMBHRNHHELZWUN0&hl_lid=&marketplace=FLIPKART&fm=eyJ3dHAiOiJyZWNvIiwicHJwdCI6InBwIiwibWlkIjoicHJvZHVjdFJlY29tbWVuZGF0aW9uL3NpbWlsYXIifQ%3D%3D&ctx=eyJkZWxpdmVyZWRCeSI6IiIsImRpc3BsYXlQcmljZSI6Ijc5OSJ9&pageUID=1795430663759",
+          "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/headphone/t/n/s/-original-imah34yhpbw475hc.jpeg",
+          "quantity": 1,
+          "size": "M",
+          "colour": "Black",
+          "priceINR": 799
+        },
+        {
+          "id": "prod-1795429973757",
+          "name": "https://www.flipkart.com/fire-boltt-aero-pro-tws-earbuds-custom-eq-profiles-50h-battery-quad-mic-enc-bt-5-4-bluetooth/p/itmbff478e9a200c?pid=ACCHEY8PGE74H4W7&lid=LSTACCHEY8PGE74H4W7VOX2SG&hl_lid=&marketplace=FLIPKART&fm=eyJ3dHAiOiJyZWNvIiwicHJwdCI6InBwIiwibWlkIjoicHJvZHVjdFJlY29tbWVuZGF0aW9uL3NpbWlsYXIifQ%3D%3D&ctx=eyJkZWxpdmVyZWRCeSI6IiIsImRpc3BsYXlQcmljZSI6Ijg5OSJ9&pageUID=1795429918561",
+          "store": "amazon",
+          "storeName": "Amazon India",
+          "url": "https://www.flipkart.com/fire-boltt-aero-pro-tws-earbuds-custom-eq-profiles-50h-battery-quad-mic-enc-bt-5-4-bluetooth/p/itmbff478e9a200c?pid=ACCHEY8PGE74H4W7&lid=LSTACCHEY8PGE74H4W7VOX2SG&hl_lid=&marketplace=FLIPKART&fm=eyJ3dHAiOiJyZWNvIiwicHJwdCI6InBwIiwibWlkIjoicHJvZHVjdFJlY29tbWVuZGF0aW9uL3NpbWlsYXIifQ%3D%3D&ctx=eyJkZWxpdmVyZWRCeSI6IiIsImRpc3BsYXlQcmljZSI6Ijg5OSJ9&pageUID=1795429918561",
+          "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/headphone/y/o/e/-enriched-transparent-2-original-imahhnzvwppfsfgf.png",
+          "quantity": 1,
+          "size": "M",
+          "colour": "Black",
+          "priceINR": 1499
+        }
+      ],
+      "destinationCountry": "United Arab Emirates",
+      "notes": ""
+    },
+    {
+      "id": "REQ-39058",
+      "requestNumber": "REQ-39058",
+      "customerId": "CUS-20261",
+      "customerName": "Pharmayushtechteam",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "date": "23 Nov 2026",
+      "status": "Under Review",
+      "totalItems": 1,
+      "totalAmountINR": 1199,
+      "products": [
+        {
+          "id": "prod-1795428229107",
+          "name": "https://www.flipkart.com/boat-rockerz-255-pro-60h-battery-asap-charge-app-support-bluetooth/p/itma00f193aac766?pid=ACCFZ95MTQSX7NFD&lid=LSTACCFZ95MTQSX7NFDAQLKMO&marketplace=FLIPKART&store=0pm%2Ffcn&srno=b_1_37&otracker=browse&fm=organic&iid=en_jf2xV9cJX6A8v2EdKGrv9hVpdWe2JFlPcWoBZUP8WZBsTtZ2dbecRWzZFPT1MTL2TsoBqMA1Pjz1wbDunAs3A7fRCbUWhbUJDakKRMV-FCm9WfUOuC7znsGGsIBdkNc7&ppt=browse&ppn=browse&ov_redirect=true&ov_redirect=true",
+          "store": "amazon",
+          "storeName": "Amazon India",
+          "url": "https://www.flipkart.com/boat-rockerz-255-pro-60h-battery-asap-charge-app-support-bluetooth/p/itma00f193aac766?pid=ACCFZ95MTQSX7NFD&lid=LSTACCFZ95MTQSX7NFDAQLKMO&marketplace=FLIPKART&store=0pm%2Ffcn&srno=b_1_37&otracker=browse&fm=organic&iid=en_jf2xV9cJX6A8v2EdKGrv9hVpdWe2JFlPcWoBZUP8WZBsTtZ2dbecRWzZFPT1MTL2TsoBqMA1Pjz1wbDunAs3A7fRCbUWhbUJDakKRMV-FCm9WfUOuC7znsGGsIBdkNc7&ppt=browse&ppn=browse&ov_redirect=true&ov_redirect=true",
+          "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/headphone/3/v/y/-original-imagzuzzkzd8gtzg.jpeg",
+          "quantity": 1,
+          "size": "M",
+          "colour": "Black",
+          "priceINR": 1199
+        }
+      ],
+      "destinationCountry": "United Arab Emirates",
+      "notes": ""
+    },
+    {
+      "id": "REQ-58588",
+      "requestNumber": "REQ-58588",
+      "customerId": "CUS-20261",
+      "customerName": "Pharmayushtechteam",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "date": "23 Nov 2026",
+      "status": "Under Review",
+      "totalItems": 1,
+      "totalAmountINR": 849,
+      "products": [
+        {
+          "id": "prod-1795428136478",
+          "name": "Fire Boltt Aero Shadow Tws Earbuds Rgb Lights Custom Eq Profile 50h Playtime Quad Mic Enc Bluetooth",
+          "store": "flipkart",
+          "storeName": "Flipkart",
+          "url": "https://www.flipkart.com/fire-boltt-aero-shadow-tws-earbuds-rgb-lights-custom-eq-profile-50h-playtime-quad-mic-enc-bluetooth/p/itm72b8ccbe07077?pid=ACCHKXSYNAGTCHRY&lid=LSTACCHKXSYNAGTCHRYEDXALV&marketplace=FLIPKART&store=0pm%2Ffcn&srno=b_1_32&otracker=browse&fm=organic&iid=en_jf2xV9cJX6A8v2EdKGrv9hVpdWe2JFlPcWoBZUP8WZABuVW03dEW8sggWD7LaUJcBA4IE8gr93UQ3t4ZscvMp9W1vXZbKkEmSkpP-D2Uv_m9WfUOuC7znsGGsIBdkNc7&ppt=browse&ppn=browse&ov_redirect=true&ov_redirect=true",
+          "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/headphone/m/p/8/-original-imahhnn9ugmfqjpa.jpeg",
+          "quantity": 1,
+          "size": "Standard",
+          "colour": "Default",
+          "priceINR": 849
+        }
+      ],
+      "destinationCountry": "United Arab Emirates",
+      "notes": ""
+    },
+    {
+      "id": "REQ-89219",
+      "requestNumber": "REQ-89219",
+      "customerId": "CUS-20261",
+      "customerName": "Pharmayushtechteam",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "date": "23 Nov 2026",
+      "status": "Under Review",
+      "totalItems": 1,
+      "totalAmountINR": 1799,
+      "products": [
+        {
+          "id": "prod-1795425953374",
+          "name": "Bullstorm Nuvyx 711 Vanilla Pearl True Wireless Earbuds 13mm Dynamic Driver 05 Bluetooth Gaming",
+          "store": "flipkart",
+          "storeName": "Flipkart",
+          "url": "https://www.flipkart.com/bullstorm-nuvyx-711-vanilla-pearl-true-wireless-earbuds-13mm-dynamic-driver-05-bluetooth-gaming/p/itmb73f17a7b967f?pid=ACCHT6RKDNZZTJDU&marketplace=FLIPKART&lid=LSTACCHT6RKDNZZTJDUYRMYCV&fm=organic&pageUID=1795411785267",
+          "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/headphone/5/v/e/nuvyx-711-vanilla-pearl-true-wireless-earbuds-with-13mm-dynamic-original-imaht6qfmhpjyhcw.jpeg",
+          "quantity": 1,
+          "size": "Standard",
+          "colour": "Default",
+          "priceINR": 1799
+        }
+      ],
+      "destinationCountry": "United Arab Emirates",
+      "notes": ""
+    },
+    {
+      "id": "REQ-78669",
+      "requestNumber": "REQ-78669",
+      "customerId": "CUS-20261",
+      "customerName": "sahara",
+      "customerEmail": "pharmayushtechteam@gmail.com",
+      "date": "23 Nov 2026",
+      "status": "Under Review",
+      "totalItems": 2,
+      "totalAmountINR": 2154,
+      "products": [
+        {
+          "id": "prod-1795411825108",
+          "name": "Myxes M19 True Wireless Earbuds Powerful Bass Smart Touch Control LED Display M64 Bluetooth",
+          "store": "flipkart",
+          "storeName": "Flipkart",
+          "url": "https://www.flipkart.com/myxes-m19-true-wireless-earbuds-powerful-bass-smart-touch-control-led-display-m64-bluetooth/p/itm00de86abc911e?pid=ACCHK6BYDHWYMDSN&lid=LSTACCHK6BYDHWYMDSNTMBUY2&marketplace=FLIPKART&store=0pm%2Ffcn&srno=b_1_18&otracker=browse&fm=organic&iid=en_jf2xV9cJX6A8v2EdKGrv9hVpdWe2JFlPcWoBZUP8WZAp7rNSeqi_vJO0kUM01kJyywp-JED7hL5x3lt9TOV_9P5xgZ357Et1pDE96GMW1xZiYYEsN3O6eL2caypAEnb4&ppt=browse&ppn=browse&ov_redirect=true&ov_redirect=true",
+          "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/headphone/6/y/w/m19-true-wireless-earbuds-powerful-bass-smart-touch-control-led-original-imahhugfsasnjtnf.jpeg",
+          "quantity": 1,
+          "size": "3LT",
+          "colour": "Default",
+          "priceINR": 355
+        },
+        {
+          "id": "prod-1795411797213",
+          "name": "Bullstorm Exclusive Tws T2 Wireless Earbuds 1500mah Powerbank Asap Charge ANC B32 Bluetooth",
+          "store": "flipkart",
+          "storeName": "Flipkart",
+          "url": "https://www.flipkart.com/bullstorm-exclusive-tws-t2-wireless-earbuds-1500mah-powerbank-asap-charge-anc-b32-bluetooth/p/itm4d1d4eae17467?pid=ACCHBRFKENABYE7M&lid=LSTACCHBRFKENABYE7MC9JEJF&marketplace=FLIPKART&store=0pm%2Ffcn&srno=b_1_5&otracker=browse&fm=organic&iid=678603e3-2f13-4664-9c98-4f9552a04665.ACCHBRFKENABYE7M.SEARCH&ppt=browse&ppn=browse&ov_redirect=true&ov_redirect=true",
+          "imageUrl": "https://rukminim2.flixcart.com/image/300/300/xif0q/headphone/3/s/h/bs-ultrapood-best-sound-bullstorm-original-imahfzffqe498yy5.jpeg",
+          "quantity": 1,
+          "size": "Standard",
+          "colour": "Default",
+          "priceINR": 1799
+        }
+      ],
+      "destinationCountry": "United Arab Emirates",
+      "notes": ""
+    }
   ]
 }

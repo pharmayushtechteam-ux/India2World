@@ -11,6 +11,13 @@ import {
   DATA_SYNC_EVENT,
 } from '../../services/integratedDataService';
 import {
+  fetchAllExternalPurchaseRequests,
+  getCachedExternalPurchaseRequests,
+  getCachedExternalPurchaseStats,
+  ExternalPurchaseRequestRecord,
+  ExternalPurchaseDashboardStats,
+} from '../../services/externalPurchaseRequestService';
+import {
   FileText,
   FileSpreadsheet,
   IndianRupee,
@@ -23,6 +30,7 @@ import {
   ChevronDown,
   ArrowRight,
   TrendingUp,
+  Globe,
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -39,18 +47,55 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [stats, setStats] = useState(getDynamicAdminStats);
   const [recentRequests, setRecentRequests] = useState(() => getAllPurchaseRequests().slice(0, 5));
   const [recentShipments, setRecentShipments] = useState(() => getAllShipments().slice(0, 5));
+  const [externalRequests, setExternalRequests] = useState<ExternalPurchaseRequestRecord[]>(() =>
+    getCachedExternalPurchaseRequests()
+  );
+  const [externalStats, setExternalStats] = useState<ExternalPurchaseDashboardStats>(() =>
+    getCachedExternalPurchaseStats()
+  );
 
   useEffect(() => {
+    let active = true;
+
+    const syncExternalFromServer = async () => {
+      try {
+        const res = await fetchAllExternalPurchaseRequests();
+        if (active) {
+          setExternalRequests(res.requests);
+          setExternalStats(res.stats);
+        }
+      } catch {
+        // fallback to cached state
+      }
+    };
+
     const handleSync = () => {
       setStats(getDynamicAdminStats());
       setRecentRequests(getAllPurchaseRequests().slice(0, 5));
       setRecentShipments(getAllShipments().slice(0, 5));
+      setExternalRequests(getCachedExternalPurchaseRequests());
+      setExternalStats(getCachedExternalPurchaseStats());
     };
+
+    const handleFocusOrStorage = () => {
+      handleSync();
+      void syncExternalFromServer();
+    };
+
+    void syncExternalFromServer();
+    const pollTimer = window.setInterval(() => {
+      void syncExternalFromServer();
+    }, 10000);
+
     window.addEventListener(DATA_SYNC_EVENT, handleSync);
-    window.addEventListener('storage', handleSync);
+    window.addEventListener('storage', handleFocusOrStorage);
+    window.addEventListener('focus', handleFocusOrStorage);
     return () => {
+      active = false;
+      window.clearInterval(pollTimer);
       window.removeEventListener(DATA_SYNC_EVENT, handleSync);
-      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('storage', handleFocusOrStorage);
+      window.removeEventListener('focus', handleFocusOrStorage);
     };
   }, []);
 
@@ -82,16 +127,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const statCards = [
     {
       title: 'New Purchase Requests',
-      value: stats.newPurchaseRequests,
+      value: stats.newPurchaseRequests + externalStats.newRequests,
       icon: FileText,
       iconColor: 'text-emerald-600',
       bgColor: 'bg-emerald-50',
       borderColor: 'border-emerald-100',
-      tab: 'purchase-requests' as AdminTab,
+      tab: (externalStats.newRequests > 0 ? 'external-purchase-requests' : 'purchase-requests') as AdminTab,
     },
     {
       title: 'Quotes Pending',
-      value: stats.quotesPending,
+      value: stats.quotesPending + externalStats.pendingQuotations,
       icon: FileSpreadsheet,
       iconColor: 'text-amber-600',
       bgColor: 'bg-amber-50',
@@ -375,6 +420,137 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Live External Platform Purchase Requests */}
+      <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#0066FF] border border-blue-100 flex items-center justify-center shrink-0">
+              <Globe className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-bold text-[#0B1933] tracking-tight">
+                  Recent External Platform Requests
+                </h2>
+                {externalStats.newRequests > 0 && (
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-rose-500 text-white">
+                    {externalStats.newRequests} New
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500">
+                Automatically synced from customer &ldquo;Request a Product from Another Platform&rdquo; submissions
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => onNavigateTab('external-purchase-requests')}
+            className="text-xs font-bold text-[#0066FF] hover:underline flex items-center gap-1 cursor-pointer"
+          >
+            <span>Manage All ({externalRequests.length})</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {externalRequests.length === 0 ? (
+          <div className="py-8 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
+            No external platform purchase requests submitted yet. New customer submissions will appear here automatically.
+          </div>
+        ) : (
+          <div className="overflow-x-auto lg:overflow-x-visible">
+            <table className="w-full min-w-[760px] lg:min-w-0 lg:table-fixed text-left text-xs sm:text-sm">
+              <thead>
+                <tr className="border-b border-slate-100 text-slate-400 font-bold text-[11px] uppercase tracking-wider">
+                  <th className="pb-3 pr-3 w-[16%] font-semibold">Request ID</th>
+                  <th className="pb-3 px-2 w-[22%] font-semibold">Customer</th>
+                  <th className="pb-3 px-2 w-[26%] font-semibold">Requested Products</th>
+                  <th className="pb-3 px-2 w-[14%] font-semibold">Destination</th>
+                  <th className="pb-3 px-2 w-[10%] font-semibold text-center">Items</th>
+                  <th className="pb-3 pl-2 w-[12%] font-semibold text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {externalRequests.slice(0, 6).map((ext) => {
+                  const totalQty = (ext.requestedProducts || []).reduce(
+                    (sum, item) => sum + Number(item.quantity || 1),
+                    0
+                  );
+                  const firstProduct = ext.requestedProducts?.[0]?.productName || 'Requested Product';
+                  return (
+                    <tr
+                      key={ext.requestId}
+                      onClick={() => onNavigateTab('external-purchase-requests')}
+                      className={`hover:bg-slate-50/80 transition-colors cursor-pointer group ${
+                        ext.unreadAdminAlert ? 'bg-blue-50/30' : ''
+                      }`}
+                    >
+                      <td className="py-3.5 pr-3 align-middle">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="font-bold text-[#0066FF] truncate" title={ext.requestId}>
+                            {ext.requestId}
+                          </span>
+                          {ext.unreadAdminAlert && (
+                            <span className="px-1.5 py-0.5 text-[9px] font-extrabold bg-rose-500 text-white rounded-full shrink-0">
+                              NEW
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                          {ext.createdAt}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-2 align-middle">
+                        <div className="font-bold text-slate-800 truncate" title={ext.customerName}>
+                          {ext.customerName}
+                        </div>
+                        <div className="text-[11px] text-slate-400 truncate" title={ext.customerEmail}>
+                          {ext.customerEmail}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-2 align-middle">
+                        <div className="font-medium text-slate-700 truncate" title={firstProduct}>
+                          {firstProduct}
+                        </div>
+                        {ext.requestedProducts.length > 1 && (
+                          <div className="text-[10px] font-bold text-[#0066FF] mt-0.5">
+                            +{ext.requestedProducts.length - 1} more product{ext.requestedProducts.length - 1 > 1 ? 's' : ''}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-2 align-middle">
+                        <div className="text-slate-700 font-medium truncate" title={`${ext.city}, ${ext.country}`}>
+                          {ext.destinationFlag} {ext.city || ext.country}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-2 text-center align-middle font-bold text-slate-700">
+                        {totalQty}
+                      </td>
+                      <td className="py-3.5 pl-2 text-right align-middle">
+                        <span
+                          className={`inline-block px-2 py-1 text-[10.5px] font-bold rounded-lg border leading-tight ${
+                            ext.status === 'New Requests'
+                              ? 'bg-blue-50 text-[#0066FF] border-blue-200'
+                              : ext.status === 'Customer Approved' || ext.status === 'Delivered'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : ext.status === 'Cancelled' || ext.status === 'Customer Rejected'
+                              ? 'bg-rose-50 text-rose-700 border-rose-200'
+                              : 'bg-amber-50 text-amber-800 border-amber-200'
+                          }`}
+                        >
+                          {ext.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Bottom Section: Recent Purchase Requests + Recent Shipments */}

@@ -33,9 +33,11 @@ import {
   submitCustomerQuotationDecision,
 } from '../../services/externalPurchaseRequestService';
 import { getCurrentUser } from '../../utils/userAuth';
+import { parseProductFromUrl } from '../../utils/urlProductParser';
 
 interface RequestExternalPurchasePageProps {
   onNavigate: (page: Page) => void;
+  isInDashboard?: boolean;
 }
 
 const SHOPPING_PLATFORMS = [
@@ -64,7 +66,7 @@ function isValidHttpUrl(value: string): boolean {
 
 export const RequestExternalPurchasePage: React.FC<
   RequestExternalPurchasePageProps
-> = ({ onNavigate }) => {
+> = ({ onNavigate, isInDashboard = false }) => {
   const userProfile = getCurrentUser();
 
   // Customer Details State
@@ -198,6 +200,65 @@ export const RequestExternalPurchasePage: React.FC<
     setProducts((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  const detectPlatformFromUrl = (rawUrl: string): string | null => {
+    const lower = rawUrl.toLowerCase();
+    if (lower.includes('flipkart.')) return 'Flipkart';
+    if (lower.includes('amazon.')) return 'Amazon';
+    if (lower.includes('myntra.')) return 'Myntra';
+    if (lower.includes('nykaa.')) return 'Nykaa';
+    if (lower.includes('ajio.')) return 'AJIO';
+    if (lower.includes('tatacliq.')) return 'Tata CLiQ';
+    if (lower.includes('bigbasket.')) return 'BigBasket';
+    if (lower.includes('meesho.')) return 'Meesho';
+    if (lower.includes('jiomart.')) return 'JioMart';
+    return null;
+  };
+
+  const enrichProductFromUrl = async (idx: number, rawUrl: string) => {
+    const trimmed = rawUrl.trim();
+    if (!/^https?:\/\//i.test(trimmed)) return;
+
+    const detectedPlatform = detectPlatformFromUrl(trimmed);
+    const parsed = parseProductFromUrl(trimmed);
+
+    setProducts((prev) => {
+      if (!prev[idx]) return prev;
+      const next = [...prev];
+      const cur = { ...next[idx] };
+      if (detectedPlatform) cur.platform = detectedPlatform;
+      if (!cur.productUrl.trim()) cur.productUrl = trimmed;
+      if (!cur.productName.trim() || /^https?:\/\//i.test(cur.productName.trim())) {
+        if (parsed.title) cur.productName = parsed.title;
+      }
+      next[idx] = cur;
+      return next;
+    });
+
+    try {
+      const res = await fetch(`/api/fetch-product-meta?url=${encodeURIComponent(trimmed)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setProducts((prev) => {
+        if (!prev[idx]) return prev;
+        const next = [...prev];
+        const cur = { ...next[idx] };
+        if (data.title && (!cur.productName.trim() || /^https?:\/\//i.test(cur.productName.trim()))) {
+          cur.productName = data.title;
+        }
+        if (data.price && Number(data.price) > 0 && (!cur.expectedBudgetINR.trim() || Number(cur.expectedBudgetINR) <= 0)) {
+          cur.expectedBudgetINR = String(Math.round(Number(data.price)));
+        }
+        if (data.imageUrl && !cur.productImage.trim()) {
+          cur.productImage = data.imageUrl;
+        }
+        next[idx] = cur;
+        return next;
+      });
+    } catch {
+      // silent fallback
+    }
+  };
+
   const updateProduct = (idx: number, key: string, value: any) => {
     setProducts((prev) => {
       const next = [...prev];
@@ -209,6 +270,10 @@ export const RequestExternalPurchasePage: React.FC<
       delete copy[`product_${idx}_${key}`];
       return copy;
     });
+
+    if ((key === 'productUrl' || key === 'productName') && typeof value === 'string' && /^https?:\/\//i.test(value.trim())) {
+      void enrichProductFromUrl(idx, value);
+    }
   };
 
   const validateAllFields = (): boolean => {
@@ -272,25 +337,66 @@ export const RequestExternalPurchasePage: React.FC<
       return;
     }
 
-    const formattedProducts: Partial<CustomerRequestedProductItem>[] =
-      products.map((p) => ({
-        id: p.id,
-        productName: p.productName.trim(),
-        platform: p.platform,
-        productUrl: p.productUrl.trim() || undefined,
-        productImage: p.productImage.trim() || undefined,
-        quantity: Math.max(1, Math.round(Number(p.quantity) || 1)),
-        expectedBudgetINR:
-          p.expectedBudgetINR.trim() && Number(p.expectedBudgetINR) > 0
-            ? Math.round(Number(p.expectedBudgetINR))
-            : undefined,
-        description: p.description.trim() || undefined,
-        additionalRequirements: p.additionalRequirements.trim() || undefined,
-      }));
-
     setSubmitting(true);
     setFormError(null);
     try {
+      const formattedProducts: Partial<CustomerRequestedProductItem>[] = await Promise.all(
+        products.map(async (p) => {
+          const rawName = p.productName.trim();
+          const rawUrl = p.productUrl.trim();
+          const effectiveUrl = rawUrl || (/^https?:\/\//i.test(rawName) ? rawName : '');
+          let resolvedName = rawName;
+          let resolvedPlatform = p.platform;
+          let resolvedImage = p.productImage.trim() || undefined;
+          let resolvedPrice =
+            p.expectedBudgetINR.trim() && Number(p.expectedBudgetINR) > 0
+              ? Math.round(Number(p.expectedBudgetINR))
+              : undefined;
+
+          if (effectiveUrl) {
+            const detected = detectPlatformFromUrl(effectiveUrl);
+            if (detected) resolvedPlatform = detected;
+            const parsed = parseProductFromUrl(effectiveUrl);
+            if (/^https?:\/\//i.test(resolvedName) && parsed.title) {
+              resolvedName = parsed.title;
+            }
+            if (!resolvedPrice || /^https?:\/\//i.test(resolvedName)) {
+              try {
+                const metaRes = await fetch(
+                  `/api/fetch-product-meta?url=${encodeURIComponent(effectiveUrl)}`
+                );
+                if (metaRes.ok) {
+                  const meta = await metaRes.json();
+                  if (!resolvedPrice && meta.price && Number(meta.price) > 0) {
+                    resolvedPrice = Math.round(Number(meta.price));
+                  }
+                  if (/^https?:\/\//i.test(resolvedName) && meta.title) {
+                    resolvedName = meta.title;
+                  }
+                  if (!resolvedImage && meta.imageUrl) {
+                    resolvedImage = meta.imageUrl;
+                  }
+                }
+              } catch {
+                // fallback silently
+              }
+            }
+          }
+
+          return {
+            id: p.id,
+            productName: resolvedName,
+            platform: resolvedPlatform,
+            productUrl: effectiveUrl || undefined,
+            productImage: resolvedImage,
+            quantity: Math.max(1, Math.round(Number(p.quantity) || 1)),
+            expectedBudgetINR: resolvedPrice,
+            description: p.description.trim() || undefined,
+            additionalRequirements: p.additionalRequirements.trim() || undefined,
+          };
+        })
+      );
+
       const response = await submitCustomerExternalPurchaseRequest({
         customerName: fullName.trim(),
         customerEmail: email.trim(),
@@ -378,30 +484,30 @@ export const RequestExternalPurchasePage: React.FC<
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-16">
+    <div className={isInDashboard ? 'bg-[#F8FAFC] pb-10 rounded-2xl overflow-hidden border border-slate-200/80 shadow-xs' : 'min-h-screen bg-[#F8FAFC] pb-16'}>
       {/* Hero Banner */}
-      <div className="bg-gradient-to-r from-[#0B1933] via-[#10254C] to-[#1E3A8A] text-white py-10 sm:py-14 px-4 sm:px-6 lg:px-8 border-b border-blue-500/20">
+      <div className="bg-gradient-to-br from-[#EFF6FF] via-[#F8FAFC] to-white text-slate-900 py-7 sm:py-9 px-5 sm:px-8 border-b border-blue-100">
         <div className="max-w-5xl mx-auto space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <button
               type="button"
-              onClick={() => onNavigate('home')}
-              className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-blue-200 hover:text-white transition cursor-pointer"
+              onClick={() => onNavigate(isInDashboard ? 'dashboard' : 'home')}
+              className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#0066FF] hover:text-[#0052CC] transition cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back to PHARMAYUSH / India2World Home
+              {isInDashboard ? 'Back to Dashboard Overview' : 'Back to PHARMAYUSH / India2World Home'}
             </button>
 
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-xs font-bold uppercase tracking-wider">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-[#0066FF] text-xs font-bold uppercase tracking-wider">
               <Sparkles className="w-3.5 h-3.5" />
               PHARMAYUSH • ASSISTED EXTERNAL PROCUREMENT
             </div>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-black tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             Request a Product from Another Platform
           </h1>
-          <p className="text-sm sm:text-base text-blue-100/90 max-w-3xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 max-w-3xl leading-relaxed">
             Want to buy products from Amazon, Flipkart, Myntra, Nykaa, AJIO, or
             any other external shopping platform? Submit your product
             requirements below. Our team will verify availability, send an
@@ -411,35 +517,35 @@ export const RequestExternalPurchasePage: React.FC<
 
           {/* 3-Step Pill Highlights */}
           <div className="pt-2 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div className="bg-white/10 backdrop-blur-xs border border-white/15 rounded-2xl p-3.5 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-blue-500 text-white font-black flex items-center justify-center shrink-0">
+            <div className="bg-white border border-blue-100 shadow-xs rounded-2xl p-3.5 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-[#0066FF] text-white font-black flex items-center justify-center shrink-0 shadow-xs">
                 1
               </div>
               <div>
-                <div className="font-bold text-white">Submit Requirements</div>
-                <div className="text-blue-200 text-[11px]">
+                <div className="font-bold text-slate-900">Submit Requirements</div>
+                <div className="text-slate-500 text-[11px]">
                   Add 1 or more products from any store
                 </div>
               </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-xs border border-white/15 rounded-2xl p-3.5 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-blue-500 text-white font-black flex items-center justify-center shrink-0">
+            <div className="bg-white border border-blue-100 shadow-xs rounded-2xl p-3.5 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-[#0066FF] text-white font-black flex items-center justify-center shrink-0 shadow-xs">
                 2
               </div>
               <div>
-                <div className="font-bold text-white">Approve Quotation</div>
-                <div className="text-blue-200 text-[11px]">
+                <div className="font-bold text-slate-900">Approve Quotation</div>
+                <div className="text-slate-500 text-[11px]">
                   Receive verified pricing via email
                 </div>
               </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-xs border border-white/15 rounded-2xl p-3.5 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-blue-500 text-white font-black flex items-center justify-center shrink-0">
+            <div className="bg-white border border-blue-100 shadow-xs rounded-2xl p-3.5 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-[#0066FF] text-white font-black flex items-center justify-center shrink-0 shadow-xs">
                 3
               </div>
               <div>
-                <div className="font-bold text-white">We Purchase &amp; Ship</div>
-                <div className="text-blue-200 text-[11px]">
+                <div className="font-bold text-slate-900">We Purchase &amp; Ship</div>
+                <div className="text-slate-500 text-[11px]">
                   Full order &amp; tracking updates by email
                 </div>
               </div>
@@ -449,13 +555,13 @@ export const RequestExternalPurchasePage: React.FC<
       </div>
 
       {/* Main Container */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 space-y-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-8">
         {/* Secure Quotation Approval / Rejection Section (When Customer Opens Email Link) */}
         {(tokenRecord || tokenDecisionMessage) && (
-          <div className="bg-white rounded-3xl border-2 border-blue-600 shadow-xl overflow-hidden">
-            <div className="bg-slate-900 px-6 py-4 text-white flex items-center justify-between">
+          <div className="bg-white rounded-3xl border-2 border-[#0066FF] shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-[#0066FF] to-[#1D4ED8] px-6 py-4 text-white flex items-center justify-between">
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-400">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-100">
                   OFFICIAL QUOTATION REVIEW
                 </span>
                 <h2 className="text-lg font-black">
@@ -799,10 +905,10 @@ export const RequestExternalPurchasePage: React.FC<
               <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-200">
                 <button
                   type="button"
-                  onClick={() => onNavigate('home')}
+                  onClick={() => onNavigate(isInDashboard ? 'dashboard' : 'home')}
                   className="px-5 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-bold cursor-pointer"
                 >
-                  Return to Website Home
+                  {isInDashboard ? 'Back to Dashboard' : 'Return to Website Home'}
                 </button>
                 <button
                   type="button"
@@ -820,26 +926,26 @@ export const RequestExternalPurchasePage: React.FC<
           <form
             onSubmit={handleSubmit}
             noValidate
-            className="bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden"
+            className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden"
           >
             {/* Form Header */}
-            <div className="px-6 sm:px-8 py-5 bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="px-6 sm:px-8 py-5 bg-gradient-to-r from-[#F8FAFC] to-[#EFF6FF]/70 border-b border-slate-200/90 text-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-[#0066FF] shadow-xs flex items-center justify-center shrink-0">
                   <ShoppingBag className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-lg sm:text-xl font-black">
+                  <h2 className="text-base sm:text-lg font-extrabold text-slate-900">
                     External Platform Purchase Request Form
                   </h2>
-                  <p className="text-xs text-slate-300">
-                    Fields marked with <span className="text-rose-400">*</span>{' '}
+                  <p className="text-xs text-slate-500">
+                    Fields marked with <span className="text-rose-600 font-bold">*</span>{' '}
                     are required.
                   </p>
                 </div>
               </div>
-              <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-white/10 text-blue-200 self-start sm:self-center">
-                No Admin Login Required
+              <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-700 self-start sm:self-center">
+                {isInDashboard ? 'Customer Account Verified' : 'Customer Portal'}
               </span>
             </div>
 
@@ -1068,7 +1174,7 @@ export const RequestExternalPurchasePage: React.FC<
                       className="p-5 rounded-2xl border border-slate-200 bg-slate-50/70 space-y-4"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="px-3 py-1 rounded-full bg-blue-600 text-white text-xs font-extrabold">
+                        <span className="px-3 py-1 rounded-full bg-[#0066FF] text-white text-xs font-extrabold">
                           Product #{idx + 1}
                         </span>
                         {products.length > 1 && (

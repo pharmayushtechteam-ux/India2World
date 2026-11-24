@@ -10,6 +10,11 @@ import {
   getAllOrders,
   DATA_SYNC_EVENT,
 } from '../../services/integratedDataService';
+import {
+  getAllInvoices,
+  createOrderAndAutomateInvoice,
+  resendInvoiceEmail,
+} from '../../services/orderInvoiceService';
 import { TablePaginationBar } from './TablePaginationBar';
 
 export interface PurchaseQueueItem {
@@ -191,27 +196,95 @@ export const AdminPurchaseQueueModule: React.FC<{
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const handleConfirmOrder = (e: React.FormEvent) => {
+  const handleConfirmOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedItemForOrder) return;
 
+    const currentItem = selectedItemForOrder;
+    const merchantOrderId = sellerOrderInput || 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+    const merchantTracking = sellerTrackingInput || 'TRK-' + Math.floor(100000 + Math.random() * 900000);
+
     setItems((prev) =>
       prev.map((item) =>
-        item.id === selectedItemForOrder.id
+        item.id === currentItem.id
           ? {
               ...item,
               status: 'Ordered',
-              sellerOrderNumber: sellerOrderInput || 'ORD-' + Math.floor(100000 + Math.random() * 900000),
-              sellerTracking: sellerTrackingInput || 'TRK-' + Math.floor(100000 + Math.random() * 900000),
+              sellerOrderNumber: merchantOrderId,
+              sellerTracking: merchantTracking,
             }
           : item
       )
     );
 
-    triggerToast(`Order placed for ${selectedItemForOrder.id} (${selectedItemForOrder.store})!`);
     setSelectedItemForOrder(null);
     setSellerOrderInput('');
     setSellerTrackingInput('');
+
+    // Automatically locate or generate the customer's invoice and email it via SMTP
+    const allOrders = getAllOrders();
+    const linkedOrder = allOrders.find(
+      (o) =>
+        o.id === currentItem.requestId ||
+        o.requestId === currentItem.requestId ||
+        (o.customerId === currentItem.customerId &&
+          o.items.some((i) => i.title.toLowerCase() === currentItem.itemTitle.toLowerCase()))
+    );
+
+    const allInvoices = getAllInvoices();
+    let targetInvoice = allInvoices.find(
+      (inv) =>
+        (linkedOrder && inv.orderId === linkedOrder.id) ||
+        inv.orderId === currentItem.requestId ||
+        inv.orderId === `ORD-${currentItem.requestId.replace('REQ-', '')}`
+    );
+
+    if (!targetInvoice && linkedOrder && linkedOrder.customerEmail) {
+      const created = createOrderAndAutomateInvoice({
+        user: {
+          customerId: linkedOrder.customerId,
+          name: linkedOrder.customerName,
+          email: linkedOrder.customerEmail,
+          phone: '+91 98765 43210',
+          country: linkedOrder.destination.split(',')[1]?.trim() || linkedOrder.destination || 'United Arab Emirates',
+          countryCode: 'AE',
+          lockerId: `I2W-${linkedOrder.customerId}`,
+          avatar: linkedOrder.customerAvatar || '',
+          notificationsCount: 0,
+        },
+        products: linkedOrder.items.map((i) => ({
+          name: i.title,
+          storeName: i.store,
+          priceINR: i.price,
+          quantity: i.qty,
+        })),
+        costSummary: linkedOrder.costSummary || {
+          subtotal: linkedOrder.totalINR,
+          domesticShipping: 0,
+          serviceFee: 0,
+          tax: 0,
+          discount: 0,
+          total: linkedOrder.totalINR,
+        },
+        paymentMethod: 'Assisted Purchase',
+        destinationCity: linkedOrder.destination.split(',')[0]?.trim() || 'Dubai',
+        destinationCountry: linkedOrder.destination.split(',')[1]?.trim() || 'United Arab Emirates',
+        existingOrderId: linkedOrder.id,
+      });
+      targetInvoice = created.invoice;
+    }
+
+    if (targetInvoice) {
+      triggerToast(`Order placed for ${currentItem.id}! Sending official invoice to ${targetInvoice.customerEmail}...`);
+      const emailRes = await resendInvoiceEmail(targetInvoice.invoiceNumber, targetInvoice.customerEmail);
+      if (emailRes.success) {
+        triggerToast(`Purchased & Invoice ${targetInvoice.invoiceNumber} automatically emailed to ${targetInvoice.customerEmail}!`);
+      } else {
+        triggerToast(`Order placed for ${currentItem.id}, but invoice email failed: ${emailRes.error || 'Check SMTP'}`);
+      }
+    } else {
+      triggerToast(`Order placed for ${currentItem.id} (${currentItem.store})!`);
+    }
   };
 
   const filtered = items.filter((item) => {

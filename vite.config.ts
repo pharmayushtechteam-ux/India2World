@@ -1281,6 +1281,60 @@ function adminSettingsPlugin(): Plugin {
           res.end(JSON.stringify(data));
         };
 
+        // Admin sync endpoint: return all registered customers (without password hashes)
+        if (pathname === '/api/customer/registered-list' && req.method === 'GET') {
+          try {
+            const customersPath = path.resolve(process.cwd(), 'server', 'data', 'registered_customers.json');
+            let list: any[] = [];
+            if (fs.existsSync(customersPath)) {
+              const raw = fs.readFileSync(customersPath, 'utf-8');
+              const parsed = JSON.parse(raw);
+              if (Array.isArray(parsed)) {
+                list = parsed
+                  .filter((c: any) => {
+                    const email = String(c?.email || '').toLowerCase();
+                    return (
+                      email &&
+                      !email.startsWith('test_customer_') &&
+                      !email.includes('nonexistentdomain')
+                    );
+                  })
+                  .map(({ passwordHash, ...safe }: any) => safe);
+              }
+            }
+            return jsonResponse(200, { success: true, customers: list });
+          } catch (err: any) {
+            return jsonResponse(500, { success: false, error: err?.message || 'Failed to read registered customers' });
+          }
+        }
+
+        // Admin sync endpoint: return all customer orders from server/data/orders_db.json
+        if (pathname === '/api/customer/orders-sync' && req.method === 'GET') {
+          try {
+            const ordersPath = path.resolve(process.cwd(), 'server', 'data', 'orders_db.json');
+            let list: any[] = [];
+            if (fs.existsSync(ordersPath)) {
+              const raw = fs.readFileSync(ordersPath, 'utf-8');
+              const parsed = JSON.parse(raw);
+              if (Array.isArray(parsed)) {
+                list = parsed.filter((o: any) => {
+                  const id = String(o?.orderId || o?.id || '').toUpperCase();
+                  const email = String(o?.customerEmail || '').toLowerCase();
+                  return (
+                    id &&
+                    !id.startsWith('ORD-TEST') &&
+                    !email.startsWith('test_customer_') &&
+                    !email.includes('nonexistentdomain')
+                  );
+                });
+              }
+            }
+            return jsonResponse(200, { success: true, orders: list });
+          } catch (err: any) {
+            return jsonResponse(500, { success: false, error: err?.message || 'Failed to read orders_db.json' });
+          }
+        }
+
         // 1. GET /api/admin/settings
         if (pathname === '/api/admin/settings' && req.method === 'GET') {
           const settings = getAdminSettings();
@@ -1408,6 +1462,60 @@ function customerAuthPlugin(): Plugin {
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify(data));
         };
+
+        // Admin sync endpoint: return all registered customers (without password hashes)
+        if (pathname === '/api/customer/registered-list' && req.method === 'GET') {
+          try {
+            const customersPath = path.resolve(process.cwd(), 'server', 'data', 'registered_customers.json');
+            let list: any[] = [];
+            if (fs.existsSync(customersPath)) {
+              const raw = fs.readFileSync(customersPath, 'utf-8');
+              const parsed = JSON.parse(raw);
+              if (Array.isArray(parsed)) {
+                list = parsed
+                  .filter((c: any) => {
+                    const email = String(c?.email || '').toLowerCase();
+                    return (
+                      email &&
+                      !email.startsWith('test_customer_') &&
+                      !email.includes('nonexistentdomain')
+                    );
+                  })
+                  .map(({ passwordHash, ...safe }: any) => safe);
+              }
+            }
+            return jsonResponse(200, { success: true, customers: list });
+          } catch (err: any) {
+            return jsonResponse(500, { success: false, error: err?.message || 'Failed to read registered customers' });
+          }
+        }
+
+        // Admin sync endpoint: return all customer orders from server/data/orders_db.json
+        if (pathname === '/api/customer/orders-sync' && req.method === 'GET') {
+          try {
+            const ordersPath = path.resolve(process.cwd(), 'server', 'data', 'orders_db.json');
+            let list: any[] = [];
+            if (fs.existsSync(ordersPath)) {
+              const raw = fs.readFileSync(ordersPath, 'utf-8');
+              const parsed = JSON.parse(raw);
+              if (Array.isArray(parsed)) {
+                list = parsed.filter((o: any) => {
+                  const id = String(o?.orderId || o?.id || '').toUpperCase();
+                  const email = String(o?.customerEmail || '').toLowerCase();
+                  return (
+                    id &&
+                    !id.startsWith('ORD-TEST') &&
+                    !email.startsWith('test_customer_') &&
+                    !email.includes('nonexistentdomain')
+                  );
+                });
+              }
+            }
+            return jsonResponse(200, { success: true, orders: list });
+          } catch (err: any) {
+            return jsonResponse(500, { success: false, error: err?.message || 'Failed to read orders_db.json' });
+          }
+        }
 
         // 1. POST /api/customer/auth/signup
         if (pathname === '/api/customer/auth/signup' && req.method === 'POST') {
@@ -1716,6 +1824,60 @@ function trackingPlugin(): Plugin {
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify(data));
         };
+
+        // Admin sync endpoint: return all registered customers (without password hashes)
+        if (pathname === '/api/customer/registered-list' && req.method === 'GET') {
+          try {
+            const customersPath = path.resolve(process.cwd(), 'server', 'data', 'registered_customers.json');
+            let list: any[] = [];
+            if (fs.existsSync(customersPath)) {
+              const raw = fs.readFileSync(customersPath, 'utf-8');
+              const parsed = JSON.parse(raw);
+              if (Array.isArray(parsed)) {
+                list = parsed
+                  .filter((c: any) => {
+                    const email = String(c?.email || '').toLowerCase();
+                    return (
+                      email &&
+                      !email.startsWith('test_customer_') &&
+                      !email.includes('nonexistentdomain')
+                    );
+                  })
+                  .map(({ passwordHash, ...safe }: any) => safe);
+              }
+            }
+            return jsonResponse(200, { success: true, customers: list });
+          } catch (err: any) {
+            return jsonResponse(500, { success: false, error: err?.message || 'Failed to read registered customers' });
+          }
+        }
+
+        // Admin sync endpoint: return all customer orders from server/data/orders_db.json
+        if (pathname === '/api/customer/orders-sync' && req.method === 'GET') {
+          try {
+            const ordersPath = path.resolve(process.cwd(), 'server', 'data', 'orders_db.json');
+            let list: any[] = [];
+            if (fs.existsSync(ordersPath)) {
+              const raw = fs.readFileSync(ordersPath, 'utf-8');
+              const parsed = JSON.parse(raw);
+              if (Array.isArray(parsed)) {
+                list = parsed.filter((o: any) => {
+                  const id = String(o?.orderId || o?.id || '').toUpperCase();
+                  const email = String(o?.customerEmail || '').toLowerCase();
+                  return (
+                    id &&
+                    !id.startsWith('ORD-TEST') &&
+                    !email.startsWith('test_customer_') &&
+                    !email.includes('nonexistentdomain')
+                  );
+                });
+              }
+            }
+            return jsonResponse(200, { success: true, orders: list });
+          } catch (err: any) {
+            return jsonResponse(500, { success: false, error: err?.message || 'Failed to read orders_db.json' });
+          }
+        }
 
         // 1. GET /api/tracking/records - List ONLY the authenticated customer's own orders/requests
         if (pathname === '/api/tracking/records' && req.method === 'GET') {

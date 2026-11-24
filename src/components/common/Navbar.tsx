@@ -70,22 +70,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           ))}
         </nav>
 
-        {/* Right Actions: Request CTA, Login, Sign Up, Currency, Menu */}
+        {/* Right Actions: Login, Sign Up, Currency, Menu */}
         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5 xl:gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={() => onNavigate('request-external-purchase')}
-            className="hidden xl:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-[#0066FF] border border-blue-200/90 font-bold text-xs cursor-pointer transition-colors whitespace-nowrap shrink-0 shadow-2xs"
-          >
-            <span className="hidden 2xl:inline">Request a Product from Another Platform</span>
-            <span className="inline 2xl:hidden">Request Product</span>
-          </button>
           {/* Login (visible on tablet/desktop; inside mobile drawer on small screens) */}
           <button
             type="button"
-            onClick={() => onNavigate('auth')}
+            onClick={() => onNavigate('login')}
             className={`hidden sm:inline-flex items-center justify-center transition-colors hover:text-[#0066FF] font-bold text-sm cursor-pointer px-2 py-1.5 select-none whitespace-nowrap ${
-              currentPage === 'auth' ? 'text-[#0066FF]' : 'text-[#0B1940]'
+              currentPage === 'login' || currentPage === 'auth' ? 'text-[#0066FF]' : 'text-[#0B1940]'
             }`}
           >
             Login
@@ -94,7 +86,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Sign Up Button */}
           <button
             type="button"
-            onClick={() => onNavigate('auth')}
+            onClick={() => onNavigate('signup')}
             className="h-8 sm:h-9 px-2.5 min-[375px]:px-3 sm:px-4 rounded-lg sm:rounded-xl bg-[#0066FF] hover:bg-[#0052cc] text-white font-bold text-[11px] min-[375px]:text-xs sm:text-sm shadow-xs hover:shadow-md transition-all active:scale-[0.98] inline-flex items-center justify-center cursor-pointer select-none whitespace-nowrap shrink-0"
           >
             Sign Up
@@ -161,16 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                onNavigate('request-external-purchase');
-                setMobileMenuOpen(false);
-              }}
-              className="w-full text-center py-2.5 px-3 bg-blue-50 text-[#0066FF] border border-blue-200 font-extrabold rounded-xl cursor-pointer text-sm"
-            >
-              Request a Product from Another Platform
-            </button>
+
             <button
               type="button"
               onClick={() => {
@@ -185,7 +168,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={() => {
-                onNavigate('auth');
+                onNavigate('login');
                 setMobileMenuOpen(false);
               }}
               className="w-full text-center py-2.5 text-slate-700 font-semibold border border-slate-200 rounded-xl cursor-pointer"
@@ -195,7 +178,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={() => {
-                onNavigate('auth');
+                onNavigate('signup');
                 setMobileMenuOpen(false);
               }}
               className="w-full text-center py-2.5 bg-[#0066FF] text-white font-bold rounded-xl shadow-xs cursor-pointer"

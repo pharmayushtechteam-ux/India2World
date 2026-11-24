@@ -27,17 +27,31 @@ import {
 } from '../../utils/userAuth';
 
 interface AuthPageProps {
+  initialMode?: 'login' | 'signup';
+  onModeChange?: (mode: 'login' | 'signup') => void;
   onSuccess: () => void;
   onNavigate: (page: Page) => void;
 }
 
-export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => {
+export const AuthPage: React.FC<AuthPageProps> = ({
+  initialMode,
+  onModeChange,
+  onSuccess,
+  onNavigate,
+}) => {
   const [mode, setMode] = useState<'signup' | 'login'>(() => {
-    if (typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('login')) {
-      return 'login';
+    if (initialMode) return initialMode;
+    if (typeof window !== 'undefined' && window.location.pathname.toLowerCase().includes('signup')) {
+      return 'signup';
     }
-    return 'signup';
+    return 'login';
   });
+
+  useEffect(() => {
+    if (initialMode && initialMode !== mode) {
+      setMode(initialMode);
+    }
+  }, [initialMode]);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneCode, setPhoneCode] = useState('+91');
@@ -506,6 +520,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
               aria-selected={mode === 'signup'}
               onClick={() => {
                 setMode('signup');
+                onModeChange?.('signup');
                 setErrors({});
                 setFeedbackNotice(null);
               }}
@@ -526,6 +541,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess, onNavigate }) => 
               aria-selected={mode === 'login'}
               onClick={() => {
                 setMode('login');
+                onModeChange?.('login');
                 setErrors({});
                 setFeedbackNotice(null);
               }}

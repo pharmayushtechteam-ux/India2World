@@ -21,6 +21,10 @@ import { AdminPaymentsRefundsModule } from './AdminPaymentsRefundsModule';
 import { AdminSupportNotificationsModule } from './AdminSupportNotificationsModule';
 import { AdminReportsSettingsModule } from './AdminReportsSettingsModule';
 import { AdminCustomersModule } from './AdminCustomersModule';
+import {
+  syncCustomersFromServer,
+  syncOrdersFromServer,
+} from '../../services/integratedDataService';
 
 interface AdminPanelProps {
   onNavigateHome: () => void;
@@ -54,6 +58,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
 
   const currentTab = controlledTab || internalTab;
+
+  // Automatically sync newly signed-up customers and customer orders from server DB into Admin
+  useEffect(() => {
+    syncCustomersFromServer().catch(() => {});
+    syncOrdersFromServer().catch(() => {});
+  }, [currentTab]);
 
   useEffect(() => {
     if (controlledTab && controlledTab !== internalTab) {

@@ -32,6 +32,8 @@ import {
   getAllCustomers,
   saveCustomers,
   deduplicateCustomers,
+  syncCustomersFromServer,
+  syncOrdersFromServer,
   getAllOrders,
   getAllPurchaseRequests,
   IntegratedOrderRecord,
@@ -68,6 +70,11 @@ export const AdminCustomersModule: React.FC<{
       setInvoices(getAllInvoices());
       setRequests(getAllPurchaseRequests());
     };
+    // Pull latest newly signed-up customers & customer purchases from backend DB
+    Promise.all([syncCustomersFromServer(), syncOrdersFromServer()]).then(([freshCustomers, freshOrders]) => {
+      setCustomers(freshCustomers);
+      setOrders(freshOrders);
+    });
     window.addEventListener(DATA_SYNC_EVENT, handleSync);
     window.addEventListener('i2w-invoices-updated', handleSync);
     window.addEventListener('storage', handleSync);
@@ -151,33 +158,34 @@ export const AdminCustomersModule: React.FC<{
   };
 
   // Helper to dynamically calculate orders, spend, and items taken by any customer
+  // Matches strictly by customerId first (same isolation rule as CustomerDashboard)
+  // so Admin always reflects the exact orders the customer purchased on their page.
   const getCustomerProfileData = (c: AdminCustomer) => {
     const cId = (c.id || '').trim().toLowerCase();
     const cEmail = (c.email || '').trim().toLowerCase();
-    const cName = (c.name || '').trim().toLowerCase();
 
-    // Match orders
+    // Match orders strictly by customerId (or email only when customerId is absent)
     const cOrders = orders.filter((o) => {
-      const idMatch = cId && o.customerId && o.customerId.toLowerCase() === cId;
-      const emailMatch = cEmail && o.customerEmail && o.customerEmail.toLowerCase() === cEmail;
-      const nameMatch = cName && o.customerName && o.customerName.toLowerCase() === cName;
-      return idMatch || emailMatch || nameMatch;
+      const oId = (o.customerId || '').trim().toLowerCase();
+      const oEmail = (o.customerEmail || '').trim().toLowerCase();
+      if (oId) return oId === cId;
+      return Boolean(cEmail && oEmail && oEmail === cEmail);
     });
 
-    // Match invoices
+    // Match invoices strictly by customerId (or email only when customerId is absent)
     const cInvoices = invoices.filter((inv) => {
-      const idMatch = cId && inv.customerId && inv.customerId.toLowerCase() === cId;
-      const emailMatch = cEmail && inv.customerEmail && inv.customerEmail.toLowerCase() === cEmail;
-      const nameMatch = cName && inv.customerName && inv.customerName.toLowerCase() === cName;
-      return idMatch || emailMatch || nameMatch;
+      const iId = (inv.customerId || '').trim().toLowerCase();
+      const iEmail = (inv.customerEmail || '').trim().toLowerCase();
+      if (iId) return iId === cId;
+      return Boolean(cEmail && iEmail && iEmail === cEmail);
     });
 
-    // Match purchase requests
+    // Match purchase requests strictly by customerId (or email only when customerId is absent)
     const cRequests = requests.filter((r) => {
-      const idMatch = cId && r.customerId && r.customerId.toLowerCase() === cId;
-      const emailMatch = cEmail && (r as any).customerEmail && (r as any).customerEmail.toLowerCase() === cEmail;
-      const nameMatch = cName && r.customerName && r.customerName.toLowerCase() === cName;
-      return idMatch || emailMatch || nameMatch;
+      const rId = (r.customerId || '').trim().toLowerCase();
+      const rEmail = ((r as any).customerEmail || '').trim().toLowerCase();
+      if (rId) return rId === cId;
+      return Boolean(cEmail && rEmail && rEmail === cEmail);
     });
 
     // Merge any invoices whose orderId isn't already present in cOrders
@@ -210,12 +218,9 @@ export const AdminCustomersModule: React.FC<{
 
     const allCustomerOrders = [...cOrders, ...extraInvoiceOrders];
 
-    // Compute live order counts and total spent accurately
-    const totalOrdersCount = Math.max(c.totalOrders || 0, allCustomerOrders.length);
-    const computedTotalSpent = Math.max(
-      c.totalSpentINR || 0,
-      allCustomerOrders.reduce((sum, o) => sum + (o.totalINR || 0), 0)
-    );
+    // Compute exact live order counts and total spent strictly from the customer's actual orders
+    const totalOrdersCount = allCustomerOrders.length;
+    const computedTotalSpent = allCustomerOrders.reduce((sum, o) => sum + (o.totalINR || 0), 0);
 
     // Compute total product items count taken
     const totalProductsCount = allCustomerOrders.reduce(
@@ -234,30 +239,37 @@ export const AdminCustomersModule: React.FC<{
     };
   };
 
-  const filtered = customers.filter((c) => {
-    const q = search.toLowerCase();
-    return (
-      !q ||
-      c.name.toLowerCase().includes(q) ||
-      c.id.toLowerCase().includes(q) ||
-      c.email.toLowerCase().includes(q) ||
-      c.country.toLowerCase().includes(q) ||
-      c.city.toLowerCase().includes(q)
-    );
-  });
+  const filtered = customers
+    .filter((c) => {
+      const q = search.toLowerCase();
+      return (
+        !q ||
+        c.name.toLowerCase().includes(q) ||
+        c.id.toLowerCase().includes(q) ||
+        c.email.toLowerCase().includes(q) ||
+        c.country.toLowerCase().includes(q) ||
+        c.city.toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => {
+      const ma = getCustomerProfileData(a);
+      const mb = getCustomerProfileData(b);
+      if (mb.totalOrdersCount !== ma.totalOrdersCount) {
+        return mb.totalOrdersCount - ma.totalOrdersCount;
+      }
+      return mb.totalSpentINR - ma.totalSpentINR;
+    });
 
   const paginatedCustomers = filtered.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
 
-  // Global aggregate metrics across all orders and customers
-  const totalAllOrdersCount = orders.length;
-  const totalAllRevenue = orders.reduce((sum, o) => sum + (o.totalINR || 0), 0);
-  const totalAllProductsTaken = orders.reduce(
-    (sum, o) => sum + (o.items && o.items.length > 0 ? o.items.reduce((s, it) => s + (it.qty || 1), 0) : (o.itemCount || 0)),
-    0
-  );
+  // Global aggregate metrics computed strictly from actual customer orders
+  const allProfileMetrics = customers.map((c) => getCustomerProfileData(c));
+  const totalAllOrdersCount = allProfileMetrics.reduce((sum, m) => sum + m.totalOrdersCount, 0);
+  const totalAllRevenue = allProfileMetrics.reduce((sum, m) => sum + m.totalSpentINR, 0);
+  const totalAllProductsTaken = allProfileMetrics.reduce((sum, m) => sum + m.totalProductsCount, 0);
 
   const selectedStats = selectedCustomer ? getCustomerProfileData(selectedCustomer) : null;
 
@@ -346,17 +358,17 @@ export const AdminCustomersModule: React.FC<{
 
       {/* Customers Table */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm">
-            <thead className="bg-slate-50/80 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-200/80">
+        <div className="overflow-x-auto lg:overflow-x-visible">
+          <table className="w-full min-w-[760px] lg:min-w-0 lg:table-fixed text-left text-xs sm:text-sm">
+            <thead className="bg-slate-50/80 text-slate-500 text-[10.5px] font-bold uppercase tracking-wider border-b border-slate-200/80">
               <tr>
-                <th className="py-3.5 px-4 whitespace-nowrap">Customer & Locker</th>
-                <th className="py-3.5 px-4 whitespace-nowrap">Contact</th>
-                <th className="py-3.5 px-4 whitespace-nowrap">Destination</th>
-                <th className="py-3.5 px-4 text-center whitespace-nowrap">Total Orders</th>
-                <th className="py-3.5 px-4 whitespace-nowrap">Total Amount Spent</th>
-                <th className="py-3.5 px-4 text-center whitespace-nowrap">Status</th>
-                <th className="py-3.5 px-4 text-center w-28 whitespace-nowrap">Actions</th>
+                <th className="py-3.5 px-3 w-[22%]">Customer &amp; Locker</th>
+                <th className="py-3.5 px-3 w-[23%]">Contact</th>
+                <th className="py-3.5 px-3 w-[15%]">Destination</th>
+                <th className="py-3.5 px-2 text-center w-[10%]">Total Orders</th>
+                <th className="py-3.5 px-3 w-[12%]">Total Amount Spent</th>
+                <th className="py-3.5 px-2 text-center w-[9%]">Status</th>
+                <th className="py-3.5 px-2 text-center w-[9%]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
@@ -364,65 +376,73 @@ export const AdminCustomersModule: React.FC<{
                 const stats = getCustomerProfileData(c);
                 return (
                   <tr key={c.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4 align-middle">
-                      <div className="flex items-center gap-3">
+                    <td className="py-3.5 px-3 align-middle">
+                      <div className="flex items-center gap-2.5 min-w-0">
                         <img
                           src={c.avatar}
                           alt={c.name}
                           referrerPolicy="no-referrer"
-                          className="w-10 h-10 rounded-full object-cover border border-slate-200 bg-slate-100 shrink-0"
+                          className="w-9 h-9 rounded-full object-cover border border-slate-200 bg-slate-100 shrink-0"
                         />
-                        <div>
-                          <div className="font-bold text-slate-900 text-sm">{c.name}</div>
-                          <div className="text-xs font-mono text-[#0066FF] font-bold">Locker #{c.id}</div>
+                        <div className="min-w-0">
+                          <div className="font-bold text-slate-900 text-xs sm:text-[13px] truncate" title={c.name}>
+                            {c.name}
+                          </div>
+                          <div className="text-[11px] font-mono text-[#0066FF] font-bold truncate">
+                            Locker #{c.id}
+                          </div>
                         </div>
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 align-middle">
-                      <div className="text-slate-800 font-medium text-xs sm:text-sm">{c.email}</div>
-                      <div className="text-[11px] text-slate-400 mt-0.5">{c.phone}</div>
+                    <td className="py-3.5 px-3 align-middle">
+                      <div className="text-slate-800 font-medium text-xs truncate" title={c.email}>
+                        {c.email}
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-0.5 truncate" title={c.phone}>
+                        {c.phone}
+                      </div>
                     </td>
 
-                    <td className="py-3.5 px-4 align-middle font-semibold text-slate-700 whitespace-nowrap">
-                      <div>{c.country}</div>
-                      <div className="text-[11px] text-slate-400 font-normal">{c.city}</div>
+                    <td className="py-3.5 px-3 align-middle font-semibold text-slate-700">
+                      <div className="text-xs sm:text-[13px] leading-snug break-words">{c.country}</div>
+                      <div className="text-[11px] text-slate-400 font-normal truncate">{c.city}</div>
                     </td>
 
-                    <td className="py-3.5 px-4 text-center align-middle whitespace-nowrap">
+                    <td className="py-3.5 px-2 text-center align-middle">
                       <div className="font-extrabold text-sm text-[#0B1933]">{stats.totalOrdersCount}</div>
                       {stats.totalProductsCount > 0 ? (
-                        <span className="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200/60 px-1.5 py-0.5 rounded-md inline-block mt-0.5">
+                        <span className="text-[10px] font-bold text-slate-600 bg-slate-100 border border-slate-200/60 px-1.5 py-0.5 rounded-md inline-block mt-0.5 whitespace-nowrap">
                           {stats.totalProductsCount} item{stats.totalProductsCount > 1 ? 's' : ''}
                         </span>
                       ) : (
-                        <span className="text-[10px] text-slate-400 block mt-0.5">0 items</span>
+                        <span className="text-[10px] text-slate-400 block mt-0.5 whitespace-nowrap">0 items</span>
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4 align-middle whitespace-nowrap">
-                      <div className="font-extrabold text-sm text-[#0066FF]">
+                    <td className="py-3.5 px-3 align-middle">
+                      <div className="font-extrabold text-xs sm:text-sm text-[#0066FF] whitespace-nowrap">
                         ₹{stats.totalSpentINR.toLocaleString('en-IN')}
                       </div>
-                      <span className="text-[10px] text-slate-400 font-medium">INR Verified</span>
+                      <span className="text-[10px] text-slate-400 font-medium whitespace-nowrap">INR Verified</span>
                     </td>
 
-                    <td className="py-3.5 px-4 text-center align-middle whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                    <td className="py-3.5 px-2 text-center align-middle">
+                      <span className="inline-flex items-center px-2 py-0.5 text-[11px] font-bold rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5" />
                         {c.status}
                       </span>
                     </td>
 
-                    <td className="py-3.5 px-4 text-center align-middle whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-1.5">
+                    <td className="py-3.5 px-2 text-center align-middle">
+                      <div className="flex items-center justify-center gap-2 flex-nowrap">
                         <button
                           type="button"
                           onClick={() => {
                             setSelectedCustomer(c);
                             setModalTab('products');
                           }}
-                          className="w-8.5 h-8.5 rounded-xl bg-blue-50 hover:bg-[#0066FF] text-[#0066FF] hover:text-white border border-blue-200/70 hover:border-transparent flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                          className="p-1.5 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0"
                           title="View Profile & Products"
                           aria-label="View Profile & Products"
                         >
@@ -431,7 +451,7 @@ export const AdminCustomersModule: React.FC<{
                         <button
                           type="button"
                           onClick={() => handleDeleteCustomer(c.id, c.name)}
-                          className="w-8.5 h-8.5 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-500 hover:text-white border border-rose-200/70 hover:border-transparent flex items-center justify-center cursor-pointer shadow-2xs hover:shadow-xs transition-all active:scale-95"
+                          className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-600 flex items-center justify-center cursor-pointer transition-colors active:scale-95 shrink-0"
                           title="Delete Customer Registration"
                           aria-label="Delete Customer"
                         >
