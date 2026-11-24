@@ -2722,57 +2722,44 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                       <table className="w-full table-fixed text-left text-xs">
                         <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200">
                           <tr>
-                            <th className="py-3 px-3 w-[15%]">Invoice # &amp; Order</th>
-                            <th className="py-3 px-2 w-[12%]">Date</th>
-                            <th className="py-3 px-2 w-[21%]">Items / Description</th>
-                            <th className="py-3 px-2 w-[13%]">Total Breakdown</th>
-                            <th className="py-3 px-2 w-[12%]">Payment</th>
-                            <th className="py-3 px-2 w-[18%]">Email Delivery</th>
-                            <th className="py-3 px-3 w-[9%] text-center">Actions</th>
+                            <th className="py-3 px-3 w-[16%]">Invoice #</th>
+                            <th className="py-3 px-2 w-[15%]">Date</th>
+                            <th className="py-3 px-2 w-[26%]">Items / Description</th>
+                            <th className="py-3 px-2 w-[11%]">Total</th>
+                            <th className="py-3 px-2 w-[10%]">Payment</th>
+                            <th className="py-3 px-2 w-[11%]">Email</th>
+                            <th className="py-3 px-3 w-[11%] text-center">Actions</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
-                          {isolatedInvoices.map((inv) => {
-                            const feesAndShipping = Math.max(0, (inv.totalINR || 0) - (inv.subtotalINR || 0));
-                            return (
+                          {isolatedInvoices.map((inv) => (
                             <tr key={inv.id} className="hover:bg-slate-50/70 transition-colors align-middle">
-                              <td className="py-3 px-3">
+                              <td className="py-3.5 px-3">
                                 <div className="font-mono font-bold text-[#0066FF] text-[12px] truncate" title={inv.invoiceNumber}>
                                   {inv.invoiceNumber}
                                 </div>
-                                <div className="text-[11px] text-slate-400 truncate">Order: {inv.orderId}</div>
                               </td>
-                              <td className="py-3 px-2 text-slate-500 leading-snug">
+                              <td className="py-3.5 px-2 text-slate-600 whitespace-nowrap truncate" title={inv.createdAt}>
                                 {inv.createdAt}
                               </td>
-                              <td className="py-3 px-2">
+                              <td className="py-3.5 px-2">
                                 <div className="font-medium text-slate-800 truncate" title={inv.items.map((i) => i.title).join(', ')}>
                                   {inv.items.map((i) => i.title).join(', ')}
                                 </div>
-                                <div className="text-[11px] text-slate-400 truncate">
-                                  {inv.items.length} item{inv.items.length > 1 ? 's' : ''} &bull; {inv.destinationCountry}
-                                </div>
                               </td>
-                              <td className="py-3 px-2">
+                              <td className="py-3.5 px-2">
                                 <div className="font-extrabold text-[#0B1933] whitespace-nowrap">
                                   ₹{inv.totalINR.toLocaleString('en-IN')}
                                 </div>
-                                <div className="text-[10px] text-slate-400 truncate" title={`Items ₹${inv.subtotalINR.toLocaleString('en-IN')} + Fees/Shipping ₹${feesAndShipping.toLocaleString('en-IN')}`}>
-                                  Items ₹{inv.subtotalINR.toLocaleString('en-IN')}
-                                  {feesAndShipping > 0 ? ` + ₹${feesAndShipping.toLocaleString('en-IN')} fees` : ''}
-                                </div>
                               </td>
-                              <td className="py-3 px-2">
-                                <span className="inline-block px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                              <td className="py-3.5 px-2">
+                                <span className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
                                   {inv.paymentStatus}
                                 </span>
-                                <div className="text-[10px] text-slate-500 truncate mt-0.5" title={inv.paymentMethod}>
-                                  {inv.paymentMethod || 'Online Payment'}
-                                </div>
                               </td>
-                              <td className="py-3 px-2">
+                              <td className="py-3.5 px-2">
                                 <span
-                                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold max-w-full ${
+                                  className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold max-w-full ${
                                     inv.emailStatus === 'Sent'
                                       ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                       : inv.emailStatus === 'Pending'
@@ -2784,22 +2771,9 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                                   <Mail className="w-3 h-3 shrink-0" />
                                   <span className="truncate">{inv.emailStatus}</span>
                                 </span>
-                                <div className="text-[10px] text-slate-500 truncate mt-0.5" title={inv.customerEmail}>
-                                  {inv.customerEmail}
-                                </div>
-                                {inv.emailStatus === 'Sent' && inv.emailSentAt && (
-                                  <div className="text-[10px] text-slate-400 truncate">
-                                    Delivered {inv.emailSentAt}
-                                  </div>
-                                )}
-                                {inv.emailStatus === 'Failed' && (
-                                  <div className="text-[10px] text-red-500 truncate">
-                                    Failed — click resend
-                                  </div>
-                                )}
                               </td>
-                              <td className="py-3 px-2 text-center align-middle">
-                                <div className="flex flex-col items-center justify-center gap-1">
+                              <td className="py-3.5 px-2 text-center align-middle">
+                                <div className="flex items-center justify-center gap-1">
                                   <button
                                     type="button"
                                     onClick={() => setSelectedInvoice(inv)}
@@ -2828,8 +2802,7 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                                 </div>
                               </td>
                             </tr>
-                            );
-                          })}
+                          ))}
                         </tbody>
                       </table>
                     </div>
@@ -2843,20 +2816,17 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
                               <div className="font-mono font-bold text-[#0066FF] text-sm">{inv.invoiceNumber}</div>
-                              <div className="text-[11px] text-slate-400">Order: {inv.orderId} &bull; {inv.createdAt}</div>
+                              <div className="text-[11px] text-slate-500">{inv.createdAt}</div>
                             </div>
                             <div className="text-right shrink-0">
                               <div className="font-extrabold text-[#0B1933] text-sm">₹{inv.totalINR.toLocaleString('en-IN')}</div>
                               <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 mt-0.5">
-                                {inv.paymentStatus} &bull; {inv.paymentMethod || 'Online'}
+                                {inv.paymentStatus}
                               </span>
                             </div>
                           </div>
-                          <div className="text-xs text-slate-700 font-medium">
+                          <div className="text-xs text-slate-800 font-medium truncate">
                             {inv.items.map((i) => i.title).join(', ')}
-                            <span className="block text-[11px] text-slate-400 mt-0.5">
-                              {inv.items.length} item{inv.items.length > 1 ? 's' : ''} &bull; {inv.destinationCountry}
-                            </span>
                           </div>
                           <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
                             <div className="min-w-0">
@@ -2872,10 +2842,6 @@ export const CustomerDashboard: React.FC<CustomerDashboardProps> = ({
                                 <Mail className="w-3 h-3 shrink-0" />
                                 <span>{inv.emailStatus}</span>
                               </span>
-                              <div className="text-[10px] text-slate-400 truncate mt-0.5">
-                                {inv.customerEmail}
-                                {inv.emailStatus === 'Sent' && inv.emailSentAt ? ` • ${inv.emailSentAt}` : ''}
-                              </div>
                             </div>
                             <div className="flex items-center gap-1 shrink-0">
                               <button
